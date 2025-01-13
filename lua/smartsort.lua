@@ -1,4 +1,4 @@
-local f = require('funcs')
+local f = require("funcs")
 
 local M = {}
 
@@ -13,8 +13,7 @@ local M = {}
 --- @field row number: the row of the coord
 --- @field col number: the column of the coord
 
-M.setup = function()
-end
+M.setup = function() end
 
 --- Get the coords of the visual selection
 --- @return Selection
@@ -78,8 +77,10 @@ end
 --- @return string: the sorted words
 ---
 M._build_sorted_words = function(spaces_between_words, words_with_end_comma, words)
-    assert(#words == #spaces_between_words + 1,
-        "Number of spaces between words must be one less than the number of words")
+    assert(
+        #words == #spaces_between_words + 1,
+        "Number of spaces between words must be one less than the number of words"
+    )
     assert(#words == #words_with_end_comma, "Number of words with end comma must be the same as the number of words")
 
     local output = {}
@@ -140,14 +141,18 @@ end
 --- @param str string: the string to calculate the spaces between words of
 --- @return number[]: the spaces between words
 M._calculate_spaces_between_words = function(str)
-    if #str <= 1 then return {} end
+    if #str <= 1 then
+        return {}
+    end
 
     local spaces = {}
     local idx = 1
     while idx <= #str do
         if string.sub(str, idx, idx) == " " then
             local space_idx = idx
-            while string.sub(str, space_idx, space_idx) == " " do space_idx = space_idx + 1 end
+            while string.sub(str, space_idx, space_idx) == " " do
+                space_idx = space_idx + 1
+            end
             local number_of_spaces = space_idx - idx
             table.insert(spaces, number_of_spaces)
 
@@ -163,7 +168,7 @@ end
 --- @param coords Selection: the selection to sort
 M.sort_lines = function(coords)
     f.debug(coords)
-    print('sort several lines')
+    print("sort several lines")
 end
 
 M.sort = function()
