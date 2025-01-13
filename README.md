@@ -1,11 +1,13 @@
 # smartsort.nvim
 
+![tests-badge](https://github.com/JavierPoduje/smartsort.nvim/actions/workflows/ci.yml/badge.svg)
+
 ## Description
 
 Smartsort.nvim is a plugin that allows you to sort text in smart way by visually selecting the text and calling the sort function.
 
-- You can sort a single line
-- You can sort multiple blocks of text, like functions or classes
+- Sort a single line
+- Sort multiple blocks of text, like functions or classes
 
 ### How does it work?
 
@@ -28,3 +30,34 @@ import { bar, baz, foo } from 'module';
 - It's main use case is to sort functions in a file by their name
 - It respects the space between the functions, even if it's inconsistent
 - Except for the comments, it'll ignore blocks of code that are not functions and treat them as empty lines
+
+## Installation
+
+Using [lazy.nvim](https://github.com/folke/lazy.nvim):
+
+```lua
+{
+    "smartsort.nvim",
+    config = function ()
+        require('smartsort')
+    end
+}
+```
+
+## Usage
+
+### Using lua:
+
+- Sort single line in visual mode:
+```lua
+vim.keymap.set("c", ":ss", require('smartsort').sort)
+```
+
+## WIP
+
+- [x] Sort single lines
+    - [ ] Support complex imports like:
+    ```js
+    import { foo as bar, baz } from 'module';
+    ```
+- [ ] Sort functions
