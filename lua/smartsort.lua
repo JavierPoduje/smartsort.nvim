@@ -33,7 +33,7 @@ end
 
 --- Sort the selected line
 --- @param coords Selection: the selection to sort
-M.sort_line = function(coords)
+M.sort_single_line = function(coords)
     local full_line = vim.fn.getline(coords.start.row, coords.finish.row)
     local raw_str = string.sub(full_line[1], coords.start.col, coords.finish.col)
 
@@ -46,11 +46,27 @@ M.sort_line = function(coords)
     local words_with_end_comma = M._calculate_words_with_end_comma(words)
     words = M._remove_end_comma(words)
 
-    return table.concat({
+    local str_to_insert = table.concat({
         leftpad,
         M._build_sorted_words(spaces_between_words, words_with_end_comma, words),
         rightpad,
     }, "")
+
+    M._insert(coords.start.row, coords.start.col, coords.finish.col, str_to_insert)
+end
+
+--- Insert the string into the buffer in a single line in a specific range
+--- @param row number: the row to insert the string into
+--- @param start_col number: the start column to insert the string into
+--- @param end_col number: the end column to insert the string into
+--- @param str string: the string to insert
+--- @return nil
+M._insert = function(row, start_col, end_col, str)
+    if f.is_max_col(end_col) then
+        local line = vim.api.nvim_buf_get_lines(0, row - 1, row, true)[1]
+        end_col = #line
+    end
+    vim.api.nvim_buf_set_text(0, row - 1, start_col - 1, row - 1, end_col, { str })
 end
 
 --- Build the string of sorted words
@@ -61,7 +77,8 @@ end
 --- @return string: the sorted words
 ---
 M._build_sorted_words = function(spaces_between_words, words_with_end_comma, words)
-    assert(#words == #spaces_between_words + 1, "Number of spaces between words must be one less than the number of words")
+    assert(#words == #spaces_between_words + 1,
+        "Number of spaces between words must be one less than the number of words")
     assert(#words == #words_with_end_comma, "Number of words with end comma must be the same as the number of words")
 
     local output = {}
@@ -151,7 +168,7 @@ end
 M.sort = function()
     local coords = M.selection_coords()
     if coords.start.row == coords.finish.row then
-        M.sort_line(coords)
+        M.sort_single_line(coords)
     else
         M.sort_lines(coords)
     end
