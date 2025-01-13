@@ -41,9 +41,10 @@ M.sort_single_line = function(coords)
     local spaces_between_words = M._calculate_spaces_between_words(trimmed_str)
 
     local words = vim.fn.split(trimmed_str)
+    local words_with_end_comma = M._calculate_words_with_end_comma(words)
+
     table.sort(words)
 
-    local words_with_end_comma = M._calculate_words_with_end_comma(words)
     words = M._remove_end_comma(words)
 
     local str_to_insert = table.concat({
