@@ -50,4 +50,15 @@ describe("smartsort._build_sorted_words", function()
         --- @diagnostic disable-next-line: undefined-field
         assert.are.equals("this, is  a,   test", build_sorted_words(spaces_between_words, words_with_end_comma, words))
     end)
+
+    --- @diagnostic disable-next-line: undefined-global
+    it("should respect non-alphanumeric characters", function()
+        local spaces_between_words = { 1, 1 }
+        local words_with_end_comma = { true, true, false }
+        local words = { '"c"', '"ss"', "require('smartsort').sort" }
+        --- @diagnostic disable-next-line: undefined-field
+        assert.are.equals('"c", "ss", require(\'smartsort\').sort',
+            build_sorted_words(spaces_between_words, words_with_end_comma, words))
+    end)
 end)
+

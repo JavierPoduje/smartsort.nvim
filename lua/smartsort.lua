@@ -1,4 +1,5 @@
 local f = require("funcs")
+-- local parsers = require("nvim-treesitter.parsers")
 
 local M = {}
 
@@ -15,7 +16,53 @@ local M = {}
 
 M.setup = function() end
 
+M.sort = function()
+    local coords = M.selection_coords()
+    if coords.start.row == coords.finish.row then
+        M.sort_single_line(coords)
+    else
+        M.sort_lines(coords)
+    end
+end
+
+--- Sort the selected lines
+---
+--- @param coords Selection: the selection to sort
+M.sort_lines = function(coords)
+    -- local parser = parsers.get_parser()
+    -- local tree = parser:parse()[1]
+    -- local root = tree:root()
+
+    f.debug(coords)
+    print("sort several lines")
+end
+
+--- Sort the selected line
+---
+--- @param coords Selection: the selection to sort
+M.sort_single_line = function(coords)
+    local full_line = vim.fn.getline(coords.start.row, coords.finish.row)
+    local raw_str = string.sub(full_line[1], coords.start.col, coords.finish.col)
+
+    local trimmed_str, leftpad, rightpad = M._trim(raw_str)
+    local spaces_between_words = M._calculate_spaces_between_words(trimmed_str)
+
+    -- split words by comma
+    local words = vim.fn.split(trimmed_str, ",\\s*")
+
+    table.sort(words)
+
+    local str_to_insert = table.concat({
+        leftpad,
+        M._build_sorted_words(spaces_between_words, words),
+        rightpad,
+    }, "")
+
+    M._insert_in_buffer(coords.start.row, coords.start.col, coords.finish.col, str_to_insert)
+end
+
 --- Get the coords of the visual selection
+---
 --- @return Selection
 M.selection_coords = function()
     local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
@@ -30,40 +77,15 @@ M.selection_coords = function()
     return { start = start, finish = finish }
 end
 
---- Sort the selected line
---- @param coords Selection: the selection to sort
-M.sort_single_line = function(coords)
-    local full_line = vim.fn.getline(coords.start.row, coords.finish.row)
-    local raw_str = string.sub(full_line[1], coords.start.col, coords.finish.col)
-
-    local trimmed_str, leftpad, rightpad = M._trim(raw_str)
-    local spaces_between_words = M._calculate_spaces_between_words(trimmed_str)
-
-    -- split words by comma
-    local words = vim.fn.split(trimmed_str, ",\\s*")
-
-    local words_with_end_comma = M._calculate_words_with_end_comma(words)
-
-    table.sort(words)
-
-    words = M._remove_end_comma(words)
-
-    local str_to_insert = table.concat({
-        leftpad,
-        M._build_sorted_words(spaces_between_words, words_with_end_comma, words),
-        rightpad,
-    }, "")
-
-    M._insert(coords.start.row, coords.start.col, coords.finish.col, str_to_insert)
-end
 
 --- Insert the string into the buffer in a single line in a specific range
+---
 --- @param row number: the row to insert the string into
 --- @param start_col number: the start column to insert the string into
 --- @param end_col number: the end column to insert the string into
 --- @param str string: the string to insert
 --- @return nil
-M._insert = function(row, start_col, end_col, str)
+M._insert_in_buffer = function(row, start_col, end_col, str)
     if f.is_max_col(end_col) then
         local line = vim.api.nvim_buf_get_lines(0, row - 1, row, true)[1]
         end_col = #line
@@ -74,24 +96,22 @@ end
 --- Build the string of sorted words
 ---
 --- @param spaces_between_words number[]: the spaces between words
---- @param words_with_end_comma boolean[]: list of booleans, where each boolean represents whether the word has a comma at the end or not
 --- @param words string[]: the words to build the sorted words of
 --- @return string: the sorted words
 ---
-M._build_sorted_words = function(spaces_between_words, words_with_end_comma, words)
+M._build_sorted_words = function(spaces_between_words, words)
     assert(
         #words == #spaces_between_words + 1,
         "Number of spaces between words must be one less than the number of words"
     )
-    assert(#words == #words_with_end_comma, "Number of words with end comma must be the same as the number of words")
 
     local output = {}
 
     for i, word in ipairs(words) do
         table.insert(output, word)
 
-        -- add comma if needed
-        if words_with_end_comma[i] then
+        -- add comma at the end of word if it's not the last word
+        if i < #words then
             table.insert(output, ",")
         end
 
@@ -105,41 +125,8 @@ M._build_sorted_words = function(spaces_between_words, words_with_end_comma, wor
     return table.concat(output, "")
 end
 
---- Remove the end comma from the given strings. If a string happens to have more than one at the end,
---- it will remove only the last one.
---- @param words string[]: the words to remove the end comma from
---- @return string[]: the words without the end comma
-M._remove_end_comma = function(words)
-    local remove_last_character = function(str)
-        return string.sub(str, 1, -2)
-    end
-
-    local sanitized_words = {}
-    for _, word in ipairs(words) do
-        local last_char = string.sub(word, -1)
-        if last_char == "," then
-            table.insert(sanitized_words, remove_last_character(word))
-        else
-            table.insert(sanitized_words, word)
-        end
-    end
-    return sanitized_words
-end
-
---- Calculate the words with end comma. This is a list of booleans, where each boolean
---- represents whether the word has a comma at the end or not.
---- @param words string[]: the words to calculate the end comma of
---- @return boolean[]: the words with end comma
-M._calculate_words_with_end_comma = function(words)
-    local words_with_end_comma = {}
-    for _, word in ipairs(words) do
-        local last_char = string.sub(word, -1)
-        table.insert(words_with_end_comma, last_char == ",")
-    end
-    return words_with_end_comma
-end
-
 --- Calculate the spaces between. The spaces are only calculated between words separated by a comma.
+---
 --- @param str string: the string to calculate the spaces between words of
 --- @return number[]: the spaces between words
 M._calculate_spaces_between_words = function(str)
@@ -168,27 +155,15 @@ M._calculate_spaces_between_words = function(str)
 
             idx = space_idx
             count_spaces = false
+        elseif count_spaces and string.sub(str, idx, idx) ~= " " then
+            table.insert(spaces, 0)
+            idx = idx + 1
+            count_spaces = false
         else
             idx = idx + 1
         end
     end
     return spaces
-end
-
---- Sort the selected lines
---- @param coords Selection: the selection to sort
-M.sort_lines = function(coords)
-    f.debug(coords)
-    print("sort several lines")
-end
-
-M.sort = function()
-    local coords = M.selection_coords()
-    if coords.start.row == coords.finish.row then
-        M.sort_single_line(coords)
-    else
-        M.sort_lines(coords)
-    end
 end
 
 --- Get the trimmed string, and the left and right "padding", where padding is the empty space

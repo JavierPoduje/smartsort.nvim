@@ -37,4 +37,10 @@ describe("smartsort._calculate_spaces_between_words", function()
         --- @diagnostic disable-next-line: undefined-field
         assert.are.same({ 1, 2 }, calculate_spaces_between_words("something, other as this,  what's up"))
     end)
+
+    --- @diagnostic disable-next-line: undefined-global
+    it("should detect no-spaces between words", function()
+        --- @diagnostic disable-next-line: undefined-field
+        assert.are.same({ 0, 0, 0, 1 }, calculate_spaces_between_words(" hola,chao,leorio,caquita, holanda "))
+    end)
 end)

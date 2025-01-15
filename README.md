@@ -50,7 +50,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 - Sort single line in visual mode:
 ```lua
-vim.keymap.set("c", ":ss", require('smartsort').sort)
+vim.keymap.set("v", "<leader>s", vim.cmd.Smartsort)
 ```
 
 ## WIP
