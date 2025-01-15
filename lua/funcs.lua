@@ -11,4 +11,8 @@ M.is_max_col = function(col)
     return col == vim.v.maxcol
 end
 
+M.bool2str = function(bool)
+    return bool and "true" or "false"
+end
+
 return M
