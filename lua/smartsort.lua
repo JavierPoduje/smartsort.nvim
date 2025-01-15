@@ -39,7 +39,9 @@ M.sort_single_line = function(coords)
     local trimmed_str, leftpad, rightpad = M._trim(raw_str)
     local spaces_between_words = M._calculate_spaces_between_words(trimmed_str)
 
-    local words = vim.fn.split(trimmed_str)
+    -- split words by comma
+    local words = vim.fn.split(trimmed_str, ",\\s*")
+
     local words_with_end_comma = M._calculate_words_with_end_comma(words)
 
     table.sort(words)
@@ -112,16 +114,16 @@ M._remove_end_comma = function(words)
         return string.sub(str, 1, -2)
     end
 
-    local words_without_end_comma = {}
+    local sanitized_words = {}
     for _, word in ipairs(words) do
         local last_char = string.sub(word, -1)
         if last_char == "," then
-            table.insert(words_without_end_comma, remove_last_character(word))
+            table.insert(sanitized_words, remove_last_character(word))
         else
-            table.insert(words_without_end_comma, word)
+            table.insert(sanitized_words, word)
         end
     end
-    return words_without_end_comma
+    return sanitized_words
 end
 
 --- Calculate the words with end comma. This is a list of booleans, where each boolean
@@ -137,7 +139,7 @@ M._calculate_words_with_end_comma = function(words)
     return words_with_end_comma
 end
 
---- Calculate the spaces between words
+--- Calculate the spaces between. The spaces are only calculated between words separated by a comma.
 --- @param str string: the string to calculate the spaces between words of
 --- @return number[]: the spaces between words
 M._calculate_spaces_between_words = function(str)
@@ -145,10 +147,18 @@ M._calculate_spaces_between_words = function(str)
         return {}
     end
 
+    --- @type number[]
     local spaces = {}
     local idx = 1
+    local count_spaces = false
+
     while idx <= #str do
-        if string.sub(str, idx, idx) == " " then
+        if string.sub(str, idx, idx) == "," then
+            idx = idx + 1
+            count_spaces = true
+        end
+
+        if count_spaces and string.sub(str, idx, idx) == " " then
             local space_idx = idx
             while string.sub(str, space_idx, space_idx) == " " do
                 space_idx = space_idx + 1
@@ -157,6 +167,7 @@ M._calculate_spaces_between_words = function(str)
             table.insert(spaces, number_of_spaces)
 
             idx = space_idx
+            count_spaces = false
         else
             idx = idx + 1
         end
