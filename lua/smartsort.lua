@@ -1,5 +1,5 @@
 local f = require("funcs")
--- local parsers = require("nvim-treesitter.parsers")
+local ts = require("treesitter")
 
 local M = {}
 
@@ -29,12 +29,38 @@ end
 ---
 --- @param coords Selection: the selection to sort
 M.sort_lines = function(coords)
-    -- local parser = parsers.get_parser()
-    -- local tree = parser:parse()[1]
-    -- local root = tree:root()
+    local nodes_by_name, non_sortable_nodes, gap_between_nodes, node_is_sortable_by_idx = ts.get_selection_data(coords)
 
-    f.debug(coords)
-    print("sort several lines")
+    --- @type string[]
+    local sorted_node_names = f.sorted_keys(nodes_by_name)
+    local sortable_nodes_idx = 1
+    local non_sortable_nodes_idx = 1
+
+    --- @type string[]
+    local sorted_nodes_as_strings = {}
+    for idx, is_sortable in ipairs(node_is_sortable_by_idx) do
+        if is_sortable then
+            local node_name = sorted_node_names[sortable_nodes_idx]
+            local node_as_string = ts.node_to_string(nodes_by_name[node_name])
+            table.insert(sorted_nodes_as_strings, node_as_string)
+            sortable_nodes_idx = sortable_nodes_idx + 1
+        else
+            local node_as_string = ts.node_to_string(non_sortable_nodes[non_sortable_nodes_idx])
+            table.insert(sorted_nodes_as_strings, node_as_string)
+            non_sortable_nodes_idx = non_sortable_nodes_idx + 1
+        end
+
+        if idx < #node_is_sortable_by_idx then
+            table.insert(sorted_nodes_as_strings, f.repeat_str("\n", gap_between_nodes[idx]))
+        end
+    end
+
+    local str_to_insert = table.concat(sorted_nodes_as_strings, "")
+
+    --- nvim_buf_set_lines doesn't accept 'new-lines', so we need to split the string by new-lines
+    local lines_to_insert = vim.fn.split(str_to_insert, "\n\\s*")
+
+    vim.api.nvim_buf_set_lines(0, coords.start.row - 1, coords.finish.row, true, lines_to_insert)
 end
 
 --- Sort the selected line
