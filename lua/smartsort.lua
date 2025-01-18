@@ -1,44 +1,33 @@
 local f = require("funcs")
 local ts = require("treesitter")
+local Region = require("region")
 
 local M = {}
-
---- @class Selection
---- @field start Coord: the start of the selection
---- @field finish Coord: the end of the selection
-
---- @class SmartSort
---- @field selection Selection: the selected scope to sort
-
---- @class Coord
---- @field row number: the row of the coord
---- @field col number: the column of the coord
 
 M.setup = function() end
 
 M.sort = function()
-    local coords = M.selection_coords()
+    local region = Region.from_selection()
 
-    if coords.start.row == coords.finish.row then
-        M.sort_single_line(coords)
+    if region.srow == region.erow then
+        M.sort_single_line(region)
     else
-        M.sort_lines(coords)
+        M.sort_lines(region)
     end
 end
 
 --- Sort the selected lines
 ---
---- @param coords Selection: the selection to sort
-M.sort_lines = function(coords)
-    -- local nodes_by_name, non_sortable_nodes, gap_between_nodes, node_is_sortable_by_idx = ts.get_selection_data(coords)
-    local nodes_by_name, non_sortable_nodes, gap_between_nodes, node_is_sortable_by_idx = ts.get_selection_data(coords)
+--- @param region Region: the region to sort
+M.sort_lines = function(region)
+    local nodes_by_name, non_sortable_nodes, gap_between_nodes, node_is_sortable_by_idx = ts.get_selection_data(region)
     local string_to_insert = M._build_string_to_insert(
         nodes_by_name,
         non_sortable_nodes,
         gap_between_nodes,
         node_is_sortable_by_idx)
     local lines_to_insert = vim.fn.split(string_to_insert, "\n\\s*")
-    vim.api.nvim_buf_set_lines(0, coords.start.row - 1, coords.finish.row, true, lines_to_insert)
+    vim.api.nvim_buf_set_lines(0, region.srow - 1, region.erow, true, lines_to_insert)
 end
 
 
@@ -76,11 +65,10 @@ M._build_string_to_insert = function(nodes_by_name, non_sortable_nodes, gap_betw
 end
 
 --- Sort the selected line
----
---- @param coords Selection: the selection to sort
-M.sort_single_line = function(coords)
-    local full_line = vim.fn.getline(coords.start.row, coords.finish.row)
-    local raw_str = string.sub(full_line[1], coords.start.col, coords.finish.col)
+--- @param region Region: the region to sort
+M.sort_single_line = function(region)
+    local full_line = vim.fn.getline(region.srow, region.erow)
+    local raw_str = string.sub(full_line[1], region.scol, region.ecol)
 
     local trimmed_str, leftpad, rightpad = M._trim(raw_str)
     local spaces_between_words = M._calculate_spaces_between_words(trimmed_str)
@@ -96,25 +84,8 @@ M.sort_single_line = function(coords)
         rightpad,
     }, "")
 
-    M._insert_in_buffer(coords.start.row, coords.start.col, coords.finish.col, str_to_insert)
+    M._insert_in_buffer(region.srow, region.scol, region.ecol, str_to_insert)
 end
-
---- Get the coords of the visual selection
----
---- @return Selection
-M.selection_coords = function()
-    local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
-    local _, end_line, end_col, _ = unpack(vim.fn.getpos("'>"))
-
-    local start = { row = start_line, col = start_col }
-    local finish = { row = end_line, col = end_col }
-
-    assert(start.row <= finish.row, "Start row must be less than or equal to finish row")
-    assert(start.col <= finish.col, "Start col must be less than or equal to finish col")
-
-    return { start = start, finish = finish }
-end
-
 
 --- Insert the string into the buffer in a single line in a specific range
 ---

@@ -28,20 +28,52 @@ end
 --- @diagnostic disable-next-line: undefined-global
 describe("chadnode", function()
     --- @diagnostic disable-next-line: undefined-global
-    it("get_sorable_idx", function()
-        local bufnr, parser = setup(typescript_mocks.simplest)
-        local range = {
-            finish = {
-                col = 2147483647,
-                row = 9
-            },
-            start = {
-                col = 1,
-                row = 1
-            }
-        }
+    describe("gap", function()
+        --- @diagnostic disable-next-line: undefined-global
+        it("should detect 0 line", function()
+            local mock = typescript_mocks.without_gap
+            local bufnr, parser = setup(mock.content)
+            local chadnodes = ts.get_nodes_from_range(bufnr, mock.region, parser)
+            local cn1 = chadnodes[1]
+            local cn2 = chadnodes[2]
 
-        local chadnodes = ts.get_nodes_from_range(bufnr, range, parser)
+            --- @diagnostic disable-next-line: undefined-field
+            assert.are.equal(cn1:gap(cn2), 0)
+        end)
+
+        --- @diagnostic disable-next-line: undefined-global
+        it("should detect 1 line", function()
+            local mock = typescript_mocks.simplest
+            local bufnr, parser = setup(mock.content)
+
+            local chadnodes = ts.get_nodes_from_range(bufnr, mock.region, parser)
+            local cn1 = chadnodes[1]
+            local cn2 = chadnodes[2]
+
+            --- @diagnostic disable-next-line: undefined-field
+            assert.are.equal(cn1:gap(cn2), 1)
+        end)
+
+        --- @diagnostic disable-next-line: undefined-global
+        it("should detect 3 line", function()
+            local mock = typescript_mocks.with_bigger_gap
+            local bufnr, parser = setup(mock.content)
+
+            local chadnodes = ts.get_nodes_from_range(bufnr, mock.region, parser)
+            local cn1 = chadnodes[1]
+            local cn2 = chadnodes[2]
+
+            --- @diagnostic disable-next-line: undefined-field
+            assert.are.equal(cn1:gap(cn2), 3)
+        end)
+    end)
+
+    --- @diagnostic disable-next-line: undefined-global
+    it("get_sortable_idx", function()
+        local mock = typescript_mocks.simplest
+        local bufnr, parser = setup(mock.content)
+
+        local chadnodes = ts.get_nodes_from_range(bufnr, mock.region, parser)
         --- @type string[]
         local chadnode_idxs = {}
         for _, chadnode in ipairs(chadnodes) do
@@ -50,71 +82,5 @@ describe("chadnode", function()
 
         --- @diagnostic disable-next-line: undefined-field
         assert.is.truthy(vim.deep_equal(chadnode_idxs, { "foo", "bar" }))
-    end)
-
-    --- @diagnostic disable-next-line: undefined-global
-    it("gap should detect 1 line", function()
-        local bufnr, parser = setup(typescript_mocks.simplest)
-        local range = {
-            finish = {
-                col = 2147483647,
-                row = 9
-            },
-            start = {
-                col = 1,
-                row = 1
-            }
-        }
-
-        local chadnodes = ts.get_nodes_from_range(bufnr, range, parser)
-        local cn1 = chadnodes[1]
-        local cn2 = chadnodes[2]
-
-        --- @diagnostic disable-next-line: undefined-field
-        assert.are.equal(cn1:gap(cn2), 1)
-    end)
-
-    --- @diagnostic disable-next-line: undefined-global
-    it("gap should detect 3 line", function()
-        local bufnr, parser = setup(typescript_mocks.with_bigger_gap)
-        local range = {
-            finish = {
-                col = 2147483647,
-                row = 9
-            },
-            start = {
-                col = 1,
-                row = 1
-            }
-        }
-
-        local chadnodes = ts.get_nodes_from_range(bufnr, range, parser)
-        local cn1 = chadnodes[1]
-        local cn2 = chadnodes[2]
-
-        --- @diagnostic disable-next-line: undefined-field
-        assert.are.equal(cn1:gap(cn2), 3)
-    end)
-
-    --- @diagnostic disable-next-line: undefined-global
-    it("gap should detect 0 line", function()
-        local bufnr, parser = setup(typescript_mocks.without_bigger_gap)
-        local range = {
-            finish = {
-                col = 2147483647,
-                row = 9
-            },
-            start = {
-                col = 1,
-                row = 1
-            }
-        }
-
-        local chadnodes = ts.get_nodes_from_range(bufnr, range, parser)
-        local cn1 = chadnodes[1]
-        local cn2 = chadnodes[2]
-
-        --- @diagnostic disable-next-line: undefined-field
-        assert.are.equal(cn1:gap(cn2), 0)
     end)
 end)

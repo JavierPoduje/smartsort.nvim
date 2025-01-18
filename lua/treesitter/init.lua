@@ -19,9 +19,9 @@ M.node_to_string = function(node)
     return ts.get_node_text(node, 0)
 end
 
---- @param coords Selection: the selection to sort
+--- @param region Region: the selected region to get the data from
 --- @return table<string, TSNode>, TSNode[], number[], boolean[]
-M.get_selection_data = function(coords)
+M.get_selection_data = function(region)
     local parser = parsers.get_parser()
     --- @type table<string, TSNode>
     local nodes_by_name = {}
@@ -41,7 +41,7 @@ M.get_selection_data = function(coords)
 
         -- if the node is after the last line of the visually-selected area, stop
         local _, _, erow, _ = node:range()
-        if erow > coords.finish.row - 1 then
+        if erow > region.erow - 1 then
             break
         end
 
@@ -76,10 +76,10 @@ M.get_selection_data = function(coords)
 end
 
 --- @param bufnr number: the buffer number
---- @param coords Selection: the selection to sort
+--- @param region Region: the region to get the nodes from
 --- @param parser vim.treesitter.LanguageTree
 --- @return Chadnode[]
-M.get_nodes_from_range = function(bufnr, coords, parser)
+M.get_nodes_from_range = function(bufnr, region, parser)
     local node = ts_utils.get_node_at_cursor()
 
     assert(node ~= nil, "No node found")
@@ -92,7 +92,7 @@ M.get_nodes_from_range = function(bufnr, coords, parser)
 
         -- if the node is after the last line of the visually-selected area, stop
         local _, _, erow, _ = node:range()
-        if erow > coords.finish.row - 1 then
+        if erow > region.erow - 1 then
             break
         end
 

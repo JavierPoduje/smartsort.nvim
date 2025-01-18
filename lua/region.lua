@@ -28,4 +28,17 @@ Region.new = function(srow, scol, erow, ecol)
     return self
 end
 
+Region.from_selection = function()
+    local srow = vim.fn.line("'<")
+    local scol = vim.fn.col("'<")
+    local erow = vim.fn.line("'>")
+    local ecol = vim.fn.col("'>")
+
+    local last_line = vim.api.nvim_buf_get_lines(0, erow - 1, erow, true)[1]
+    local line_length = vim.str_utfindex(last_line, #last_line)
+    ecol = math.min(ecol, line_length)
+
+    return Region.new(srow, scol, erow, ecol)
+end
+
 return Region
