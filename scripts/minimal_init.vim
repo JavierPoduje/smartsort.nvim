@@ -11,8 +11,6 @@ runtime! plugin/nvim-treesitter.lua
 runtime! plugin/init.lua
 
 lua <<EOF
--- lsp-config setup
-
 -- treesitter setup
 local required_parsers = {'typescript'}
 local installed_parsers = require'nvim-treesitter.info'.installed_parsers()

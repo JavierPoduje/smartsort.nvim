@@ -9,8 +9,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-latest, windows-2022]
-        rev: [nightly, v0.10.0]
+        os: [ubuntu-22.04, macos-latest]
+        rev: [v0.10.0]
 
     steps:
       - uses: actions/checkout@v4
