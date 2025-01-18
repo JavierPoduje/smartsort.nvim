@@ -36,4 +36,5 @@ jobs:
       - name: Run tests
         run: |
           nvim --version
+          make ci-install-deps
           make test

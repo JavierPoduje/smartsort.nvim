@@ -1,6 +1,9 @@
+local Region = require('region')
+
 --- @class Chadnode
 --- @field node TSNode: the node
 --- @field sortable_idx string | nil: the index from which the node can be sorted
+--- @field range Region: the region of the node
 
 local Chadnode = {}
 Chadnode.__index = Chadnode
@@ -13,8 +16,11 @@ function Chadnode.new(node, sortable_idx)
 
     assert(node ~= nil, "Can't create a Chadnode from this nil POS")
 
+    local srow, scol, erow, ecol = node:range()
+
     self.node = node
     self.sortable_idx = sortable_idx or nil
+    self.range = Region.new(srow, scol, erow, ecol)
     return self
 end
 
@@ -65,12 +71,9 @@ end
 Chadnode.gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
 
-    local _, _, n1_end_row, _ = self:get():range()
-    local n2_start_row, _, _, _ = other:get():range()
+    assert(self.range.erow < other.range.srow, "Node 1 is not before Node 2 or they're overlaping")
 
-    assert(n1_end_row < n2_start_row, "Node 1 is not before Node 2 or they're overlaping")
-
-    return n2_start_row - n1_end_row - 1
+    return other.range.srow - self.range.erow - 1
 end
 
 --- Check if the node has a next sibling

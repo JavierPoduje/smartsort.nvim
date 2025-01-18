@@ -1,5 +1,4 @@
 local f = require("funcs")
-local node_utils = require("treesitter.node_utils")
 local parsers = require("nvim-treesitter.parsers")
 local queries = require("treesitter.queries")
 local Chadnode = require("treesitter.chadnode")
@@ -60,7 +59,10 @@ M.get_selection_data = function(coords)
                 break
             end
 
-            table.insert(gap_between_nodes, node_utils.gap(node, next_sibling))
+            local cnode1 = Chadnode.new(node_to_save, function_name)
+            local cnode2 = Chadnode.new(next_sibling, nil)
+
+            table.insert(gap_between_nodes, cnode1:gap(cnode2))
         end
 
         if not match_found then
