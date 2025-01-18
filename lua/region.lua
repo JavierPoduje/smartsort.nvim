@@ -3,6 +3,9 @@
 --- @field scol number: the start column
 --- @field erow number: the end row
 --- @field ecol number: the end column
+--- @field new fun(srow: number, scol: number, erow: number, ecol: number): Region
+--- @field from_selection fun(): Region
+--- @field from_node fun(node: TSNode): Region
 
 local Region = {}
 Region.__index = Region
@@ -28,6 +31,8 @@ Region.new = function(srow, scol, erow, ecol)
     return self
 end
 
+--- Returns a `Region` from the current visual selection
+--- @return Region
 Region.from_selection = function()
     local srow = vim.fn.line("'<")
     local scol = vim.fn.col("'<")
@@ -38,6 +43,15 @@ Region.from_selection = function()
     local line_length = vim.str_utfindex(last_line, #last_line)
     ecol = math.min(ecol, line_length)
 
+    return Region.new(srow, scol, erow, ecol)
+end
+
+--- Returns a `Region` from a `TSNode`
+--- @param node TSNode: the node
+--- @return Region
+Region.from_node = function(node)
+    assert(node ~= nil, "Can't create a Region from this `nil` piece of shit node")
+    local srow, scol, erow, ecol = node:range()
     return Region.new(srow, scol, erow, ecol)
 end
 

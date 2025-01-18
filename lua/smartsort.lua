@@ -47,11 +47,11 @@ M._build_string_to_insert = function(nodes_by_name, non_sortable_nodes, gap_betw
     for idx, is_sortable in ipairs(node_is_sortable_by_idx) do
         if is_sortable then
             local node_name = sorted_node_names[sortable_nodes_idx]
-            local node_as_string = ts.node_to_string(nodes_by_name[node_name])
+            local node_as_string = f.node_to_string(nodes_by_name[node_name])
             table.insert(sorted_nodes_as_strings, node_as_string)
             sortable_nodes_idx = sortable_nodes_idx + 1
         else
-            local node_as_string = ts.node_to_string(non_sortable_nodes[non_sortable_nodes_idx])
+            local node_as_string = f.node_to_string(non_sortable_nodes[non_sortable_nodes_idx])
             table.insert(sorted_nodes_as_strings, node_as_string)
             non_sortable_nodes_idx = non_sortable_nodes_idx + 1
         end

@@ -2,7 +2,6 @@ local f = require("funcs")
 local parsers = require("nvim-treesitter.parsers")
 local queries = require("treesitter.queries")
 local Chadnode = require("treesitter.chadnode")
-local ts = vim.treesitter
 local ts_utils = require "nvim-treesitter.ts_utils"
 
 local M = {}
@@ -10,13 +9,6 @@ local M = {}
 M.print_lang = function()
     local parser = parsers.get_parser()
     print(parser:lang())
-end
-
---- Return the string representation of a node
---- @param node TSNode
---- @return string
-M.node_to_string = function(node)
-    return ts.get_node_text(node, 0)
 end
 
 --- @param region Region: the selected region to get the data from
@@ -48,8 +40,8 @@ M.get_selection_data = function(region)
         local query = queries.functions_query(parser:lang())
         for _, matches in query:iter_matches(node, 0) do
             match_found = true
-            local function_name = M._get_function_name(matches)
-            local node_to_save = M._get_node(matches)
+            local function_name = f.get_function_name(matches)
+            local node_to_save = f.get_node(matches)
 
             nodes_by_name[function_name] = node_to_save
             table.insert(node_is_sortable_by_idx, true)
@@ -100,7 +92,7 @@ M.get_nodes_from_range = function(bufnr, region, parser)
 
         for _, matches in query:iter_matches(node, bufnr) do
             match_found = true
-            local cnode = Chadnode.new(M._get_node(matches), M._get_function_name(matches))
+            local cnode = Chadnode.new(f.get_node(matches), f.get_function_name(matches))
 
             table.insert(chadnodes, cnode)
 
@@ -118,26 +110,6 @@ M.get_nodes_from_range = function(bufnr, region, parser)
     end
 
     return chadnodes
-end
-
---- @param node TSNode
---- @return string
-M._get_function_name = function(node)
-    return f.if_else(
-        f.contains(node, 1),
-        function() return M.node_to_string(node[1]) end,
-        function() return M.node_to_string(node[3]) end
-    )
-end
-
---- @param node TSNode
---- @return TSNode
-M._get_node = function(node)
-    return f.if_else(
-        f.contains(node, 2),
-        function() return node[2] end,
-        function() return node[4] end
-    )
 end
 
 return M

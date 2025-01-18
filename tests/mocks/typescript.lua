@@ -19,6 +19,22 @@ local simplest = {
 }
 
 --- @type BufferMock
+local with_comment = {
+    content = {
+        "const foo = () => {",
+        "  console.log(\"foo \");",
+        "};",
+        "",
+        "// this is a comment",
+        "",
+        "function bar() {",
+        "  console.log(\"bar \");",
+        "}",
+    },
+    region = Region.new(1, 1, 9, 2147483647),
+}
+
+--- @type BufferMock
 local with_bigger_gap = {
     content = {
         "const foo = () => {",
@@ -50,5 +66,6 @@ local without_gap = {
 return {
     simplest = simplest,
     with_bigger_gap = with_bigger_gap,
+    with_comment = with_comment,
     without_gap = without_gap,
 }

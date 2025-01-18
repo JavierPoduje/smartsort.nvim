@@ -4,6 +4,13 @@ local Region = require('region')
 --- @field node TSNode: the node
 --- @field sortable_idx string | nil: the index from which the node can be sorted
 --- @field range Region: the region of the node
+--- @field new fun(node: TSNode, sortable_idx: string | nil): Chadnode
+--- @field debug fun(self: Chadnode, bufnr: number)
+--- @field get fun(self: Chadnode): TSNode
+--- @field to_string fun(self: Chadnode, bufnr: number): string
+--- @field get_sortable_idx fun(self: Chadnode): string
+--- @field get_next_sibling fun(self: Chadnode): Chadnode
+--- @field gap fun(self: Chadnode, other: TSNode): number
 
 local Chadnode = {}
 Chadnode.__index = Chadnode
@@ -70,9 +77,7 @@ end
 --- @return number: the gap between the two nodes
 Chadnode.gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
-
     assert(self.range.erow < other.range.srow, "Node 1 is not before Node 2 or they're overlaping")
-
     return other.range.srow - self.range.erow - 1
 end
 

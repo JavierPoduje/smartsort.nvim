@@ -54,4 +54,31 @@ M.repeat_str = function(str, times)
     return result
 end
 
+--- Return the string representation of a node
+--- @param node TSNode
+--- @return string
+M.node_to_string = function(node)
+    return vim.treesitter.get_node_text(node, 0)
+end
+
+--- @param node TSNode
+--- @return string
+M.get_function_name = function(node)
+    return M.if_else(
+        M.contains(node, 1),
+        function() return vim.treesitter.get_node_text(node[1], 0) end,
+        function() return vim.treesitter.get_node_text(node[3], 0) end
+    )
+end
+
+--- @param node TSNode
+--- @return TSNode
+M.get_node = function(node)
+    return M.if_else(
+        M.contains(node, 2),
+        function() return node[2] end,
+        function() return node[4] end
+    )
+end
+
 return M

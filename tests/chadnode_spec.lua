@@ -1,6 +1,6 @@
 local parsers = require("nvim-treesitter.parsers")
-local ts = require("treesitter")
 local typescript_mocks = require("tests.mocks.typescript")
+local Chadnodes = require("treesitter.chadnodes")
 
 --- @param buf_content string[]: the content of the buffer
 --- @return number, vim.treesitter.LanguageTree
@@ -33,9 +33,9 @@ describe("chadnode", function()
         it("should detect 0 line", function()
             local mock = typescript_mocks.without_gap
             local bufnr, parser = setup(mock.content)
-            local chadnodes = ts.get_nodes_from_range(bufnr, mock.region, parser)
-            local cn1 = chadnodes[1]
-            local cn2 = chadnodes[2]
+            local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+            local cn1 = chadnodes:node_by_idx(1)
+            local cn2 = chadnodes:node_by_idx(2)
 
             --- @diagnostic disable-next-line: undefined-field
             assert.are.equal(cn1:gap(cn2), 0)
@@ -45,10 +45,9 @@ describe("chadnode", function()
         it("should detect 1 line", function()
             local mock = typescript_mocks.simplest
             local bufnr, parser = setup(mock.content)
-
-            local chadnodes = ts.get_nodes_from_range(bufnr, mock.region, parser)
-            local cn1 = chadnodes[1]
-            local cn2 = chadnodes[2]
+            local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+            local cn1 = chadnodes:node_by_idx(1)
+            local cn2 = chadnodes:node_by_idx(2)
 
             --- @diagnostic disable-next-line: undefined-field
             assert.are.equal(cn1:gap(cn2), 1)
@@ -58,10 +57,9 @@ describe("chadnode", function()
         it("should detect 3 line", function()
             local mock = typescript_mocks.with_bigger_gap
             local bufnr, parser = setup(mock.content)
-
-            local chadnodes = ts.get_nodes_from_range(bufnr, mock.region, parser)
-            local cn1 = chadnodes[1]
-            local cn2 = chadnodes[2]
+            local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+            local cn1 = chadnodes:node_by_idx(1)
+            local cn2 = chadnodes:node_by_idx(2)
 
             --- @diagnostic disable-next-line: undefined-field
             assert.are.equal(cn1:gap(cn2), 3)
@@ -72,11 +70,11 @@ describe("chadnode", function()
     it("get_sortable_idx", function()
         local mock = typescript_mocks.simplest
         local bufnr, parser = setup(mock.content)
+        local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        local chadnodes = ts.get_nodes_from_range(bufnr, mock.region, parser)
         --- @type string[]
         local chadnode_idxs = {}
-        for _, chadnode in ipairs(chadnodes) do
+        for _, chadnode in ipairs(chadnodes:get()) do
             table.insert(chadnode_idxs, chadnode:get_sortable_idx())
         end
 
