@@ -10,19 +10,29 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-latest, windows-2022]
-        rev: [nightly, v0.9.5, v0.10.0]
+        rev: [nightly, v0.10.0]
 
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: nvim-treesitter/nvim-treesitter
+          path: nvim-treesitter
 
       - uses: rhysd/action-setup-vim@v1
         with:
           neovim: true
           version: ${{ matrix.rev }}
 
-      - name: Prepare
+      - name: Prepare plenary
         run: |
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ../plenary.nvim
+
+      - name: Prepare treesitter
+        run: |
+          git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter ../nvim-treesitter
+
 
       - name: Run tests
         run: |
