@@ -18,6 +18,7 @@ M.setup = function() end
 
 M.sort = function()
     local coords = M.selection_coords()
+
     if coords.start.row == coords.finish.row then
         M.sort_single_line(coords)
     else
@@ -29,8 +30,24 @@ end
 ---
 --- @param coords Selection: the selection to sort
 M.sort_lines = function(coords)
+    -- local nodes_by_name, non_sortable_nodes, gap_between_nodes, node_is_sortable_by_idx = ts.get_selection_data(coords)
     local nodes_by_name, non_sortable_nodes, gap_between_nodes, node_is_sortable_by_idx = ts.get_selection_data(coords)
+    local string_to_insert = M._build_string_to_insert(
+        nodes_by_name,
+        non_sortable_nodes,
+        gap_between_nodes,
+        node_is_sortable_by_idx)
+    local lines_to_insert = vim.fn.split(string_to_insert, "\n\\s*")
+    vim.api.nvim_buf_set_lines(0, coords.start.row - 1, coords.finish.row, true, lines_to_insert)
+end
 
+
+--- @param nodes_by_name table<string, TSNode>: the nodes to sort by name
+--- @param non_sortable_nodes TSNode[]: the nodes that are not sortable
+--- @param gap_between_nodes number[]: the gap between nodes
+--- @param node_is_sortable_by_idx boolean[]: the nodes that are sortable
+--- @return string: the string to insert
+M._build_string_to_insert = function(nodes_by_name, non_sortable_nodes, gap_between_nodes, node_is_sortable_by_idx)
     --- @type string[]
     local sorted_node_names = f.sorted_keys(nodes_by_name)
     local sortable_nodes_idx = 1
@@ -55,12 +72,7 @@ M.sort_lines = function(coords)
         end
     end
 
-    local str_to_insert = table.concat(sorted_nodes_as_strings, "")
-
-    --- nvim_buf_set_lines doesn't accept 'new-lines', so we need to split the string by new-lines
-    local lines_to_insert = vim.fn.split(str_to_insert, "\n\\s*")
-
-    vim.api.nvim_buf_set_lines(0, coords.start.row - 1, coords.finish.row, true, lines_to_insert)
+    return table.concat(sorted_nodes_as_strings, "")
 end
 
 --- Sort the selected line

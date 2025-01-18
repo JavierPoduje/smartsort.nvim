@@ -1,0 +1,90 @@
+--- @class Chadnode
+--- @field node TSNode: the node
+--- @field sortable_idx string | nil: the index from which the node can be sorted
+
+local Chadnode = {}
+Chadnode.__index = Chadnode
+
+--- Create a new Chadnode
+--- @param node TSNode: the node
+--- @param sortable_idx string | nil: the index from which the node can be sorted
+function Chadnode.new(node, sortable_idx)
+    local self = setmetatable({}, Chadnode)
+
+    assert(node ~= nil, "Can't create a Chadnode from this nil POS")
+
+    self.node = node
+    self.sortable_idx = sortable_idx or nil
+    return self
+end
+
+--- @param self Chadnode
+--- @param bufnr number
+Chadnode.debug = function(self, bufnr)
+    vim.print(vim.inspect({
+        node = self:to_string(bufnr),
+        sortable_idx = self:get_sortable_idx()
+    }))
+end
+
+--- Get the node
+--- @param self Chadnode: the node
+--- @return TSNode: the node
+Chadnode.get = function(self)
+    return self.node
+end
+
+--- Return the string representation of a node
+--- @param self Chadnode: the node
+--- @return string
+Chadnode.to_string = function(self, bufnr)
+    return vim.treesitter.get_node_text(self.node, bufnr)
+end
+
+--- Return the node's sortable index
+--- @param self Chadnode: the node
+--- @return string
+Chadnode.get_sortable_idx = function(self)
+    return self.sortable_idx or ''
+end
+
+--- Get the next `Chadnode` sibling
+--- @param self Chadnode: the node
+--- @return Chadnode: the next sibling
+Chadnode.get_next_sibling = function(self)
+    local next_sibling = self.node:next_sibling()
+    assert(next_sibling ~= nil, "The node has no next sibling")
+    local new_chad_node = Chadnode.new(next_sibling, nil)
+    return new_chad_node
+end
+
+--- Calculate the "gap" between two nodes, where the gap is the number of rows between them.
+--- @param self Chadnode: the first node
+--- @param other TSNode: the second node
+--- @return number: the gap between the two nodes
+Chadnode.gap = function(self, other)
+    assert(other ~= nil, "The given node can't be nil")
+
+    local _, _, n1_end_row, _ = self:get():range()
+    local n2_start_row, _, _, _ = other:get():range()
+
+    assert(n1_end_row < n2_start_row, "Node 1 is not before Node 2 or they're overlaping")
+
+    return n2_start_row - n1_end_row - 1
+end
+
+--- Check if the node has a next sibling
+--- @param self Chadnode: the node
+--- @return boolean: whether the node has a next sibling
+Chadnode.has_next_sibling = function(self)
+    return self.node:next_sibling() ~= nil
+end
+
+--- Return tru if the node is sortable, false otherwise.
+--- @param self Chadnode: the node
+--- @return boolean: whether the node is sortable
+Chadnode.is_sortable = function(self)
+    return self.sortable_idx ~= nil
+end
+
+return Chadnode

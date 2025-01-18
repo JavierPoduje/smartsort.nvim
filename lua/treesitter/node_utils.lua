@@ -14,7 +14,7 @@ M.gap = function(n1, n2)
 
     assert(n1_end_row < n2_start_row, "Node 1 is not before Node 2 or they're overlaping")
 
-    return n2_start_row - n1_end_row - 1
+    return n2_start_row - n1_end_row
 end
 
 return M

@@ -1,9 +1,10 @@
 local f = require("funcs")
+local node_utils = require("treesitter.node_utils")
 local parsers = require("nvim-treesitter.parsers")
+local queries = require("treesitter.queries")
+local Chadnode = require("treesitter.chadnode")
 local ts = vim.treesitter
 local ts_utils = require "nvim-treesitter.ts_utils"
-local node_utils = require("treesitter.node_utils")
-local q = require("treesitter.queries")
 
 local M = {}
 
@@ -45,7 +46,8 @@ M.get_selection_data = function(coords)
             break
         end
 
-        for _, matches in ts.query.parse(parser:lang(), q.typescript_functions()):iter_matches(node, 0) do
+        local query = queries.functions_query(parser:lang())
+        for _, matches in query:iter_matches(node, 0) do
             match_found = true
             local function_name = M._get_function_name(matches)
             local node_to_save = M._get_node(matches)
@@ -58,8 +60,7 @@ M.get_selection_data = function(coords)
                 break
             end
 
-            local gap = node_utils.gap(node, next_sibling)
-            table.insert(gap_between_nodes, gap)
+            table.insert(gap_between_nodes, node_utils.gap(node, next_sibling))
         end
 
         if not match_found then
@@ -70,6 +71,51 @@ M.get_selection_data = function(coords)
     end
 
     return nodes_by_name, non_sortable_nodes, gap_between_nodes, node_is_sortable_by_idx
+end
+
+--- @param bufnr number: the buffer number
+--- @param coords Selection: the selection to sort
+--- @param parser vim.treesitter.LanguageTree
+--- @return Chadnode[]
+M.get_nodes_from_range = function(bufnr, coords, parser)
+    local node = ts_utils.get_node_at_cursor()
+
+    assert(node ~= nil, "No node found")
+
+    --- @type Chadnode[]
+    local chadnodes = {}
+
+    while node ~= nil do
+        local match_found = false
+
+        -- if the node is after the last line of the visually-selected area, stop
+        local _, _, erow, _ = node:range()
+        if erow > coords.finish.row - 1 then
+            break
+        end
+
+        local query = queries.functions_query(parser:lang())
+
+        for _, matches in query:iter_matches(node, bufnr) do
+            match_found = true
+            local cnode = Chadnode.new(M._get_node(matches), M._get_function_name(matches))
+
+            table.insert(chadnodes, cnode)
+
+            if not cnode:has_next_sibling() then
+                break
+            end
+        end
+
+        if not match_found then
+            local cnode = Chadnode.new(node, nil)
+            table.insert(chadnodes, cnode)
+        end
+
+        node = node:next_sibling()
+    end
+
+    return chadnodes
 end
 
 --- @param node TSNode
