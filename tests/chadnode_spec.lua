@@ -38,6 +38,11 @@ describe("chadnode", function()
             local cn2 = chadnodes:node_by_idx(2)
 
             --- @diagnostic disable-next-line: undefined-field
+            assert.are.equal(cn1 == nil, false)
+            --- @diagnostic disable-next-line: undefined-field
+            assert.are.equal(cn2 == nil, false)
+
+            --- @diagnostic disable-next-line: undefined-field, need-check-nil, param-type-mismatch
             assert.are.equal(cn1:gap(cn2), 0)
         end)
 
@@ -50,6 +55,11 @@ describe("chadnode", function()
             local cn2 = chadnodes:node_by_idx(2)
 
             --- @diagnostic disable-next-line: undefined-field
+            assert.are.equal(cn1 == nil, false)
+            --- @diagnostic disable-next-line: undefined-field
+            assert.are.equal(cn2 == nil, false)
+
+            --- @diagnostic disable-next-line: undefined-field, need-check-nil, param-type-mismatch
             assert.are.equal(cn1:gap(cn2), 1)
         end)
 
@@ -62,6 +72,11 @@ describe("chadnode", function()
             local cn2 = chadnodes:node_by_idx(2)
 
             --- @diagnostic disable-next-line: undefined-field
+            assert.are.equal(cn1 == nil, false)
+            --- @diagnostic disable-next-line: undefined-field
+            assert.are.equal(cn2 == nil, false)
+
+            --- @diagnostic disable-next-line: undefined-field, need-check-nil, param-type-mismatch
             assert.are.equal(cn1:gap(cn2), 3)
         end)
     end)

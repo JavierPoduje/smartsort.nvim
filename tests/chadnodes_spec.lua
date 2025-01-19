@@ -27,7 +27,7 @@ end
 --- @diagnostic disable-next-line: undefined-global
 describe("chadnodes", function()
     --- @diagnostic disable-next-line: undefined-global
-    it("from_region", function()
+    it("from_selection", function()
         local mock = typescript_mocks.without_gap
         local bufnr, parser = setup(mock.content)
     end)

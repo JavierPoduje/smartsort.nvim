@@ -10,7 +10,7 @@ local Region = require('region')
 --- @field to_string fun(self: Chadnode, bufnr: number): string
 --- @field get_sortable_idx fun(self: Chadnode): string
 --- @field get_next_sibling fun(self: Chadnode): Chadnode
---- @field gap fun(self: Chadnode, other: TSNode): number
+--- @field gap fun(self: Chadnode, other: Chadnode): number
 
 local Chadnode = {}
 Chadnode.__index = Chadnode
@@ -73,7 +73,7 @@ end
 
 --- Calculate the "gap" between two nodes, where the gap is the number of rows between them.
 --- @param self Chadnode: the first node
---- @param other TSNode: the second node
+--- @param other Chadnode: the second node
 --- @return number: the gap between the two nodes
 Chadnode.gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
