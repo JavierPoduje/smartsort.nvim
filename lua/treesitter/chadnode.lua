@@ -12,6 +12,7 @@ local Region = require('region')
 --- @field public get_next_sibling fun(self: Chadnode): Chadnode
 --- @field public get_sortable_idx fun(self: Chadnode): string
 --- @field public new fun(node: TSNode, sortable_idx: string | nil): Chadnode
+--- @field public print fun(self: Chadnode, bufnr: number)
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
 
 local Chadnode = {}
@@ -40,6 +41,13 @@ Chadnode.debug = function(self, bufnr)
         node = self:to_string(bufnr),
         sortable_idx = self:get_sortable_idx()
     }
+end
+
+--- Print the human-readable representation of the current Chadnode
+--- @param self Chadnode: the node
+--- @param bufnr number: the buffer number
+Chadnode.print = function(self, bufnr)
+    print(vim.inspect(self:debug(bufnr)))
 end
 
 --- Get the node

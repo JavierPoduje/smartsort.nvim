@@ -33,14 +33,14 @@ Chadnodes.debug = function(self, bufnr)
     for _, node in ipairs(self.nodes) do
         table.insert(debug_tbl, node:debug(bufnr))
     end
-    return vim.inspect(debug_tbl)
+    return debug_tbl
 end
 
 --- Print the string representation of the current Chadnodes
 --- @param self Chadnodes
 --- @param bufnr number
 Chadnodes.print = function(self, bufnr)
-    print(self:debug(bufnr))
+    print(vim.inspect(self:debug(bufnr)))
 end
 
 --- Get the node by index
@@ -74,16 +74,16 @@ end
 --- @return Chadnodes
 Chadnodes.from_region = function(bufnr, region, parser)
     local node = ts_utils.get_node_at_cursor()
+
     assert(node ~= nil, "No node found")
 
-    --- @type Chadnodes
     local cnodes = Chadnodes.new()
 
     while node ~= nil do
         local match_found = false
 
         -- if the node is after the last line of the visually-selected area, stop
-        if region.erow < Region.from_node(node).erow - 1 then
+        if region.erow < Region.from_node(node).erow then
             break
         end
 
@@ -92,7 +92,6 @@ Chadnodes.from_region = function(bufnr, region, parser)
         for _, matches in query:iter_matches(node, bufnr) do
             match_found = true
             local cnode = Chadnode.new(f.get_node(matches), f.get_function_name(matches))
-
             cnodes:add(cnode)
 
             if not cnode:has_next_sibling() then
@@ -101,8 +100,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
         end
 
         if not match_found then
-            local cnode = Chadnode.new(node, nil)
-            cnodes:add(cnode)
+            cnodes:add(Chadnode.new(node, nil))
         end
 
         node = node:next_sibling()

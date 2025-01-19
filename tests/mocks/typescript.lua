@@ -8,11 +8,11 @@ local Region = require("region")
 local simplest = {
     content = {
         "const foo = () => {",
-        "  console.log(\"foo \");",
+        "  console.log(\"foo\");",
         "};",
         "",
         "function bar() {",
-        "  console.log(\"bar \");",
+        "  console.log(\"bar\");",
         "}",
     },
     region = Region.new(1, 1, 7, 1),
@@ -22,13 +22,13 @@ local simplest = {
 local with_comment = {
     content = {
         "const foo = () => {",
-        "  console.log(\"foo \");",
+        "  console.log(\"foo\");",
         "};",
         "",
         "// this is a comment",
         "",
         "function bar() {",
-        "  console.log(\"bar \");",
+        "  console.log(\"bar\");",
         "}",
     },
     region = Region.new(1, 1, 9, 1),
@@ -38,13 +38,13 @@ local with_comment = {
 local with_bigger_gap = {
     content = {
         "const foo = () => {",
-        "  console.log(\"foo \");",
+        "  console.log(\"foo\");",
         "};",
         "",
         "",
         "",
         "function bar() {",
-        "  console.log(\"bar \");",
+        "  console.log(\"bar\");",
         "}",
     },
     region = Region.new(1, 1, 9, 1),
@@ -54,10 +54,10 @@ local with_bigger_gap = {
 local without_gap = {
     content = {
         "const foo = () => {",
-        "  console.log(\"foo \");",
+        "  console.log(\"foo\");",
         "};",
         "function bar() {",
-        "  console.log(\"bar \");",
+        "  console.log(\"bar\");",
         "}",
     },
     region = Region.new(1, 1, 6, 1),

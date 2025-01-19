@@ -1,6 +1,14 @@
-local Chadnodes = require("chadnodes")
+local Chadnodes = require("treesitter.chadnodes")
+local Region = require("region")
 local parsers = require("nvim-treesitter.parsers")
 local typescript_mocks = require("tests.mocks.typescript")
+
+--- @diagnostic disable-next-line: undefined-global
+local describe = describe
+--- @diagnostic disable-next-line: undefined-global
+local it = it
+--- @diagnostic disable-next-line: undefined-field
+local is = assert.is
 
 --- @return number, vim.treesitter.LanguageTree
 local setup = function(buf_content)
@@ -24,11 +32,40 @@ local setup = function(buf_content)
     return bufnr, parser
 end
 
---- @diagnostic disable-next-line: undefined-global
 describe("chadnodes", function()
-    --- @diagnostic disable-next-line: undefined-global
-    it("from_selection", function()
-        local mock = typescript_mocks.without_gap
-        local bufnr, parser = setup(mock.content)
+    describe("from_region", function()
+        it("should recognize non-sortable nodes", function()
+            local mock = typescript_mocks.with_comment
+            local bufnr, parser = setup(mock.content)
+            local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+
+            is.truthy(vim.deep_equal(cnodes:debug(bufnr), {
+                {
+                    node = 'const foo = () => {\n  console.log("foo");\n};',
+                    sortable_idx = "foo"
+                },
+                {
+                    node = "// this is a comment",
+                    sortable_idx = ""
+                },
+                {
+                    node = 'function bar() {\n  console.log("bar");\n}',
+                    sortable_idx = "bar"
+                }
+            }))
+        end)
+
+        it("shouldn't consider nodes outside region", function()
+            local mock = typescript_mocks.simplest
+            local bufnr, parser = setup(mock.content)
+            local cnodes = Chadnodes.from_region(bufnr, Region.new(1, 1, 3, 1), parser)
+
+            is.truthy(vim.deep_equal(cnodes:debug(bufnr), {
+                {
+                    node = 'const foo = () => {\n  console.log("foo");\n};',
+                    sortable_idx = "foo"
+                },
+            }))
+        end)
     end)
 end)
