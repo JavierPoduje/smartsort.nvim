@@ -26,8 +26,6 @@ M.get_selection_data = function(region)
     --- @type TSNode[]
     local non_sortable_nodes = {}
 
-    Chadnodes.from_region(0, region, parser)
-
     local node = ts_utils.get_node_at_cursor()
     assert(node ~= nil, "No node found")
 

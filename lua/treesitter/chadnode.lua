@@ -9,8 +9,10 @@ local Region = require('region')
 --- @field public debug fun(self: Chadnode, bufnr: number): table<any>
 --- @field public gap fun(self: Chadnode, other: Chadnode): number
 --- @field public get fun(self: Chadnode): TSNode
---- @field public get_next_sibling fun(self: Chadnode): Chadnode
+--- @field public next_sibling fun(self: Chadnode): Chadnode
 --- @field public get_sortable_idx fun(self: Chadnode): string
+--- @field public has_next_sibling fun(self: Chadnode): boolean
+--- @field public is_sortable fun(self: Chadnode): boolean
 --- @field public new fun(node: TSNode, sortable_idx: string | nil): Chadnode
 --- @field public print fun(self: Chadnode, bufnr: number)
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
@@ -74,7 +76,7 @@ end
 --- Get the next `Chadnode` sibling
 --- @param self Chadnode: the node
 --- @return Chadnode: the next sibling
-Chadnode.get_next_sibling = function(self)
+Chadnode.next_sibling = function(self)
     local next_sibling = self.node:next_sibling()
     assert(next_sibling ~= nil, "The node has no next sibling")
     local new_chad_node = Chadnode.new(next_sibling, nil)
