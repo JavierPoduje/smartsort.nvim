@@ -2,6 +2,8 @@ local f = require("funcs")
 local parsers = require("nvim-treesitter.parsers")
 local queries = require("treesitter.queries")
 local Chadnode = require("treesitter.chadnode")
+local Chadnodes = require("treesitter.chadnodes")
+local Region = require("region")
 local ts_utils = require "nvim-treesitter.ts_utils"
 
 local M = {}
@@ -24,6 +26,8 @@ M.get_selection_data = function(region)
     --- TODO: used it. It's not used in the current implementation
     --- @type TSNode[]
     local non_sortable_nodes = {}
+
+    M.get_nodes_from_region(0, region, parser)
 
     local node = ts_utils.get_node_at_cursor()
     assert(node ~= nil, "No node found")
@@ -71,20 +75,18 @@ end
 --- @param region Region: the region to get the nodes from
 --- @param parser vim.treesitter.LanguageTree
 --- @return Chadnode[]
-M.get_nodes_from_range = function(bufnr, region, parser)
+M.get_nodes_from_region = function(bufnr, region, parser)
     local node = ts_utils.get_node_at_cursor()
 
     assert(node ~= nil, "No node found")
 
-    --- @type Chadnode[]
-    local chadnodes = {}
+    local cnodes = Chadnodes.new()
 
     while node ~= nil do
         local match_found = false
 
         -- if the node is after the last line of the visually-selected area, stop
-        local _, _, erow, _ = node:range()
-        if erow > region.erow - 1 then
+        if region.erow < Region.from_node(node).erow - 1 then
             break
         end
 
@@ -93,8 +95,7 @@ M.get_nodes_from_range = function(bufnr, region, parser)
         for _, matches in query:iter_matches(node, bufnr) do
             match_found = true
             local cnode = Chadnode.new(f.get_node(matches), f.get_function_name(matches))
-
-            table.insert(chadnodes, cnode)
+            cnodes:add(cnode)
 
             if not cnode:has_next_sibling() then
                 break
@@ -102,14 +103,15 @@ M.get_nodes_from_range = function(bufnr, region, parser)
         end
 
         if not match_found then
-            local cnode = Chadnode.new(node, nil)
-            table.insert(chadnodes, cnode)
+            cnodes:add(Chadnode.new(node, nil))
         end
 
         node = node:next_sibling()
     end
 
-    return chadnodes
+    cnodes:print(bufnr)
+
+    return cnodes
 end
 
 return M

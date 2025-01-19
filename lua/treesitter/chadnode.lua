@@ -1,16 +1,18 @@
 local Region = require('region')
 
 --- @class Chadnode
---- @field node TSNode: the node
---- @field sortable_idx string | nil: the index from which the node can be sorted
---- @field range Region: the region of the node
---- @field new fun(node: TSNode, sortable_idx: string | nil): Chadnode
---- @field debug fun(self: Chadnode, bufnr: number)
---- @field get fun(self: Chadnode): TSNode
---- @field to_string fun(self: Chadnode, bufnr: number): string
---- @field get_sortable_idx fun(self: Chadnode): string
---- @field get_next_sibling fun(self: Chadnode): Chadnode
---- @field gap fun(self: Chadnode, other: Chadnode): number
+---
+--- @field public node TSNode: the node
+--- @field public sortable_idx string | nil: the index from which the node can be sorted
+--- @field public range Region: the region of the node
+---
+--- @field public debug fun(self: Chadnode, bufnr: number): table<any>
+--- @field public gap fun(self: Chadnode, other: Chadnode): number
+--- @field public get fun(self: Chadnode): TSNode
+--- @field public get_next_sibling fun(self: Chadnode): Chadnode
+--- @field public get_sortable_idx fun(self: Chadnode): string
+--- @field public new fun(node: TSNode, sortable_idx: string | nil): Chadnode
+--- @field public to_string fun(self: Chadnode, bufnr: number): string
 
 local Chadnode = {}
 Chadnode.__index = Chadnode
@@ -34,10 +36,10 @@ end
 --- @param self Chadnode
 --- @param bufnr number
 Chadnode.debug = function(self, bufnr)
-    vim.print(vim.inspect({
+    return {
         node = self:to_string(bufnr),
         sortable_idx = self:get_sortable_idx()
-    }))
+    }
 end
 
 --- Get the node

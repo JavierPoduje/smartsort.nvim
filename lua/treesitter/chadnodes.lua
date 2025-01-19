@@ -5,12 +5,15 @@ local queries = require("treesitter.queries")
 local ts_utils = require("nvim-treesitter.ts_utils")
 
 --- @class Chadnodes
+---
 --- @field public nodes Chadnode[]
+---
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode)
+--- @field public debug fun(self: Chadnodes, bufnr: number): table<any>
 --- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
---- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
 --- @field public get fun(self: Chadnodes): Chadnode[]
---- @field public debug fun(self: Chadnodes)
+--- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
+--- @field public print fun(self: Chadnodes, bufnr: number)
 
 local Chadnodes = {}
 Chadnodes.__index = Chadnodes
@@ -22,8 +25,22 @@ Chadnodes.new = function()
     return self
 end
 
-Chadnodes.debug = function(self)
-    print(vim.inspect(self.nodes))
+--- Return a human-readable representation of the current Chadnodes
+--- @param self Chadnodes
+--- @param bufnr number
+Chadnodes.debug = function(self, bufnr)
+    local debug_tbl = {}
+    for _, node in ipairs(self.nodes) do
+        table.insert(debug_tbl, node:debug(bufnr))
+    end
+    return vim.inspect(debug_tbl)
+end
+
+--- Print the string representation of the current Chadnodes
+--- @param self Chadnodes
+--- @param bufnr number
+Chadnodes.print = function(self, bufnr)
+    print(self:debug(bufnr))
 end
 
 --- Get the node by index

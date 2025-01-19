@@ -15,7 +15,7 @@ local simplest = {
         "  console.log(\"bar \");",
         "}",
     },
-    region = Region.new(1, 1, 9, 2147483647),
+    region = Region.new(1, 1, 7, 1),
 }
 
 --- @type BufferMock
@@ -31,7 +31,7 @@ local with_comment = {
         "  console.log(\"bar \");",
         "}",
     },
-    region = Region.new(1, 1, 9, 2147483647),
+    region = Region.new(1, 1, 9, 1),
 }
 
 --- @type BufferMock
@@ -47,7 +47,7 @@ local with_bigger_gap = {
         "  console.log(\"bar \");",
         "}",
     },
-    region = Region.new(1, 1, 9, 2147483647),
+    region = Region.new(1, 1, 9, 1),
 }
 
 --- @type BufferMock
@@ -60,7 +60,7 @@ local without_gap = {
         "  console.log(\"bar \");",
         "}",
     },
-    region = Region.new(1, 1, 9, 2147483647),
+    region = Region.new(1, 1, 6, 1),
 }
 
 return {
