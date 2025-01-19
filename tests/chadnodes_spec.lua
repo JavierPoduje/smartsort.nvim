@@ -8,7 +8,7 @@ local describe = describe
 --- @diagnostic disable-next-line: undefined-global
 local it = it
 --- @diagnostic disable-next-line: undefined-field
-local is = assert.is
+local truthy = assert.is.truthy
 
 --- @return number, vim.treesitter.LanguageTree
 local setup = function(buf_content)
@@ -39,7 +39,7 @@ describe("chadnodes", function()
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-            is.truthy(vim.deep_equal(cnodes:debug(bufnr), {
+            truthy(vim.deep_equal(cnodes:debug(bufnr), {
                 {
                     node = 'const foo = () => {\n  console.log("foo");\n};',
                     sortable_idx = "foo"
@@ -60,7 +60,7 @@ describe("chadnodes", function()
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, Region.new(1, 1, 3, 1), parser)
 
-            is.truthy(vim.deep_equal(cnodes:debug(bufnr), {
+            truthy(vim.deep_equal(cnodes:debug(bufnr), {
                 {
                     node = 'const foo = () => {\n  console.log("foo");\n};',
                     sortable_idx = "foo"

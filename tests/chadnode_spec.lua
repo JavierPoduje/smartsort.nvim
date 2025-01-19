@@ -2,6 +2,15 @@ local parsers = require("nvim-treesitter.parsers")
 local typescript_mocks = require("tests.mocks.typescript")
 local Chadnodes = require("treesitter.chadnodes")
 
+--- @diagnostic disable-next-line: undefined-global
+local describe = describe
+--- @diagnostic disable-next-line: undefined-global
+local it = it
+--- @diagnostic disable-next-line: undefined-field
+local truthy = assert.is.truthy
+--- @diagnostic disable-next-line: undefined-field
+local equal = assert.are.equal
+
 --- @param buf_content string[]: the content of the buffer
 --- @return number, vim.treesitter.LanguageTree
 local setup = function(buf_content)
@@ -25,11 +34,8 @@ local setup = function(buf_content)
     return bufnr, parser
 end
 
---- @diagnostic disable-next-line: undefined-global
 describe("chadnode", function()
-    --- @diagnostic disable-next-line: undefined-global
     describe("gap", function()
-        --- @diagnostic disable-next-line: undefined-global
         it("should detect 0 line", function()
             local mock = typescript_mocks.without_gap
             local bufnr, parser = setup(mock.content)
@@ -37,16 +43,13 @@ describe("chadnode", function()
             local cn1 = chadnodes:node_by_idx(1)
             local cn2 = chadnodes:node_by_idx(2)
 
-            --- @diagnostic disable-next-line: undefined-field
-            assert.are.equal(cn1 == nil, false)
-            --- @diagnostic disable-next-line: undefined-field
-            assert.are.equal(cn2 == nil, false)
+            equal(cn1 == nil, false)
+            equal(cn2 == nil, false)
 
-            --- @diagnostic disable-next-line: undefined-field, need-check-nil, param-type-mismatch
-            assert.are.equal(cn1:gap(cn2), 0)
+            --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
+            equal(cn1:gap(cn2), 0)
         end)
 
-        --- @diagnostic disable-next-line: undefined-global
         it("should detect 1 line", function()
             local mock = typescript_mocks.simplest
             local bufnr, parser = setup(mock.content)
@@ -54,16 +57,13 @@ describe("chadnode", function()
             local cn1 = chadnodes:node_by_idx(1)
             local cn2 = chadnodes:node_by_idx(2)
 
-            --- @diagnostic disable-next-line: undefined-field
-            assert.are.equal(cn1 == nil, false)
-            --- @diagnostic disable-next-line: undefined-field
-            assert.are.equal(cn2 == nil, false)
+            equal(cn1 == nil, false)
+            equal(cn2 == nil, false)
 
-            --- @diagnostic disable-next-line: undefined-field, need-check-nil, param-type-mismatch
-            assert.are.equal(cn1:gap(cn2), 1)
+            --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
+            equal(cn1:gap(cn2), 1)
         end)
 
-        --- @diagnostic disable-next-line: undefined-global
         it("should detect 3 line", function()
             local mock = typescript_mocks.with_bigger_gap
             local bufnr, parser = setup(mock.content)
@@ -71,17 +71,14 @@ describe("chadnode", function()
             local cn1 = chadnodes:node_by_idx(1)
             local cn2 = chadnodes:node_by_idx(2)
 
-            --- @diagnostic disable-next-line: undefined-field
-            assert.are.equal(cn1 == nil, false)
-            --- @diagnostic disable-next-line: undefined-field
-            assert.are.equal(cn2 == nil, false)
+            equal(cn1 == nil, false)
+            equal(cn2 == nil, false)
 
-            --- @diagnostic disable-next-line: undefined-field, need-check-nil, param-type-mismatch
-            assert.are.equal(cn1:gap(cn2), 3)
+            --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
+            equal(cn1:gap(cn2), 3)
         end)
     end)
 
-    --- @diagnostic disable-next-line: undefined-global
     it("get_sortable_idx", function()
         local mock = typescript_mocks.simplest
         local bufnr, parser = setup(mock.content)
@@ -93,7 +90,6 @@ describe("chadnode", function()
             table.insert(chadnode_idxs, chadnode:get_sortable_idx())
         end
 
-        --- @diagnostic disable-next-line: undefined-field
-        assert.is.truthy(vim.deep_equal(chadnode_idxs, { "foo", "bar" }))
+        truthy(vim.deep_equal(chadnode_idxs, { "foo", "bar" }))
     end)
 end)
