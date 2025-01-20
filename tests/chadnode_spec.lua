@@ -35,6 +35,44 @@ local setup = function(buf_content)
 end
 
 describe("chadnode", function()
+    describe("to_string_preserve_indent", function()
+        it("respect the identation of the content of block", function()
+            local mock = typescript_mocks.without_gap
+            local bufnr, parser = setup(mock.content)
+            local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+            local cnode = chadnodes:node_by_idx(1)
+
+            equal(cnode == nil, false)
+
+            equal(
+                true,
+                vim.deep_equal(
+                --- @diagnostic disable-next-line: need-check-nil
+                    cnode:to_string_preserve_indent(bufnr, 3),
+                    "const foo = () => {\n  console.log(\"foo\");\n};"
+                )
+            )
+        end)
+
+        it("respect the identation of the line in which the block has to be inserted", function()
+            local mock = typescript_mocks.without_gap
+            local bufnr, parser = setup(mock.content)
+            local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+            local cnode = chadnodes:node_by_idx(1)
+
+            equal(cnode == nil, false)
+
+            equal(
+                true,
+                vim.deep_equal(
+                --- @diagnostic disable-next-line: need-check-nil
+                    cnode:to_string_preserve_indent(bufnr, 4),
+                    "  const foo = () => {\n    console.log(\"foo\");\n  };"
+                )
+            )
+        end)
+    end)
+
     describe("gap", function()
         it("should detect 0 line", function()
             local mock = typescript_mocks.without_gap

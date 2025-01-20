@@ -81,4 +81,12 @@ M.get_node = function(node)
     )
 end
 
+--- Get the indent of a line (zero-based)
+--- @param bufnr number: the buffer number
+--- @param row number: the row to get the indent of
+M.get_line_indent = function(bufnr, row)
+    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+    return line:match("^%s*")
+end
+
 return M
