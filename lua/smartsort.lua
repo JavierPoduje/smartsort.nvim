@@ -1,6 +1,8 @@
 local f = require("funcs")
+local parsers = require("nvim-treesitter.parsers")
 local ts = require("treesitter")
 local Region = require("region")
+local Chadnodes = require("treesitter.chadnodes")
 
 local M = {}
 
@@ -20,48 +22,29 @@ end
 ---
 --- @param region Region: the region to sort
 M.sort_lines = function(region)
-    local nodes_by_name, non_sortable_nodes, gap_between_nodes, node_is_sortable_by_idx = ts.get_selection_data(region)
-    local string_to_insert = M._build_string_to_insert(
-        nodes_by_name,
-        non_sortable_nodes,
-        gap_between_nodes,
-        node_is_sortable_by_idx)
-    local lines_to_insert = vim.fn.split(string_to_insert, "\n\\s*")
-    vim.api.nvim_buf_set_lines(0, region.srow - 1, region.erow, true, lines_to_insert)
-end
+    local parser = parsers.get_parser()
+    local cnodes = Chadnodes.from_region(0, region, parser)
+    local gaps = cnodes:gaps()
+    local sorted_cnodes = cnodes:sort()
 
+    local sorted_nodes_with_gaps = {}
+    for idx, cnode in ipairs(sorted_cnodes.nodes) do
+        local cnode_str = cnode:to_string_preserve_indent(0, cnode.region.srow)
 
---- @param nodes_by_name table<string, TSNode>: the nodes to sort by name
---- @param non_sortable_nodes TSNode[]: the nodes that are not sortable
---- @param gap_between_nodes number[]: the gap between nodes
---- @param node_is_sortable_by_idx boolean[]: the nodes that are sortable
---- @return string: the string to insert
-M._build_string_to_insert = function(nodes_by_name, non_sortable_nodes, gap_between_nodes, node_is_sortable_by_idx)
-    --- @type string[]
-    local sorted_node_names = f.sorted_keys(nodes_by_name)
-    local sortable_nodes_idx = 1
-    local non_sortable_nodes_idx = 1
-
-    --- @type string[]
-    local sorted_nodes_as_strings = {}
-    for idx, is_sortable in ipairs(node_is_sortable_by_idx) do
-        if is_sortable then
-            local node_name = sorted_node_names[sortable_nodes_idx]
-            local node_as_string = f.node_to_string(nodes_by_name[node_name])
-            table.insert(sorted_nodes_as_strings, node_as_string)
-            sortable_nodes_idx = sortable_nodes_idx + 1
-        else
-            local node_as_string = f.node_to_string(non_sortable_nodes[non_sortable_nodes_idx])
-            table.insert(sorted_nodes_as_strings, node_as_string)
-            non_sortable_nodes_idx = non_sortable_nodes_idx + 1
+        -- add the node to the table line by line
+        for _, line in ipairs(vim.fn.split(cnode_str, "\n")) do
+            table.insert(sorted_nodes_with_gaps, line)
         end
 
-        if idx < #node_is_sortable_by_idx then
-            table.insert(sorted_nodes_as_strings, f.repeat_str("\n", gap_between_nodes[idx]))
+        -- add the gap, if any
+        if idx <= #gaps then
+            for _ = 1, gaps[idx] do
+                table.insert(sorted_nodes_with_gaps, "")
+            end
         end
     end
 
-    return table.concat(sorted_nodes_as_strings, "")
+    vim.api.nvim_buf_set_lines(0, region.srow - 1, region.erow, true, sorted_nodes_with_gaps)
 end
 
 --- Sort the selected line
