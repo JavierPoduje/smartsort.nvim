@@ -130,7 +130,8 @@ Chadnodes.from_region = function(bufnr, region, parser)
         end
 
         if not match_found then
-            cnodes:add(Chadnode.new(node, nil))
+            local cnode = Chadnode.new(node, nil)
+            cnodes:add(cnode)
         end
 
         node = node:next_sibling()

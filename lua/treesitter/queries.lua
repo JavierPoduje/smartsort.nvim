@@ -17,7 +17,4 @@ M.functions_query = function(lang)
     return query
 end
 
-M.get_nodes = function()
-end
-
 return M

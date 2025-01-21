@@ -57,6 +57,35 @@ describe("chadnodes", function()
             }))
         end)
 
+        it("should grab function comments", function ()
+            local mock = typescript_mocks.commented_functions
+            local bufnr, parser = setup(mock.content)
+            local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+
+            truthy(vim.deep_equal(cnodes:debug(bufnr), {
+                {
+                    node = "/**\n * This is a comment\n */",
+                    sortable_idx = ""
+                },
+                {
+                    node = 'const foo = () => {\n  console.log("foo");\n};',
+                    sortable_idx = "foo"
+                },
+                {
+                    node = "// this is a comment",
+                    sortable_idx = ""
+                },
+                {
+                    node = '// this comment "belongs" to the function',
+                    sortable_idx = ""
+                },
+                {
+                    node = 'function bar() {\n  console.log("bar");\n}',
+                    sortable_idx = "bar"
+                }
+            }))
+        end)
+
         it("shouldn't consider nodes outside region", function()
             local mock = typescript_mocks.simplest
             local bufnr, parser = setup(mock.content)

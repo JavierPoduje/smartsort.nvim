@@ -63,7 +63,28 @@ local without_gap = {
     region = Region.new(1, 1, 6, 1),
 }
 
+--- @type BufferMock
+local commented_functions = {
+    content = {
+        "/**",
+        " * This is a comment",
+        " */",
+        "const foo = () => {",
+        "  console.log(\"foo\");",
+        "};",
+        "",
+        "// this is a comment",
+        "",
+        "// this comment \"belongs\" to the function",
+        "function bar() {",
+        "  console.log(\"bar\");",
+        "}",
+    },
+    region = Region.new(1, 1, 12, 1),
+}
+
 return {
+    commented_functions = commented_functions,
     simplest = simplest,
     with_bigger_gap = with_bigger_gap,
     with_comment = with_comment,
