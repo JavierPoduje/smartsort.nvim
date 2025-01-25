@@ -3,11 +3,13 @@ local f = require("funcs")
 
 --- @class Chadnode
 ---
+--- @field public comment_node Chadnode: the comment node. This is used to store the comment node that belongs to the node
 --- @field public node TSNode: the node
---- @field public sortable_idx string | nil: the index from which the node can be sorted
 --- @field public region Region: the region of the node
+--- @field public sortable_idx string | nil: the index from which the node can be sorted
 ---
 --- @field public debug fun(self: Chadnode, bufnr: number): table<any>
+--- @field public set_comment fun(self: Chadnode, comment: Chadnode)
 --- @field public gap fun(self: Chadnode, other: Chadnode): number
 --- @field public get fun(self: Chadnode): TSNode
 --- @field public next_sibling fun(self: Chadnode): Chadnode
@@ -32,10 +34,18 @@ function Chadnode.new(node, sortable_idx)
 
     local srow, scol, erow, ecol = node:range()
 
+    self.comment_node = nil
     self.node = node
-    self.sortable_idx = sortable_idx or nil
     self.region = Region.new(srow, scol, erow, ecol)
+    self.sortable_idx = sortable_idx or nil
     return self
+end
+
+--- Set the comment node
+--- @param self Chadnode: the node
+--- @param comment Chadnode: the comment node
+Chadnode.set_comment = function(self, comment)
+    self.comment_node = comment
 end
 
 --- @param self Chadnode
@@ -43,7 +53,8 @@ end
 Chadnode.debug = function(self, bufnr)
     return {
         node = self:to_string(bufnr),
-        sortable_idx = self:get_sortable_idx()
+        sortable_idx = self:get_sortable_idx(),
+        comment_node = self.comment_node and self.comment_node:to_string(bufnr) or nil
     }
 end
 
@@ -82,8 +93,18 @@ Chadnode.to_string_preserve_indent = function(self, bufnr, target_row)
 
     -- Adjust indentation for all lines
     local indented_lines = {}
+
+    if self.comment_node ~= nil then
+        indented_lines[1] = self.comment_node:to_string_preserve_indent(bufnr, self.comment_node.region.srow)
+    end
+
+    local first_line = f.if_else(
+        self.comment_node == nil,
+        function() return 1 end,
+        function() return 2 end
+    )
     for i, line in ipairs(lines) do
-        if i == 1 then
+        if i == first_line then
             -- First line gets target indentation
             table.insert(indented_lines, target_indent .. line:gsub("^%s*", ""))
         else

@@ -4,6 +4,18 @@ local Region = require("region")
 --- @field content string[]
 --- @field region Region
 
+local node_with_comment = {
+    content = {
+        '/**',
+        ' * This is a comment',
+        ' */',
+        "const foo = () => {",
+        "  console.log(\"foo\");",
+        "};",
+    },
+    region = Region.new(1, 1, 7, 1),
+}
+
 --- @type BufferMock
 local simplest = {
     content = {
@@ -85,6 +97,7 @@ local commented_functions = {
 
 return {
     commented_functions = commented_functions,
+    node_with_comment = node_with_comment,
     simplest = simplest,
     with_bigger_gap = with_bigger_gap,
     with_comment = with_comment,

@@ -35,6 +35,28 @@ local setup = function(buf_content)
 end
 
 describe("chadnode", function()
+    it("chadnodes can have comments", function()
+        local mock = typescript_mocks.node_with_comment
+        local bufnr, parser = setup(mock.content)
+        local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+        local comment_cnode = chadnodes:node_by_idx(1)
+        local cnode = chadnodes:node_by_idx(2)
+
+        equal(cnode == nil, false)
+        equal(comment_cnode == nil, false)
+
+        --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
+        cnode:set_comment(comment_cnode)
+        equal(
+            true,
+            vim.deep_equal(
+            --- @diagnostic disable-next-line: need-check-nil
+                cnode:to_string_preserve_indent(bufnr, 0),
+                '/**\n * This is a comment\n */\nconst foo = () => {\nconsole.log(\"foo\");\n};'
+            )
+        )
+    end)
+
     describe("to_string_preserve_indent", function()
         it("respect the identation of the content of block", function()
             local mock = typescript_mocks.without_gap
