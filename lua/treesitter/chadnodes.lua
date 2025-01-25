@@ -7,20 +7,24 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @class Chadnodes
 ---
 --- @field public nodes Chadnode[]
+--- @field public container_node TSNode
+--- @field public parser vim.treesitter.LanguageTree
 ---
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode)
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number): table<any>
---- @field public from_chadnodes fun(cnodes: Chadnodes): Chadnodes
+--- @field public from_chadnodes fun(parser: vim.treesitter.LanguageTree, cnodes: Chadnodes): Chadnodes
 --- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
+--- @field public from_region_test fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public gaps fun(self: Chadnodes): number[]
 --- @field public get fun(self: Chadnodes): Chadnode[]
 --- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
+--- @field public new fun(parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
 --- @field public print fun(self: Chadnodes, bufnr: number)
 --- @field public sort fun(self: Chadnodes): Chadnodes
---- @field public sort_sortable_nodes fun(cnodes: Chadnode[]): Chadnodes
+--- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
 ---
 --- @field private _cnodes_by_idx fun(cnodes: Chadnode[]): table<string, Chadnode>
 --- @field private _get_idxs fun(cnodes: Chadnode[]): string[]
@@ -29,16 +33,25 @@ local Chadnodes = {}
 Chadnodes.__index = Chadnodes
 
 --- Create a new Chadnodes
-Chadnodes.new = function()
+--- @param parser vim.treesitter.LanguageTree
+--- @return Chadnodes
+Chadnodes.new = function(parser)
     local self = setmetatable({}, Chadnodes)
     self.nodes = {}
+    self.container_node = nil
+    self.parser = parser
     return self
 end
 
 --- Create a new Chadnodes from an existing Chadnodes
-Chadnodes.from_chadnodes = function(cnodes)
+--- @param parser vim.treesitter.LanguageTree
+--- @param cnodes Chadnodes
+--- @return Chadnodes
+Chadnodes.from_chadnodes = function(parser, cnodes)
     local self = setmetatable({}, Chadnodes)
     self.nodes = cnodes
+    self.parser = parser
+    self.container_node = self._get_container_node(parser)
     return self
 end
 
@@ -107,7 +120,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
 
     assert(node ~= nil, "No node found")
 
-    local cnodes = Chadnodes.new()
+    local cnodes = Chadnodes.new(parser)
 
     while node ~= nil do
         local match_found = false
@@ -140,13 +153,73 @@ Chadnodes.from_region = function(bufnr, region, parser)
     return cnodes
 end
 
+--- @param parser vim.treesitter.LanguageTree
+Chadnodes._get_container_node = function(parser)
+    local node = ts_utils.get_node_at_cursor()
+    assert(node ~= nil, "No node found")
+
+    local parent = node:parent()
+    if parent == nil then
+        local root = parser:parse()[1]:root()
+        parent = root
+    end
+
+    return parent
+end
+
+--- Return a new `Chadnodes` object with the nodes sorted and the parent node of the node from
+--- the region selected
+--- @param bufnr number: the buffer number
+--- @param region Region: the region to get the nodes from
+--- @param parser vim.treesitter.LanguageTree
+--- @return Chadnodes, TSNode
+Chadnodes.from_region_test = function(bufnr, region, parser)
+    local node = ts_utils.get_node_at_cursor()
+    assert(node ~= nil, "No node found")
+
+    local parent = node:parent()
+    if parent == nil then
+        local root = parser:parse()[1]:root()
+        parent = root
+    end
+
+    local cnodes = Chadnodes.new(parser)
+    for child, _ in parent:iter_children() do
+        -- if the node is after the last line of the visually-selected area, stop
+        if region.erow < Region.from_node(node).erow then
+            break
+        end
+
+        if child:type() == 'function_declaration' then
+            local query = queries.build(parser:lang(), queries.function_declaration_query())
+            for _, matches in query:iter_matches(child, bufnr) do
+                local function_name = vim.treesitter.get_node_text(matches[1], bufnr)
+                local matched_node = matches[2]
+                cnodes:add(Chadnode.new(matched_node, function_name))
+            end
+        elseif child:type() == 'lexical_declaration' then
+            local query = queries.build(parser:lang(), queries.lexical_declaration_query())
+            for _, matches in query:iter_matches(child, bufnr) do
+                local function_name = vim.treesitter.get_node_text(matches[1], bufnr)
+                local matched_node = matches[2]
+                cnodes:add(Chadnode.new(matched_node, function_name))
+            end
+        else
+            local cnode = Chadnode.new(node, nil)
+            cnodes:add(cnode)
+        end
+    end
+
+    return cnodes, parent
+end
+
 --- Returns a new `Chadnodes` object with the nodes sorted
 --- @param self Chadnodes
 --- @return Chadnodes
 Chadnodes.sort = function(self)
     local non_sortables = self:get_non_sortable_nodes()
-    local sortables = Chadnodes.sort_sortable_nodes(self:get_sortable_nodes())
-    local sorted_nodes = Chadnodes.new()
+    local sortables = Chadnodes:sort_sortable_nodes(self:get_sortable_nodes())
+    local sorted_nodes = Chadnodes.new(self.parser)
 
     --- @type number
     local sortable_idx = 1
@@ -207,15 +280,16 @@ Chadnodes.cnode_is_sortable_by_idx = function(self)
 end
 
 --- Returns a new `Chadnodes` object with the given list of `Chadnode`s sorted
+--- @param self Chadnodes
 --- @param cnodes Chadnode[]: the list of nodes to sort
 --- @return Chadnodes
-Chadnodes.sort_sortable_nodes = function(cnodes)
+Chadnodes.sort_sortable_nodes = function(self, cnodes)
     local sorted_idx = Chadnodes._get_idxs(cnodes)
     local cnodes_by_idx = Chadnodes._cnodes_by_idx(cnodes)
 
     table.sort(sorted_idx)
 
-    local sorted_cnodes = Chadnodes.new()
+    local sorted_cnodes = Chadnodes.new(self.parser)
     for _, idx in ipairs(sorted_idx) do
         sorted_cnodes:add(cnodes_by_idx[idx])
     end

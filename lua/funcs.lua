@@ -89,4 +89,11 @@ M.get_line_indent = function(bufnr, row)
     return line:match("^%s*")
 end
 
+--- Check if a match is a comment
+--- @param matches table<string, TSNode>
+--- @return boolean
+M.match_is_comment = function(matches)
+    return M.contains(matches, 1)
+end
+
 return M

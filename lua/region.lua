@@ -6,7 +6,7 @@
 --- @field new fun(srow: number, scol: number, erow: number, ecol: number): Region
 --- @field from_selection fun(): Region
 --- @field from_node fun(node: TSNode): Region
---- @field debug fun(self: Region)
+--- @field print fun(self: Region)
 
 local Region = {}
 Region.__index = Region
@@ -32,9 +32,9 @@ Region.new = function(srow, scol, erow, ecol)
     return self
 end
 
---- Debug the region
+--- Print the human-readable representation of the current Region
 --- @param self Region: the region to debug
-Region.debug = function(self)
+Region.print = function(self)
     print(vim.inspect(self))
 end
 

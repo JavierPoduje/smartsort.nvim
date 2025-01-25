@@ -1,12 +1,18 @@
 local f = require("funcs")
 local parsers = require("nvim-treesitter.parsers")
-local ts = require("treesitter")
 local Region = require("region")
 local Chadnodes = require("treesitter.chadnodes")
 
 local M = {}
 
 M.setup = function() end
+
+M.test = function()
+    local region = Region.from_selection()
+    local parser = parsers.get_parser()
+    local cnodes = Chadnodes.from_region_test(0, region, parser)
+    cnodes:print(0)
+end
 
 M.sort = function()
     local region = Region.from_selection()
