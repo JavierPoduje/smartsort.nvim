@@ -11,8 +11,6 @@ local it = it
 local truthy = assert.is.truthy
 --- @diagnostic disable-next-line: undefined-field
 local same = assert.are.same
---- @diagnostic disable-next-line: undefined-global
-local pending = pending
 
 --- @return number, vim.treesitter.LanguageTree
 local setup = function(buf_content)
@@ -38,7 +36,7 @@ end
 
 describe("chadnodes", function()
     describe("from_region", function()
-        pending("should recognize non-sortable nodes", function()
+        it("should recognize non-sortable nodes", function()
             local mock = typescript_mocks.with_comment
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
@@ -59,7 +57,7 @@ describe("chadnodes", function()
             }))
         end)
 
-        it("should grab function comments", function ()
+        it("should grab function comments", function()
             local mock = typescript_mocks.commented_functions
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
@@ -88,7 +86,7 @@ describe("chadnodes", function()
             }))
         end)
 
-        pending("shouldn't consider nodes outside region", function()
+        it("shouldn't consider nodes outside region", function()
             local mock = typescript_mocks.simplest
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, Region.new(1, 1, 3, 1), parser)
@@ -102,7 +100,7 @@ describe("chadnodes", function()
         end)
     end)
 
-    pending("sort", function()
+    describe("sort", function()
         it("should sort alphabetically", function()
             local mock = typescript_mocks.simplest
             local bufnr, parser = setup(mock.content)
@@ -142,7 +140,7 @@ describe("chadnodes", function()
         end)
     end)
 
-    pending("get_sortable_nodes shouldn't consider non-sortable nodes", function()
+    it("get_sortable_nodes shouldn't consider non-sortable nodes", function()
         local mock = typescript_mocks.with_comment
         local bufnr, parser = setup(mock.content)
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
@@ -160,7 +158,7 @@ describe("chadnodes", function()
         }))
     end)
 
-    pending("get_non_sortable_nodes shouldn't consider sortable nodes", function()
+    it("get_non_sortable_nodes shouldn't consider sortable nodes", function()
         local mock = typescript_mocks.with_comment
         local bufnr, parser = setup(mock.content)
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
@@ -174,7 +172,7 @@ describe("chadnodes", function()
         }))
     end)
 
-    pending("cnode_is_sortable_by_idx recognizes sortable and non-sortable chadnodes", function()
+    it("cnode_is_sortable_by_idx recognizes sortable and non-sortable chadnodes", function()
         local mock = typescript_mocks.with_comment
         local bufnr, parser = setup(mock.content)
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
@@ -182,21 +180,21 @@ describe("chadnodes", function()
     end)
 
     describe("gaps", function()
-        pending("should detect 'empty' gaps", function()
+        it("should detect 'empty' gaps", function()
             local mock = typescript_mocks.without_gap
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
             same(cnodes:gaps(), { 0 })
         end)
 
-        pending("should detect big gaps", function()
+        it("should detect big gaps", function()
             local mock = typescript_mocks.with_bigger_gap
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
             same(cnodes:gaps(), { 3 })
         end)
 
-        pending("should detect more than one gap", function()
+        it("should detect more than one gap", function()
             local mock = typescript_mocks.with_comment
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)

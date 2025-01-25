@@ -11,7 +11,9 @@ M.test = function()
     local region = Region.from_selection()
     local parser = parsers.get_parser()
     local cnodes = Chadnodes.from_region_test(0, region, parser)
+    local gaps = cnodes:gaps()
     cnodes:print(0)
+    print(vim.inspect(gaps))
 end
 
 M.sort = function()

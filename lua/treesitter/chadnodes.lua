@@ -78,9 +78,17 @@ end
 --- @return number[]
 Chadnodes.gaps = function(self)
     local gaps = {}
-    for _, cnode in ipairs(self.nodes) do
-        if cnode:has_next_sibling() then
-            table.insert(gaps, cnode:gap(cnode:next_sibling()))
+    --- @type Chadnode | nil
+    local previous_cnode = nil
+    for idx, cnode in ipairs(self.nodes) do
+        cnode:print(0)
+        print("--")
+        if idx == 1 then
+            previous_cnode = cnode
+        else
+            assert(previous_cnode ~= nil, "Previous Chadnode not found")
+            table.insert(gaps, previous_cnode:gap(cnode))
+            previous_cnode = cnode
         end
     end
     return gaps
@@ -186,7 +194,7 @@ Chadnodes.from_region_test = function(bufnr, region, parser)
     local cnodes = Chadnodes.new(parser)
     for child, _ in parent:iter_children() do
         -- if the node is after the last line of the visually-selected area, stop
-        if region.erow < Region.from_node(node).erow then
+        if region.erow < Region.from_node(child).erow then
             break
         end
 
@@ -205,7 +213,7 @@ Chadnodes.from_region_test = function(bufnr, region, parser)
                 cnodes:add(Chadnode.new(matched_node, function_name))
             end
         else
-            local cnode = Chadnode.new(node, nil)
+            local cnode = Chadnode.new(child, nil)
             cnodes:add(cnode)
         end
     end
