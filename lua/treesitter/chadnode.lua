@@ -142,6 +142,13 @@ end
 Chadnode.gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
     assert(self.region.erow < other.region.srow, "Node 1 is not before Node 2 or they're overlaping")
+
+    -- If the other node has a comment node, we need to compare the other node's comment node to
+    -- get the empty spaces
+    while other.comment_node ~= nil do
+        other = other.comment_node
+    end
+
     return other.region.srow - self.region.erow - 1
 end
 

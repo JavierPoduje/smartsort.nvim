@@ -7,7 +7,12 @@ const foo = () => {
 
 // this is a comment
 
-// this comment "belongs" to the function
+
+
+// nested comment
+/**
+ * This is a comment
+ */
 function bar() {
   console.log("bar");
 }

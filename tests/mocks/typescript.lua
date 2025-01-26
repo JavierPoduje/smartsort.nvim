@@ -95,11 +95,35 @@ local commented_functions = {
     region = Region.new(1, 1, 13, 1),
 }
 
+--- @type BufferMock
+local with_nested_comments = {
+    content = {
+        '/**',
+        ' * This is a comment',
+        ' */',
+        'const foo = () => {',
+        '  console.log("foo");',
+        '};',
+        '',
+        '// this is a comment',
+        '',
+        '// this is a nested comment',
+        '/**',
+        ' * This is a comment',
+        ' */',
+        'function bar() {',
+        '  console.log("bar");',
+        '}',
+    },
+    region = Region.new(1, 1, 16, 1),
+}
+
 return {
     commented_functions = commented_functions,
     node_with_comment = node_with_comment,
     simplest = simplest,
     with_bigger_gap = with_bigger_gap,
     with_comment = with_comment,
+    with_nested_comments = with_nested_comments,
     without_gap = without_gap,
 }
