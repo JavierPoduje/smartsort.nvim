@@ -1,5 +1,4 @@
 local Chadnode = require("treesitter.chadnode")
-local f = require("funcs")
 local Region = require("region")
 local queries = require("treesitter.queries")
 local ts_utils = require("nvim-treesitter.ts_utils")
@@ -15,7 +14,6 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public debug fun(self: Chadnodes, bufnr: number): table<any>
 --- @field public from_chadnodes fun(parser: vim.treesitter.LanguageTree, cnodes: Chadnodes): Chadnodes
 --- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
---- @field public from_region_test fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public gaps fun(self: Chadnodes): number[]
 --- @field public get fun(self: Chadnodes): Chadnode[]
 --- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
@@ -151,47 +149,43 @@ Chadnodes.add = function(self, chadnode)
     table.insert(self.nodes, chadnode)
 end
 
---- @param bufnr number: the buffer number
---- @param region Region: the region to get the nodes from
---- @param parser vim.treesitter.LanguageTree
---- @return Chadnodes
-Chadnodes.from_region = function(bufnr, region, parser)
-    local node = ts_utils.get_node_at_cursor()
-
-    assert(node ~= nil, "No node found")
-
-    local cnodes = Chadnodes.new(parser)
-
-    while node ~= nil do
-        local match_found = false
-
-        -- if the node is after the last line of the visually-selected area, stop
-        if region.erow < Region.from_node(node).erow then
-            break
-        end
-
-        local query = queries.functions_query(parser:lang())
-
-        for _, matches in query:iter_matches(node, bufnr) do
-            match_found = true
-            local cnode = Chadnode.new(f.get_node(matches), f.get_function_name(matches))
-            cnodes:add(cnode)
-
-            if not cnode:has_next_sibling() then
-                break
-            end
-        end
-
-        if not match_found then
-            local cnode = Chadnode.new(node, nil)
-            cnodes:add(cnode)
-        end
-
-        node = node:next_sibling()
-    end
-
-    return cnodes
-end
+-- Chadnodes.from_region = function(bufnr, region, parser)
+--     local node = ts_utils.get_node_at_cursor()
+--
+--     assert(node ~= nil, "No node found")
+--
+--     local cnodes = Chadnodes.new(parser)
+--
+--     while node ~= nil do
+--         local match_found = false
+--
+--         -- if the node is after the last line of the visually-selected area, stop
+--         if region.erow < Region.from_node(node).erow then
+--             break
+--         end
+--
+--         local query = queries.functions_query(parser:lang())
+--
+--         for _, matches in query:iter_matches(node, bufnr) do
+--             match_found = true
+--             local cnode = Chadnode.new(f.get_node(matches), f.get_function_name(matches))
+--             cnodes:add(cnode)
+--
+--             if not cnode:has_next_sibling() then
+--                 break
+--             end
+--         end
+--
+--         if not match_found then
+--             local cnode = Chadnode.new(node, nil)
+--             cnodes:add(cnode)
+--         end
+--
+--         node = node:next_sibling()
+--     end
+--
+--     return cnodes
+-- end
 
 --- @param parser vim.treesitter.LanguageTree
 Chadnodes._get_container_node = function(parser)
@@ -213,7 +207,7 @@ end
 --- @param region Region: the region to get the nodes from
 --- @param parser vim.treesitter.LanguageTree
 --- @return Chadnodes, TSNode
-Chadnodes.from_region_test = function(bufnr, region, parser)
+Chadnodes.from_region = function(bufnr, region, parser)
     local node = ts_utils.get_node_at_cursor()
     assert(node ~= nil, "No node found")
 

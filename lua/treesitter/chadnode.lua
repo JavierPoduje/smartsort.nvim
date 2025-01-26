@@ -93,29 +93,19 @@ Chadnode.to_string_preserve_indent = function(self, bufnr, target_row)
     local target_indent = f.get_line_indent(bufnr, target_row)
 
     -- Adjust indentation for all lines
-    local indented_lines = {}
+    local stringified_lines = {}
 
     if self.comment_node ~= nil then
-        indented_lines[1] = self.comment_node:to_string_preserve_indent(bufnr, self.comment_node.region.srow)
+        local stringified_comment = self.comment_node:to_string_preserve_indent(bufnr, self.comment_node.region.srow)
+        table.insert(stringified_lines, stringified_comment)
     end
 
-    local first_line = f.if_else(
-        self.comment_node == nil,
-        function() return 1 end,
-        function() return 2 end
-    )
-    for i, line in ipairs(lines) do
-        if i == first_line then
-            -- First line gets target indentation
-            table.insert(indented_lines, target_indent .. line:gsub("^%s*", ""))
-        else
-            -- Subsequent lines maintain relative indentation
-            local relative_indent = line:match("^" .. original_indent .. "(%s*)")
-            table.insert(indented_lines, target_indent .. (relative_indent or "") .. line:gsub("^%s*", ""))
-        end
+    for _, line in ipairs(lines) do
+        local relative_indent = line:match("^" .. original_indent .. "(%s*)")
+        table.insert(stringified_lines, target_indent .. (relative_indent or "") .. line:gsub("^%s*", ""))
     end
 
-    return table.concat(indented_lines, "\n")
+    return table.concat(stringified_lines, "\n")
 end
 
 --- Return the node's sortable index

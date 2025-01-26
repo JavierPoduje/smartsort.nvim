@@ -52,7 +52,7 @@ describe("chadnode", function()
             vim.deep_equal(
             --- @diagnostic disable-next-line: need-check-nil
                 cnode:to_string_preserve_indent(bufnr, 0),
-                '/**\n * This is a comment\n */\nconst foo = () => {\nconsole.log(\"foo\");\n};'
+                '/**\n * This is a comment\n */\nconst foo = () => {\n  console.log(\"foo\");\n};'
             )
         )
     end)

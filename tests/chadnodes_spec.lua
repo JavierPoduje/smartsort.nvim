@@ -200,21 +200,21 @@ describe("chadnodes", function()
     end)
 
     describe("gaps", function()
-        pending("should detect 'empty' gaps", function()
+        it("should detect 'empty' gaps", function()
             local mock = typescript_mocks.without_gap
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
             same(cnodes:gaps(), { 0 })
         end)
 
-        pending("should detect big gaps", function()
+        it("should detect big gaps", function()
             local mock = typescript_mocks.with_bigger_gap
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
             same(cnodes:gaps(), { 3 })
         end)
 
-        pending("should detect more than one gap", function()
+        it("should detect more than one gap", function()
             local mock = typescript_mocks.with_comment
             local bufnr, parser = setup(mock.content)
             local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)

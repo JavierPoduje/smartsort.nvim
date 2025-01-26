@@ -7,10 +7,9 @@ local M = {}
 
 M.setup = function() end
 
-M.test = function()
-    local region = Region.from_selection()
+M.sort_lines = function(region)
     local parser = parsers.get_parser()
-    local cnodes = Chadnodes.from_region_test(0, region, parser)
+    local cnodes = Chadnodes.from_region(0, region, parser)
     local merged_cnodes = cnodes:merge_sortable_nodes_with_their_comments()
     local gaps = merged_cnodes:gaps()
     local sorted_cnodes = merged_cnodes:sort()
@@ -35,41 +34,11 @@ end
 
 M.sort = function()
     local region = Region.from_selection()
-
     if region.srow == region.erow then
         M.sort_single_line(region)
     else
         M.sort_lines(region)
     end
-end
-
---- Sort the selected lines
----
---- @param region Region: the region to sort
-M.sort_lines = function(region)
-    local parser = parsers.get_parser()
-    local cnodes = Chadnodes.from_region(0, region, parser)
-    local gaps = cnodes:gaps()
-    local sorted_cnodes = cnodes:sort()
-
-    local sorted_nodes_with_gaps = {}
-    for idx, cnode in ipairs(sorted_cnodes.nodes) do
-        local cnode_str = cnode:to_string_preserve_indent(0, cnode.region.srow)
-
-        -- add the node to the table line by line
-        for _, line in ipairs(vim.fn.split(cnode_str, "\n")) do
-            table.insert(sorted_nodes_with_gaps, line)
-        end
-
-        -- add the gap, if any
-        if idx <= #gaps then
-            for _ = 1, gaps[idx] do
-                table.insert(sorted_nodes_with_gaps, "")
-            end
-        end
-    end
-
-    vim.api.nvim_buf_set_lines(0, region.srow - 1, region.erow, true, sorted_nodes_with_gaps)
 end
 
 --- Sort the selected line
