@@ -7,8 +7,6 @@ const foo = () => {
 
 // this is a comment
 
-
-
 // nested comment
 /**
  * This is a comment

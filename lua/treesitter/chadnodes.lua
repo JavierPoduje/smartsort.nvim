@@ -9,6 +9,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public container_node TSNode
 --- @field public parser vim.treesitter.LanguageTree
 ---
+--- @field public _get_node_at_row fun(bufnr: number, row: number): TSNode
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode)
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number): table<any>
@@ -208,7 +209,7 @@ end
 --- @param parser vim.treesitter.LanguageTree
 --- @return Chadnodes, TSNode
 Chadnodes.from_region = function(bufnr, region, parser)
-    local node = ts_utils.get_node_at_cursor()
+    local node = Chadnodes._get_node_at_row(bufnr, region.srow)
     assert(node ~= nil, "No node found")
 
     local parent = node:parent()
@@ -351,6 +352,21 @@ Chadnodes._cnodes_by_idx = function(cnodes)
         cnodes_by_idx[node:get_sortable_idx()] = node
     end
     return cnodes_by_idx
+end
+
+--- Get the node at the given row
+--- @param bufnr number
+--- @param row number
+--- @return TSNode | nil
+Chadnodes._get_node_at_row = function(bufnr, row)
+    local lines = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)
+    if #lines == 0 then
+        return nil
+    end
+
+    local first_line = lines[1]
+    local first_non_empty_char = first_line:find("%S") or 1
+    return ts_utils.get_root_for_position(1, first_non_empty_char)
 end
 
 return Chadnodes
