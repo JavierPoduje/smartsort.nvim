@@ -9,17 +9,18 @@ local f = require("funcs")
 --- @field public sortable_idx string | nil: the index from which the node can be sorted
 ---
 --- @field public debug fun(self: Chadnode, bufnr: number): table<any>
---- @field public set_comment fun(self: Chadnode, comment: Chadnode)
 --- @field public gap fun(self: Chadnode, other: Chadnode): number
 --- @field public get fun(self: Chadnode): TSNode
---- @field public next_sibling fun(self: Chadnode): Chadnode
 --- @field public get_sortable_idx fun(self: Chadnode): string
 --- @field public has_next_sibling fun(self: Chadnode): boolean
 --- @field public is_sortable fun(self: Chadnode): boolean
 --- @field public new fun(node: TSNode, sortable_idx: string | nil): Chadnode
+--- @field public next_sibling fun(self: Chadnode): Chadnode
 --- @field public print fun(self: Chadnode, bufnr: number)
+--- @field public set_comment fun(self: Chadnode, comment: Chadnode)
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public to_string_preserve_indent fun(self: Chadnode, bufnr: number, target_row: number): string
+--- @field public type fun(self: Chadnode): string
 
 local Chadnode = {}
 Chadnode.__index = Chadnode
@@ -156,6 +157,13 @@ end
 --- @return boolean: whether the node is sortable
 Chadnode.is_sortable = function(self)
     return self.sortable_idx ~= nil
+end
+
+--- Return tru if the node is sortable, false otherwise.
+--- @param self Chadnode: the node
+--- @return string
+Chadnode.type = function(self)
+    return self.node:type()
 end
 
 return Chadnode

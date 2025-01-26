@@ -20,6 +20,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public get fun(self: Chadnodes): Chadnode[]
 --- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
+--- @field public merge_sortable_nodes_with_their_comments fun(self: Chadnodes): Chadnodes
 --- @field public new fun(parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
 --- @field public print fun(self: Chadnodes, bufnr: number)
@@ -81,8 +82,6 @@ Chadnodes.gaps = function(self)
     --- @type Chadnode | nil
     local previous_cnode = nil
     for idx, cnode in ipairs(self.nodes) do
-        cnode:print(0)
-        print("--")
         if idx == 1 then
             previous_cnode = cnode
         else
@@ -92,6 +91,39 @@ Chadnodes.gaps = function(self)
         end
     end
     return gaps
+end
+
+--- Merge the sortable nodes with their comments
+--- @param self Chadnodes
+--- @return Chadnodes
+Chadnodes.merge_sortable_nodes_with_their_comments = function(self)
+    local gaps = self:gaps()
+    local cnodes = Chadnodes.new(self.parser)
+
+    for idx = 1, #gaps + 1 do
+        if idx > #gaps then
+            local current_node = self:node_by_idx(idx)
+            assert(current_node ~= nil, "Chadnode not found")
+            cnodes:add(current_node)
+            break
+        end
+
+        local gap = gaps[idx]
+        local current_node = self:node_by_idx(idx)
+        local next_node = self:node_by_idx(idx + 1)
+
+        assert(current_node ~= nil, "Chadnode not found")
+
+        if gap > 0 then
+            cnodes:add(current_node)
+        elseif current_node:type() == 'comment' and next_node ~= nil then
+            next_node:set_comment(current_node)
+        else
+            cnodes:add(current_node)
+        end
+    end
+
+    return cnodes
 end
 
 --- Get the node by index
