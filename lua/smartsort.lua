@@ -3,10 +3,60 @@ local parsers = require("nvim-treesitter.parsers")
 local Region = require("region")
 local Chadnodes = require("treesitter.chadnodes")
 
+--- @class Args
+--- @field separator string: the separator to use between words
+
 local M = {}
 
 M.setup = function() end
 
+--- Sort the selected text
+--- @param args Args: the arguments to use
+M.sort = function(args)
+    local region = Region.from_selection()
+
+    if region.srow == region.erow then
+        M.sort_single_line(region, args)
+    else
+        M.sort_lines(region)
+    end
+end
+
+--- Sort the selected line
+--- @param region Region: the region to sort
+--- @param args Args: the arguments to use
+M.sort_single_line = function(region, args)
+    assert(args.separator ~= nil, "Separator is required")
+
+    local separator = args.separator
+    local full_line = vim.fn.getline(region.srow, region.erow)
+    local raw_str = string.sub(full_line[1], region.scol, region.ecol)
+    local final_char_is_separator = false
+
+    local trimmed_str, leftpad, rightpad = M._trim(raw_str)
+    if string.sub(trimmed_str, -1) == separator then
+        trimmed_str = string.sub(trimmed_str, 1, -2)
+        final_char_is_separator = true
+    end
+    local spaces_between_words = M._calculate_spaces_between_words(trimmed_str, separator)
+
+    -- split words by separator
+    local words = vim.fn.split(trimmed_str, separator .. "\\s*")
+
+    table.sort(words)
+
+    local str_to_insert = table.concat({
+        leftpad,
+        M._build_sorted_words(spaces_between_words, words, separator),
+        final_char_is_separator and separator or "",
+        rightpad,
+    }, "")
+
+    M._insert_in_buffer(region.srow, region.scol, region.ecol, str_to_insert)
+end
+
+--- Sort the selected lines
+--- @param region Region: the region to sort
 M.sort_lines = function(region)
     local parser = parsers.get_parser()
     local cnodes = Chadnodes.from_region(0, region, parser)
@@ -32,38 +82,6 @@ M.sort_lines = function(region)
     vim.api.nvim_buf_set_lines(0, region.srow - 1, region.erow, true, sorted_nodes_with_gaps)
 end
 
-M.sort = function()
-    local region = Region.from_selection()
-    if region.srow == region.erow then
-        M.sort_single_line(region)
-    else
-        M.sort_lines(region)
-    end
-end
-
---- Sort the selected line
---- @param region Region: the region to sort
-M.sort_single_line = function(region)
-    local full_line = vim.fn.getline(region.srow, region.erow)
-    local raw_str = string.sub(full_line[1], region.scol, region.ecol)
-
-    local trimmed_str, leftpad, rightpad = M._trim(raw_str)
-    local spaces_between_words = M._calculate_spaces_between_words(trimmed_str)
-
-    -- split words by comma
-    local words = vim.fn.split(trimmed_str, ",\\s*")
-
-    table.sort(words)
-
-    local str_to_insert = table.concat({
-        leftpad,
-        M._build_sorted_words(spaces_between_words, words),
-        rightpad,
-    }, "")
-
-    M._insert_in_buffer(region.srow, region.scol, region.ecol, str_to_insert)
-end
-
 --- Insert the string into the buffer in a single line in a specific range
 ---
 --- @param row number: the row to insert the string into
@@ -83,9 +101,10 @@ end
 ---
 --- @param spaces_between_words number[]: the spaces between words
 --- @param words string[]: the words to build the sorted words of
+--- @param separator string: the separator to use between words
 --- @return string: the sorted words
 ---
-M._build_sorted_words = function(spaces_between_words, words)
+M._build_sorted_words = function(spaces_between_words, words, separator)
     assert(
         #words == #spaces_between_words + 1,
         "Number of spaces between words must be one less than the number of words"
@@ -98,7 +117,7 @@ M._build_sorted_words = function(spaces_between_words, words)
 
         -- add comma at the end of word if it's not the last word
         if i < #words then
-            table.insert(output, ",")
+            table.insert(output, separator)
         end
 
         -- add next gap if needed
@@ -114,8 +133,9 @@ end
 --- Calculate the spaces between. The spaces are only calculated between words separated by a comma.
 ---
 --- @param str string: the string to calculate the spaces between words of
+--- @param separator string: the separator to use between words
 --- @return number[]: the spaces between words
-M._calculate_spaces_between_words = function(str)
+M._calculate_spaces_between_words = function(str, separator)
     if #str <= 1 then
         return {}
     end
@@ -126,7 +146,7 @@ M._calculate_spaces_between_words = function(str)
     local count_spaces = false
 
     while idx <= #str do
-        if string.sub(str, idx, idx) == "," then
+        if string.sub(str, idx, idx) == separator then
             idx = idx + 1
             count_spaces = true
         end
