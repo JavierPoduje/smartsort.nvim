@@ -4,7 +4,7 @@ local M = {}
 --- @return string
 M.lexical_declaration_query = function()
     return [[
-        (lexical_declaration (variable_declarator (identifier) @name)) @function
+        (lexical_declaration (variable_declarator (identifier) @identifier)) @node
     ]]
 end
 

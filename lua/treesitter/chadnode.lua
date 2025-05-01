@@ -42,6 +42,33 @@ function Chadnode.new(node, sortable_idx)
     return self
 end
 
+--- Create a new Chadnode from a query match
+--- @param query vim.treesitter.Query: the query
+--- @param match table<integer, TSNode>: the match
+--- @param bufnr number: the buffer number
+Chadnode.from_query_match = function(query, match, bufnr)
+    -- @type TSNode
+    local whole_node = nil
+    -- @type string
+    local identifier = nil
+
+    for id, nodes in pairs(match) do
+        -- this is the name of the capture!!!!
+        -- the one that we defined with the '@' sign
+        local capture_name = query.captures[id]
+        if capture_name == "identifier" then
+            identifier = vim.treesitter.get_node_text(nodes[1], bufnr)
+        elseif capture_name == "node" then
+            whole_node = nodes[1]
+        end
+    end
+
+    assert(whole_node ~= nil, "The whole node can't be nil")
+    assert(identifier ~= nil, "The identifier can't be nil")
+
+    return Chadnode.new(whole_node, identifier)
+end
+
 --- Set the comment node
 --- @param self Chadnode: the node
 --- @param comment Chadnode: the comment node
