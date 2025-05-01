@@ -9,6 +9,7 @@ local f = require("funcs")
 --- @field public sortable_idx string | nil: the index from which the node can be sorted
 ---
 --- @field public debug fun(self: Chadnode, bufnr: number): table<any>
+--- @field public from_query_match fun(query: vim.treesitter.Query, match: table<integer, TSNode>, bufnr: number): Chadnode
 --- @field public gap fun(self: Chadnode, other: Chadnode): number
 --- @field public get fun(self: Chadnode): TSNode
 --- @field public get_sortable_idx fun(self: Chadnode): string
@@ -48,25 +49,25 @@ end
 --- @param bufnr number: the buffer number
 Chadnode.from_query_match = function(query, match, bufnr)
     -- @type TSNode
-    local whole_node = nil
+    local matched_node = nil
     -- @type string
-    local identifier = nil
+    local matched_id = nil
 
     for id, nodes in pairs(match) do
         -- this is the name of the capture!!!!
         -- the one that we defined with the '@' sign
         local capture_name = query.captures[id]
         if capture_name == "identifier" then
-            identifier = vim.treesitter.get_node_text(nodes[1], bufnr)
+            matched_id = vim.treesitter.get_node_text(nodes[1], bufnr)
         elseif capture_name == "node" then
-            whole_node = nodes[1]
+            matched_node = nodes[1]
         end
     end
 
-    assert(whole_node ~= nil, "The whole node can't be nil")
-    assert(identifier ~= nil, "The identifier can't be nil")
+    assert(matched_node ~= nil, "The whole node can't be nil")
+    assert(matched_id ~= nil, "The identifier can't be nil")
 
-    return Chadnode.new(whole_node, identifier)
+    return Chadnode.new(matched_node, matched_id)
 end
 
 --- Set the comment node

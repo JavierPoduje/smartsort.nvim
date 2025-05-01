@@ -225,16 +225,8 @@ Chadnodes.from_region = function(bufnr, region, parser)
             break
         end
 
-        if child:type() == 'function_declaration' then
-            local query = queries.build(parser:lang(), queries.function_declaration_query())
-            for _, matches in query:iter_matches(child, bufnr) do
-                local function_name = vim.treesitter.get_node_text(matches[1][1], bufnr)
-                local matched_node = matches[2][1]
-
-                cnodes:add(Chadnode.new(matched_node, function_name))
-            end
-        elseif child:type() == 'lexical_declaration' then
-            local query = vim.treesitter.query.parse(parser:lang(), queries.lexical_declaration_query())
+        if queries.is_supported_node_type(child:type()) then
+            local query = queries.build(parser:lang(), queries.query_by_node_type(child:type()))
             for pattern, match, metadata in query:iter_matches(child, bufnr) do
                 cnodes:add(Chadnode.from_query_match(query, match, bufnr))
             end
@@ -242,8 +234,6 @@ Chadnodes.from_region = function(bufnr, region, parser)
             local cnode = Chadnode.new(child, nil)
             cnodes:add(cnode)
         end
-
-        cnodes:debug(bufnr)
     end
 
     return cnodes, parent
