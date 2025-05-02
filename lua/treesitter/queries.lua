@@ -1,3 +1,8 @@
+--- This module provides functions to build and manage queries for different node types in a tree-sitter parser.
+--- All queries should have two matches:
+--- * The first match is the node itself, which is used to identify the node in the tree.
+--- * The second match is the identifier, which is later used to sort the node.
+
 local M = {}
 
 --- @param node_type string: the type of the node
@@ -23,17 +28,17 @@ M.query_by_node_type = function(node_type)
     assert(M.is_supported_node_type(node_type), "Unsupported node type: " .. node_type)
 
     if node_type == "function_declaration" then
-        return M.function_declaration_query()
+        return M._function_declaration_query()
     elseif node_type == "lexical_declaration" then
-        return M.lexical_declaration_query()
-    else
-        error("Unknown node type: " .. node_type)
+        return M._lexical_declaration_query()
     end
+
+    error("Unsupported node type: " .. node_type)
 end
 
 --- Return the query for a lexical declaration
 --- @return string
-M.lexical_declaration_query = function()
+M._lexical_declaration_query = function()
     return [[
         (lexical_declaration (variable_declarator (identifier) @identifier)) @node
     ]]
@@ -41,26 +46,10 @@ end
 
 --- Return the query for a function declaration
 --- @return string
-M.function_declaration_query = function()
+M._function_declaration_query = function()
     return [[
         (function_declaration (identifier) @identifier) @node
     ]]
-end
-
-M.typescript_functions = function()
-    return [[
-        ([
-          (lexical_declaration (variable_declarator (identifier) @arrow_function_name)) @arrow_function
-          (function_declaration (identifier) @function_name) @function
-        ])
-    ]]
-end
-
---- @param lang string: the language to query
---- @return vim.treesitter.Query
-M.functions_query = function(lang)
-    local query = vim.treesitter.query.parse(lang, M.typescript_functions())
-    return query
 end
 
 --- @param lang string: the language to query

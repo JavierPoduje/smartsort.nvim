@@ -150,44 +150,6 @@ Chadnodes.add = function(self, chadnode)
     table.insert(self.nodes, chadnode)
 end
 
--- Chadnodes.from_region = function(bufnr, region, parser)
---     local node = ts_utils.get_node_at_cursor()
---
---     assert(node ~= nil, "No node found")
---
---     local cnodes = Chadnodes.new(parser)
---
---     while node ~= nil do
---         local match_found = false
---
---         -- if the node is after the last line of the visually-selected area, stop
---         if region.erow < Region.from_node(node).erow then
---             break
---         end
---
---         local query = queries.functions_query(parser:lang())
---
---         for _, matches in query:iter_matches(node, bufnr) do
---             match_found = true
---             local cnode = Chadnode.new(f.get_node(matches), f.get_function_name(matches))
---             cnodes:add(cnode)
---
---             if not cnode:has_next_sibling() then
---                 break
---             end
---         end
---
---         if not match_found then
---             local cnode = Chadnode.new(node, nil)
---             cnodes:add(cnode)
---         end
---
---         node = node:next_sibling()
---     end
---
---     return cnodes
--- end
-
 --- @param parser vim.treesitter.LanguageTree
 Chadnodes._get_container_node = function(parser)
     local node = ts_utils.get_node_at_cursor()
@@ -202,8 +164,8 @@ Chadnodes._get_container_node = function(parser)
     return parent
 end
 
---- Return a new `Chadnodes` object with the nodes sorted and the parent node of the node from
---- the region selected
+--- Return a new `Chadnodes` object with the matched nodes in the given region and the parent node
+--- of the node from the region selected.
 --- @param bufnr number: the buffer number
 --- @param region Region: the region to get the nodes from
 --- @param parser vim.treesitter.LanguageTree

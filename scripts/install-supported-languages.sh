@@ -1,6 +1,6 @@
 #!/bin/bash
 
-lang_files=(typescript)
+lang_files=(typescript,vue,php)
 
 for lang in "${languages[@]}"
 do
