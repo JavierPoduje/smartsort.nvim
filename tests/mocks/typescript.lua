@@ -16,6 +16,30 @@ local node_with_comment = {
     region = Region.new(1, 1, 7, 1),
 }
 
+local point_class = {
+    content = {
+        'class Point {',
+        '  x: number;',
+        '  y: number;',
+        '',
+        '  constructor(x: number, y: number) {',
+        '    this.x = x;',
+        '    this.y = y;',
+        '  }',
+        '',
+        '  scale(n: number): void {',
+        '    this.x *= n;',
+        '    this.y *= n;',
+        '  }',
+        '',
+        '  asString(): string {',
+        '    return `(${this.x}, ${this.y})`;',
+        '  }',
+        '}',
+    },
+    region = Region.new(10, 1, 18, 1),
+}
+
 local middle_size = {
     content = {
         '/**',
@@ -149,6 +173,7 @@ return {
     commented_functions = commented_functions,
     middle_size = middle_size,
     node_with_comment = node_with_comment,
+    point_class = point_class,
     simplest = simplest,
     with_bigger_gap = with_bigger_gap,
     with_comment = with_comment,

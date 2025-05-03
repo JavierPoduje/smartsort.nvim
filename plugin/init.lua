@@ -14,3 +14,11 @@ end, {
     range = true,
     nargs = '?',
 })
+
+--- Print the selected region
+vim.api.nvim_create_user_command('SmartsortRegion', function()
+    require('smartsort').region()
+end, {
+    range = true,
+    nargs = '?',
+})

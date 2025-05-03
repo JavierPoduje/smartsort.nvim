@@ -1,4 +1,5 @@
 local Chadnode = require("treesitter.chadnode")
+local typescript_sortable_block_types = require("treesitter.typescript.sortable_block_types")
 local funcs = require("funcs")
 local Region = require("region")
 local queries = require("treesitter.queries")
@@ -10,7 +11,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public container_node TSNode
 --- @field public parser vim.treesitter.LanguageTree
 ---
---- @field public _get_node_at_row fun(bufnr: number, row: number): TSNode
+--- @field public _get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree): TSNode
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode)
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number): table<any>
@@ -172,7 +173,7 @@ end
 --- @param parser vim.treesitter.LanguageTree
 --- @return Chadnodes, TSNode
 Chadnodes.from_region = function(bufnr, region, parser)
-    local node = Chadnodes._get_node_at_row(bufnr, region.srow)
+    local node = Chadnodes._get_node_at_row(bufnr, region.srow, parser)
     assert(node ~= nil, "No node found")
 
     local parent = node:parent()
@@ -314,8 +315,9 @@ end
 --- Get the node at the given row
 --- @param bufnr number
 --- @param row number
+--- @param parser vim.treesitter.LanguageTree
 --- @return TSNode | nil
-Chadnodes._get_node_at_row = function(bufnr, row)
+Chadnodes._get_node_at_row = function(bufnr, row, parser)
     local lines = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)
     if #lines == 0 then
         return nil
@@ -323,7 +325,47 @@ Chadnodes._get_node_at_row = function(bufnr, row)
 
     local first_line = lines[1]
     local first_non_empty_char = first_line:find("%S") or 1
-    return ts_utils.get_root_for_position(1, first_non_empty_char)
+
+    -- Save cursor position
+    local saved_cursor = vim.api.nvim_win_get_cursor(0)
+
+    -- Move cursor to the position we want to check
+    vim.api.nvim_win_set_cursor(0, { row, first_non_empty_char - 1 })
+
+    -- Get the node at cursor (most indented node)
+    local node_at_cursor = ts_utils.get_node_at_cursor()
+
+    -- Walk up the tree to find a suitable block node
+    if node_at_cursor then
+        --- @type TSNode | nil
+        local current = node_at_cursor
+        local block_types = {}
+
+        if parser:lang() == "typescript" then
+            block_types = typescript_sortable_block_types
+        end
+
+        assert(#block_types > 0, "No block types found")
+
+        while current do
+            local type = current:type()
+            for _, block_type in ipairs(block_types) do
+                if type == block_type then
+                    -- Restore cursor position
+                    vim.api.nvim_win_set_cursor(0, saved_cursor)
+                    return current
+                end
+            end
+            current = current:parent()
+        end
+
+        node_at_cursor = current
+    end
+
+    -- Restore cursor position
+    vim.api.nvim_win_set_cursor(0, saved_cursor)
+
+    return node_at_cursor
 end
 
 return Chadnodes

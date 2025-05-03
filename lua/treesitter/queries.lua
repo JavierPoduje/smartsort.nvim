@@ -1,19 +1,16 @@
+local typescript_sortable_block_types = require("treesitter.typescript.sortable_block_types")
+
 --- This module provides functions to build and manage queries for different node types in a tree-sitter parser.
 --- All queries should have two matches:
---- * The first match is the node itself, which is used to identify the node in the tree.
---- * The second match is the identifier, which is later used to sort the node.
+--- * The first match is @block (the node itself), which is used to identify the node in the tree.
+--- * The second match is the @identifier, which is later used to sort the block of code.
 
 local M = {}
 
 --- @param node_type string: the type of the node
 --- @return boolean
 M.is_supported_node_type = function(node_type)
-    local supported_node_types = {
-        "function_declaration",
-        "lexical_declaration",
-    }
-
-    for _, supported_node_type in ipairs(supported_node_types) do
+    for _, supported_node_type in ipairs(typescript_sortable_block_types) do
         if node_type == supported_node_type then
             return true
         end
@@ -31,6 +28,8 @@ M.query_by_node_type = function(node_type)
         return M._function_declaration_query()
     elseif node_type == "lexical_declaration" then
         return M._lexical_declaration_query()
+    elseif node_type == "method_definition" then
+        return M._method_definition_query()
     end
 
     error("Unsupported node type: " .. node_type)
@@ -40,7 +39,7 @@ end
 --- @return string
 M._lexical_declaration_query = function()
     return [[
-        (lexical_declaration (variable_declarator (identifier) @identifier)) @node
+        (lexical_declaration (variable_declarator (identifier) @identifier)) @block
     ]]
 end
 
@@ -48,7 +47,13 @@ end
 --- @return string
 M._function_declaration_query = function()
     return [[
-        (function_declaration (identifier) @identifier) @node
+        (function_declaration (identifier) @identifier) @block
+    ]]
+end
+
+M._method_definition_query = function()
+    return [[
+        (method_definition (property_identifier) @identifier) @block
     ]]
 end
 

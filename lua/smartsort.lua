@@ -22,6 +22,12 @@ M.sort = function(args)
     end
 end
 
+--- Print the selected region
+M.region = function()
+    local region = Region.from_selection()
+    region:print()
+end
+
 --- Sort the selected line
 --- @param region Region: the region to sort
 --- @param args Args: the arguments to use
