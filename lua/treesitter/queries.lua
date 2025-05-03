@@ -1,4 +1,4 @@
-local typescript_sortable_block_types = require("treesitter.typescript.sortable_block_types")
+local typescript_node_types = require("treesitter.typescript.node_types")
 
 --- This module provides functions to build and manage queries for different node types in a tree-sitter parser.
 --- All queries should have two matches:
@@ -10,7 +10,7 @@ local M = {}
 --- @param node_type string: the type of the node
 --- @return boolean
 M.is_supported_node_type = function(node_type)
-    for _, supported_node_type in ipairs(typescript_sortable_block_types) do
+    for _, supported_node_type in ipairs(typescript_node_types.sortable) do
         if node_type == supported_node_type then
             return true
         end

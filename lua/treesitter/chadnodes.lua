@@ -1,9 +1,9 @@
 local Chadnode = require("treesitter.chadnode")
-local typescript_sortable_block_types = require("treesitter.typescript.sortable_block_types")
-local funcs = require("funcs")
 local Region = require("region")
 local queries = require("treesitter.queries")
 local ts_utils = require("nvim-treesitter.ts_utils")
+
+local typescript_nodes = require("treesitter.typescript.node_types")
 
 --- @class Chadnodes
 ---
@@ -185,7 +185,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
     local cnodes = Chadnodes.new(parser)
     for child, _ in parent:iter_children() do
         -- if the node is after the last line of the visually-selected area, stop
-        if Region.from_node(child).erow > region.erow then
+        if Region.from_node(child).erow >= region.erow then
             break
         end
 
@@ -202,6 +202,8 @@ Chadnodes.from_region = function(bufnr, region, parser)
             end
         end
     end
+
+    cnodes:print(bufnr)
 
     return cnodes, parent
 end
@@ -342,7 +344,7 @@ Chadnodes._get_node_at_row = function(bufnr, row, parser)
         local block_types = {}
 
         if parser:lang() == "typescript" then
-            block_types = typescript_sortable_block_types
+            block_types = typescript_nodes.sortable_and_non_sortable()
         end
 
         assert(#block_types > 0, "No block types found")
