@@ -79,13 +79,24 @@ end
 
 --- @param self Chadnode
 --- @param bufnr number
-Chadnode.debug = function(self, bufnr)
-    return {
-        node = self:to_string(bufnr),
-        sortable_idx = self:get_sortable_idx(),
-        comment_node = self.comment_node and self.comment_node:to_string(bufnr) or nil,
-        region = self.region:tostr(),
-    }
+--- @optional opts table
+Chadnode.debug = function(self, bufnr, opts)
+    opts = opts or {}
+    local include_region = opts.include_region or false
+    if include_region then
+        return {
+            node = self:to_string(bufnr),
+            sortable_idx = self:get_sortable_idx(),
+            comment_node = self.comment_node and self.comment_node:to_string(bufnr) or nil,
+            region = self.region:tostr(),
+        }
+    else
+        return {
+            node = self:to_string(bufnr),
+            sortable_idx = self:get_sortable_idx(),
+            comment_node = self.comment_node and self.comment_node:to_string(bufnr) or nil,
+        }
+    end
 end
 
 --- Print the human-readable representation of the current Chadnode

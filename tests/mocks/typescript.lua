@@ -16,6 +16,33 @@ local node_with_comment = {
     region = Region.new(1, 1, 7, 1),
 }
 
+local middle_size = {
+    content = {
+        '/**',
+        ' * This is a comment',
+        ' */',
+        'const foo = () => {',
+        '  console.log("foo");',
+        '};',
+        '',
+        '// this is a comment',
+        '',
+        '// comment attached to the function zit',
+        'const zit = () => {',
+        '  console.log("zit");',
+        '};',
+        '',
+        '// nested comment',
+        '/**',
+        ' * This is a comment',
+        ' */',
+        'function bar() {',
+        '  console.log("bar");',
+        '}',
+    },
+    region = Region.new(8, 1, 21, 1),
+}
+
 --- @type BufferMock
 local simplest = {
     content = {
@@ -120,6 +147,7 @@ local with_nested_comments = {
 
 return {
     commented_functions = commented_functions,
+    middle_size = middle_size,
     node_with_comment = node_with_comment,
     simplest = simplest,
     with_bigger_gap = with_bigger_gap,
