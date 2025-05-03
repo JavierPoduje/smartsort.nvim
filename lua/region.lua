@@ -1,12 +1,15 @@
 --- @class Region
+---
 --- @field srow number: the start row
 --- @field scol number: the start column
 --- @field erow number: the end row
 --- @field ecol number: the end column
---- @field new fun(srow: number, scol: number, erow: number, ecol: number): Region
---- @field from_selection fun(): Region
+---
 --- @field from_node fun(node: TSNode): Region
+--- @field from_selection fun(): Region
+--- @field new fun(srow: number, scol: number, erow: number, ecol: number): Region
 --- @field print fun(self: Region)
+--- @field tostr fun(self: Region): string
 
 local Region = {}
 Region.__index = Region
@@ -36,6 +39,18 @@ end
 --- @param self Region: the region to debug
 Region.print = function(self)
     print(vim.inspect(self))
+end
+
+--- Returns a string representation of the current Region
+--- @param self Region: the region to debug
+Region.tostr = function(self)
+    return string.format(
+        "Region(%d, %d, %d, %d)",
+        self.srow,
+        self.scol,
+        self.erow,
+        self.ecol
+    )
 end
 
 --- Returns a `Region` from the current visual selection

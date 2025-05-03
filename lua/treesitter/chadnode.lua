@@ -83,7 +83,8 @@ Chadnode.debug = function(self, bufnr)
     return {
         node = self:to_string(bufnr),
         sortable_idx = self:get_sortable_idx(),
-        comment_node = self.comment_node and self.comment_node:to_string(bufnr) or nil
+        comment_node = self.comment_node and self.comment_node:to_string(bufnr) or nil,
+        region = self.region:tostr(),
     }
 end
 

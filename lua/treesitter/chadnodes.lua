@@ -1,4 +1,5 @@
 local Chadnode = require("treesitter.chadnode")
+local funcs = require("funcs")
 local Region = require("region")
 local queries = require("treesitter.queries")
 local ts_utils = require("nvim-treesitter.ts_utils")
@@ -183,18 +184,21 @@ Chadnodes.from_region = function(bufnr, region, parser)
     local cnodes = Chadnodes.new(parser)
     for child, _ in parent:iter_children() do
         -- if the node is after the last line of the visually-selected area, stop
-        if region.erow < Region.from_node(child).erow then
+        if Region.from_node(child).erow > region.erow then
             break
         end
 
-        if queries.is_supported_node_type(child:type()) then
-            local query = queries.build(parser:lang(), queries.query_by_node_type(child:type()))
-            for pattern, match, metadata in query:iter_matches(child, bufnr) do
-                cnodes:add(Chadnode.from_query_match(query, match, bufnr))
+        if Region.from_node(child).srow + 1 >= region.srow then
+            if queries.is_supported_node_type(child:type()) then
+                local query = queries.build(parser:lang(), queries.query_by_node_type(child:type()))
+                for pattern, match, metadata in query:iter_matches(child, bufnr) do
+                    local cnode = Chadnode.from_query_match(query, match, bufnr)
+                    cnodes:add(cnode)
+                end
+            else
+                local cnode = Chadnode.new(child, nil)
+                cnodes:add(cnode)
             end
-        else
-            local cnode = Chadnode.new(child, nil)
-            cnodes:add(cnode)
         end
     end
 
