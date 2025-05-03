@@ -7,8 +7,6 @@ local describe = describe
 --- @diagnostic disable-next-line: undefined-global
 local it = it
 --- @diagnostic disable-next-line: undefined-field
-local truthy = assert.is.truthy
---- @diagnostic disable-next-line: undefined-field
 local same = assert.are.same
 
 describe("chadnodes: gaps", function()
