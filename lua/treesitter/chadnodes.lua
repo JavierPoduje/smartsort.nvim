@@ -195,15 +195,9 @@ Chadnodes.from_region = function(bufnr, region, parser)
 
         if Region.from_node(child).srow + 1 >= region.srow then
             if typescript_queries.is_supported_node_type(child:type()) then
-                local block_type = child:type()
-                if block_type == "export_statement" then
-                    block_type = child:child(1):type()
-                end
-
-                local query = typescript_queries.build(parser:lang(), typescript_queries.query_by_node_type(block_type))
+                local query = typescript_queries.build(parser:lang(), typescript_queries.query_by_node(child))
                 for pattern, match, metadata in query:iter_matches(child, bufnr) do
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
-
                     if not processed_nodes[child_id] then
                         cnodes:add(cnode)
                         processed_nodes[child_id] = true

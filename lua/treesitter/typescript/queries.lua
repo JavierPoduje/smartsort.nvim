@@ -19,10 +19,17 @@ M.is_supported_node_type = function(node_type)
     return false
 end
 
---- @param node_type string: the type of the node
+--- @param node TSNode: the type of the node
 --- @return string
-M.query_by_node_type = function(node_type)
-    assert(M.is_supported_node_type(node_type), "Unsupported node type: " .. node_type)
+M.query_by_node = function(node)
+    assert(M.is_supported_node_type(node:type()), "Unsupported node type: " .. node:type())
+
+    local node_type = node:type()
+
+    -- Check if the node is an export statement. If so, get the type of the first child.
+    if node_type == "export_statement" then
+        node_type = node:child(1):type()
+    end
 
     if node_type == "function_declaration" then
         return M._function_declaration_query()
