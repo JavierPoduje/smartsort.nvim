@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-latest]
-        rev: [v0.10.0]
+        rev: [v0.11.1]
 
     steps:
       - uses: actions/checkout@v4
