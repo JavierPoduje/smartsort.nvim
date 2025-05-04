@@ -16,6 +16,23 @@ local node_with_comment = {
     region = Region.new(1, 1, 7, 1),
 }
 
+local three_interfaces = {
+    content = {
+        'export interface B {',
+        '  b: number;',
+        '}',
+        '',
+        'export interface C {',
+        '  c: boolean;',
+        '}',
+        '',
+        'interface A {',
+        '  a: string;',
+        '}',
+    },
+    region = Region.new(1, 1, 11, 1),
+}
+
 local two_classes = {
     content = {
         'class BClass {',
@@ -194,6 +211,7 @@ return {
     node_with_comment = node_with_comment,
     point_class = point_class,
     simplest = simplest,
+    three_interfaces = three_interfaces,
     two_classes = two_classes,
     with_bigger_gap = with_bigger_gap,
     with_comment = with_comment,

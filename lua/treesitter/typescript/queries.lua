@@ -32,6 +32,8 @@ M.query_by_node_type = function(node_type)
         return M._method_definition_query()
     elseif node_type == "class_declaration" then
         return M._class_declaration_query()
+    elseif node_type == "interface_declaration" then
+        return M._interface_declaration_query()
     end
 
     error("Unsupported node type: " .. node_type)
@@ -50,6 +52,17 @@ end
 M._function_declaration_query = function()
     return [[
         (function_declaration (identifier) @identifier) @block
+    ]]
+end
+
+--- Return the query for a function declaration
+--- @return string
+M._interface_declaration_query = function()
+    return [[
+        [
+           (interface_declaration (type_identifier) @identifier)
+           (export_statement (interface_declaration (type_identifier) @identifier))
+         ] @block
     ]]
 end
 

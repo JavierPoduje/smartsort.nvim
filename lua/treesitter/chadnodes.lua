@@ -182,6 +182,8 @@ Chadnodes.from_region = function(bufnr, region, parser)
         parent = root
     end
 
+    local processed_nodes = {}
+
     local cnodes = Chadnodes.new(parser)
     for child, _ in parent:iter_children() do
         -- if the node is after the last line of the visually-selected area, stop
@@ -189,16 +191,30 @@ Chadnodes.from_region = function(bufnr, region, parser)
             break
         end
 
+        local child_id = child:id()
+
         if Region.from_node(child).srow + 1 >= region.srow then
             if typescript_queries.is_supported_node_type(child:type()) then
-                local query = typescript_queries.build(parser:lang(), typescript_queries.query_by_node_type(child:type()))
+                local block_type = child:type()
+                if block_type == "export_statement" then
+                    block_type = child:child(1):type()
+                end
+
+                local query = typescript_queries.build(parser:lang(), typescript_queries.query_by_node_type(block_type))
                 for pattern, match, metadata in query:iter_matches(child, bufnr) do
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
-                    cnodes:add(cnode)
+
+                    if not processed_nodes[child_id] then
+                        cnodes:add(cnode)
+                        processed_nodes[child_id] = true
+                    end
                 end
             else
                 local cnode = Chadnode.new(child, nil)
-                cnodes:add(cnode)
+                if not processed_nodes[child_id] then
+                    cnodes:add(cnode)
+                    processed_nodes[child_id] = true
+                end
             end
         end
     end
@@ -356,7 +372,12 @@ Chadnodes._get_node_at_row = function(bufnr, row, parser)
                     return current
                 end
             end
-            current = current:parent()
+
+            if current:parent() == nil then
+                break
+            else
+                current = current:parent()
+            end
         end
 
         node_at_cursor = current
