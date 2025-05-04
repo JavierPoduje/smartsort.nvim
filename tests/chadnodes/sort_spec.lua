@@ -1,4 +1,5 @@
 local Chadnodes = require("treesitter.chadnodes")
+local lua_mocks = require("tests.mocks.lua")
 local typescript_mocks = require("tests.mocks.typescript")
 local utils = require("tests.utils")
 
@@ -10,7 +11,7 @@ local it = it
 local truthy = assert.is.truthy
 
 describe("chadnodes: sort", function()
-    it("should sort alphabetically", function()
+    it("typescript - should sort alphabetically", function()
         local mock = typescript_mocks.simplest
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
@@ -27,7 +28,53 @@ describe("chadnodes: sort", function()
         }))
     end)
 
-    it("can sort typescript classes", function()
+    it("lua - should sort alphabetically", function()
+        local mock = lua_mocks.simple
+        local bufnr, parser = utils.setup(mock.content, "lua")
+        local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+
+        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
+            {
+                node = 'M.a = function()\n    print("another guy called a")\nend',
+                sortable_idx = "a"
+            },
+            {
+                node = 'M.b = function()\n    print("this is b")\nend',
+                sortable_idx = "b"
+            }
+        }))
+    end)
+
+    it("lua - can sort variable declarations", function()
+        local mock = lua_mocks.variables
+        local bufnr, parser = utils.setup(mock.content, "lua")
+        local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+
+        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
+            {
+                node = 'local varA = "something"',
+                sortable_idx = "varA"
+            },
+            {
+                node = "--- @type boolean",
+                sortable_idx = ""
+            },
+            {
+                node = "local varB = false",
+                sortable_idx = "varB"
+            },
+            {
+                node = "--- @type string",
+                sortable_idx = ""
+            },
+            {
+                node = 'local varC = "something"',
+                sortable_idx = "varC"
+            }
+        }))
+    end)
+
+    it("typescript - can sort classes", function()
         local mock = typescript_mocks.two_classes
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
@@ -44,7 +91,7 @@ describe("chadnodes: sort", function()
         }))
     end)
 
-    it("can sort typescript interfaces", function()
+    it("typescript - can sort interfaces", function()
         local mock = typescript_mocks.three_interfaces
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
@@ -65,7 +112,7 @@ describe("chadnodes: sort", function()
         }))
     end)
 
-    it("can sort peroperties of interfaces", function()
+    it("typescript - can sort peroperties of interfaces", function()
         local mock = typescript_mocks.interface_properties
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
