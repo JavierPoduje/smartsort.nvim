@@ -1,18 +1,12 @@
 local M = {}
 
 M.sortable = {
-    "class_declaration",
-    "export_statement",
+    "assignment_statement",
     "function_declaration",
-    "interface_declaration",
-    "lexical_declaration",
-    "method_definition",
-    "property_signature",
 }
 
 M.non_sortable = {
     "comment",
-    -- "arrow_function",
 }
 
 M.sortable_and_non_sortable = function()

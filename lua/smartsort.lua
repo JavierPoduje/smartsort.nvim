@@ -8,8 +8,6 @@ local Chadnodes = require("treesitter.chadnodes")
 
 local M = {}
 
-M.setup = function() end
-
 --- Sort the selected text
 --- @param args Args: the arguments to use
 M.sort = function(args)
@@ -109,7 +107,6 @@ end
 --- @param words string[]: the words to build the sorted words of
 --- @param separator string: the separator to use between words
 --- @return string: the sorted words
----
 M._build_sorted_words = function(spaces_between_words, words, separator)
     assert(
         #words == #spaces_between_words + 1,
