@@ -27,6 +27,23 @@ describe("chadnodes: sort", function()
         }))
     end)
 
+    it("can sort typescript classes", function()
+        local mock = typescript_mocks.two_classes
+        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+
+        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
+            {
+                node = "class AClass {\n  a: number;\n  constructor(x: number, y: number) {\n    this.a = x;\n  }\n}",
+                sortable_idx = "AClass"
+            },
+            {
+                node = "class BClass {\n  b: number;\n  constructor(b: number) {\n    this.b = b;\n  }\n}",
+                sortable_idx = "BClass"
+            },
+        }))
+    end)
+
     it("should keep non-sortable nodes in their place", function()
         local mock = typescript_mocks.with_comment
         local bufnr, parser = utils.setup(mock.content, "typescript")

@@ -30,6 +30,8 @@ M.query_by_node_type = function(node_type)
         return M._lexical_declaration_query()
     elseif node_type == "method_definition" then
         return M._method_definition_query()
+    elseif node_type == "class_declaration" then
+        return M._class_declaration_query()
     end
 
     error("Unsupported node type: " .. node_type)
@@ -54,6 +56,14 @@ end
 M._method_definition_query = function()
     return [[
         (method_definition (property_identifier) @identifier) @block
+    ]]
+end
+
+--- Return the query for a class_declaration
+--- @return string
+M._class_declaration_query = function()
+    return [[
+        (class_declaration (type_identifier) @identifier) @block
     ]]
 end
 

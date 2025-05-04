@@ -16,6 +16,25 @@ local node_with_comment = {
     region = Region.new(1, 1, 7, 1),
 }
 
+local two_classes = {
+    content = {
+        'class BClass {',
+        '  b: number;',
+        '  constructor(b: number) {',
+        '    this.b = b;',
+        '  }',
+        '}',
+        '',
+        'class AClass {',
+        '  a: number;',
+        '  constructor(x: number, y: number) {',
+        '    this.a = x;',
+        '  }',
+        '}',
+    },
+    region = Region.new(1, 1, 13, 1),
+}
+
 local point_class = {
     content = {
         'class Point {',
@@ -175,6 +194,7 @@ return {
     node_with_comment = node_with_comment,
     point_class = point_class,
     simplest = simplest,
+    two_classes = two_classes,
     with_bigger_gap = with_bigger_gap,
     with_comment = with_comment,
     with_nested_comments = with_nested_comments,

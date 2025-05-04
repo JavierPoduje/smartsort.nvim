@@ -1,6 +1,6 @@
 local Chadnode = require("treesitter.chadnode")
 local Region = require("region")
-local queries = require("treesitter.queries")
+local typescript_queries = require("treesitter.typescript.queries")
 local ts_utils = require("nvim-treesitter.ts_utils")
 
 local typescript_nodes = require("treesitter.typescript.node_types")
@@ -190,8 +190,8 @@ Chadnodes.from_region = function(bufnr, region, parser)
         end
 
         if Region.from_node(child).srow + 1 >= region.srow then
-            if queries.is_supported_node_type(child:type()) then
-                local query = queries.build(parser:lang(), queries.query_by_node_type(child:type()))
+            if typescript_queries.is_supported_node_type(child:type()) then
+                local query = typescript_queries.build(parser:lang(), typescript_queries.query_by_node_type(child:type()))
                 for pattern, match, metadata in query:iter_matches(child, bufnr) do
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
                     cnodes:add(cnode)
@@ -202,8 +202,6 @@ Chadnodes.from_region = function(bufnr, region, parser)
             end
         end
     end
-
-    cnodes:print(bufnr)
 
     return cnodes, parent
 end

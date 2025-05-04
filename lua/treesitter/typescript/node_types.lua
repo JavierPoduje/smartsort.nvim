@@ -4,7 +4,7 @@ M.sortable = {
     "function_declaration",
     "lexical_declaration",
     "method_definition",
-    -- "class_declaration",
+    "class_declaration",
     -- "statement_block",
     -- "arrow_function"
 }
