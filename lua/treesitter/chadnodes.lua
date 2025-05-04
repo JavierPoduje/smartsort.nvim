@@ -1,5 +1,6 @@
 local Chadnode = require("treesitter.chadnode")
 local Region = require("region")
+local funcs = require("funcs")
 local typescript_queries = require("treesitter.typescript.queries")
 local ts_utils = require("nvim-treesitter.ts_utils")
 
@@ -21,7 +22,7 @@ local typescript_nodes = require("treesitter.typescript.node_types")
 --- @field public get fun(self: Chadnodes): Chadnode[]
 --- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
---- @field public merge_sortable_nodes_with_their_comments fun(self: Chadnodes): Chadnodes
+--- @field public merge_sortable_nodes_with_adjacent_non_sortable_nodes fun(self: Chadnodes): Chadnodes
 --- @field public new fun(parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
 --- @field public print fun(self: Chadnodes, bufnr: number)
@@ -94,10 +95,10 @@ Chadnodes.gaps = function(self)
     return gaps
 end
 
---- Merge the sortable nodes with their comments
+--- Merge the sortable nodes with their adjacent non-sortable nodes. currently, it only works with comments and the final ";".
 --- @param self Chadnodes
 --- @return Chadnodes
-Chadnodes.merge_sortable_nodes_with_their_comments = function(self)
+Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self)
     local gaps = self:gaps()
     local cnodes = Chadnodes.new(self.parser)
 
@@ -105,17 +106,29 @@ Chadnodes.merge_sortable_nodes_with_their_comments = function(self)
         if idx > #gaps then
             local current_node = self:node_by_idx(idx)
             assert(current_node ~= nil, "Chadnode not found")
-            cnodes:add(current_node)
+
+            if funcs.is_special_end_char(current_node:type()) then
+                local prev_node = self:node_by_idx(idx - 1)
+                if prev_node ~= nil then
+                    prev_node:set_end_character(current_node:type())
+                end
+            else
+                cnodes:add(current_node)
+            end
+
             break
         end
 
         local gap = gaps[idx]
         local current_node = self:node_by_idx(idx)
         local next_node = self:node_by_idx(idx + 1)
+        local prev_node = self:node_by_idx(idx - 1)
 
         assert(current_node ~= nil, "Chadnode not found")
 
-        if gap > 0 then
+        if gap == 0 and funcs.is_special_end_char(current_node:type()) and prev_node ~= nil then
+            prev_node:set_end_character(current_node:type())
+        elseif gap > 0 then
             cnodes:add(current_node)
         elseif current_node:type() == 'comment' and next_node ~= nil then
             next_node:set_comment(current_node)
@@ -196,7 +209,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
         if Region.from_node(child).srow + 1 >= region.srow then
             if typescript_queries.is_supported_node_type(child:type()) then
                 local query = typescript_queries.build(parser:lang(), typescript_queries.query_by_node(child))
-                for pattern, match, metadata in query:iter_matches(child, bufnr) do
+                for pattern, match, metadata in query:iter_matches(child, bufnr, child:start(), node:end_(), { max_start_depth = 1 }) do
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
                     if not processed_nodes[child_id] then
                         cnodes:add(cnode)

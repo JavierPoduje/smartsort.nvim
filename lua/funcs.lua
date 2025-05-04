@@ -7,6 +7,37 @@ M.is_max_col = function(col)
     return col == vim.v.maxcol
 end
 
+M.is_special_end_char = function(ch)
+    local end_chars = { ";" }
+    for _, end_char in ipairs(end_chars) do
+        if ch == end_char then
+            return true
+        end
+    end
+    return false
+end
+
+--- Determines if a node is a direct child of a parent node in the tree structure
+--- @param child TSNode: the child node to check
+--- @param parent TSNode: the parent node to check against
+--- @return boolean: true if the child is a direct child of the parent
+M.is_direct_child = function(child, parent)
+    -- Check if the immediate parent of the child is the parent we're checking against
+    -- print("parent", M.node_to_string(parent))
+    if child:parent():id() == parent:id() then
+        return true
+    end
+
+    -- Get all direct children of the parent
+    local direct_children = {}
+    for direct_child, _ in parent:iter_children() do
+        direct_children[direct_child:id()] = true
+    end
+
+    -- Check if the child is in the list of direct children
+    return direct_children[child:id()] == true
+end
+
 --- Returns a sorted list of keys from a table
 --- @param tbl table<string, any>
 M.sorted_keys = function(tbl)

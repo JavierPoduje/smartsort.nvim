@@ -66,7 +66,7 @@ end
 M.sort_lines = function(region)
     local parser = parsers.get_parser()
     local cnodes = Chadnodes.from_region(0, region, parser)
-    local merged_cnodes = cnodes:merge_sortable_nodes_with_their_comments()
+    local merged_cnodes = cnodes:merge_sortable_nodes_with_adjacent_non_sortable_nodes()
     local gaps = merged_cnodes:gaps()
     local sorted_cnodes = merged_cnodes:sort()
 

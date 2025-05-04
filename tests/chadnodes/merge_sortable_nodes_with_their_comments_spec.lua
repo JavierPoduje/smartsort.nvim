@@ -9,12 +9,12 @@ local it = it
 --- @diagnostic disable-next-line: undefined-field
 local truthy = assert.is.truthy
 
-describe("chadnodes: merge_sortable_nodes_with_their_comments", function()
-    it("merge_sortable_nodes_with_their_comments", function()
+describe("chadnodes: merge_sortable_nodes_with_adjacent_non_sortable_nodes", function()
+    it("merge_sortable_nodes_with_adjacent_non_sortable_nodes", function()
         local mock = typescript_mocks.commented_functions
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
-        truthy(vim.deep_equal(cnodes:merge_sortable_nodes_with_their_comments():debug(bufnr),
+        truthy(vim.deep_equal(cnodes:merge_sortable_nodes_with_adjacent_non_sortable_nodes():debug(bufnr),
             { {
                 comment_node = "/**\n * This is a comment\n */",
                 node = 'const foo = () => {\n  console.log("foo");\n};',

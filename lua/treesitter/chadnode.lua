@@ -7,8 +7,9 @@ local f = require("funcs")
 --- @field public node TSNode: the node
 --- @field public region Region: the region of the node
 --- @field public sortable_idx string | nil: the index from which the node can be sorted
+--- @field public end_character string | nil: the end character of the node
 ---
---- @field public debug fun(self: Chadnode, bufnr: number): table<any>
+--- @field public debug fun(self: Chadnode, bufnr: number, opts: table | nil): table<any>
 --- @field public from_query_match fun(query: vim.treesitter.Query, match: table<integer, TSNode>, bufnr: number): Chadnode
 --- @field public gap fun(self: Chadnode, other: Chadnode): number
 --- @field public get fun(self: Chadnode): TSNode
@@ -17,11 +18,13 @@ local f = require("funcs")
 --- @field public is_sortable fun(self: Chadnode): boolean
 --- @field public new fun(node: TSNode, sortable_idx: string | nil): Chadnode
 --- @field public next_sibling fun(self: Chadnode): Chadnode
---- @field public print fun(self: Chadnode, bufnr: number)
+--- @field public print fun(self: Chadnode, bufnr: number, opts: table | nil)
 --- @field public set_comment fun(self: Chadnode, comment: Chadnode)
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public to_string_preserve_indent fun(self: Chadnode, bufnr: number, target_row: number): string
 --- @field public type fun(self: Chadnode): string
+--- @field public set_end_character fun(self: Chadnode, character: string)
+--- @field public parent_node fun(self: Chadnode): TSNode | nil
 
 local Chadnode = {}
 Chadnode.__index = Chadnode
@@ -29,7 +32,8 @@ Chadnode.__index = Chadnode
 --- Create a new Chadnode
 --- @param node TSNode: the node
 --- @param sortable_idx string | nil: the index from which the node can be sorted
-function Chadnode.new(node, sortable_idx)
+--- @param end_character string | nil: the end character of the node
+function Chadnode.new(node, sortable_idx, end_character)
     local self = setmetatable({}, Chadnode)
 
     assert(node ~= nil, "Can't create a Chadnode from this nil POS")
@@ -37,10 +41,28 @@ function Chadnode.new(node, sortable_idx)
     local srow, scol, erow, ecol = node:range()
 
     self.comment_node = nil
+    self.end_character = nil
     self.node = node
     self.region = Region.new(srow, scol, erow, ecol)
     self.sortable_idx = sortable_idx or nil
     return self
+end
+
+--- Get the parent node of the current node
+--- @param self Chadnode: the node
+--- @return TSNode | nil: the parent node
+Chadnode.parent_node = function(self)
+    if self.node == nil then
+        return nil
+    end
+    return self.node:parent()
+end
+
+--- Create a new Chadnode from a query match
+--- @param self Chadnode: the node
+--- @param character string: the end character
+Chadnode.set_end_character = function(self, character)
+    self.end_character = character
 end
 
 --- Create a new Chadnode from a query match
@@ -52,10 +74,10 @@ Chadnode.from_query_match = function(query, match, bufnr)
     local matched_node = nil
     -- @type string
     local matched_id = nil
+    -- @type string
+    local end_character = nil
 
     for id, nodes in pairs(match) do
-        -- this is the name of the capture!!!!
-        -- the one that we defined with the '@' sign
         local capture_name = query.captures[id]
         if capture_name == "identifier" then
             matched_id = vim.treesitter.get_node_text(nodes[1], bufnr)
@@ -67,7 +89,7 @@ Chadnode.from_query_match = function(query, match, bufnr)
     assert(matched_node ~= nil, "The whole node can't be nil")
     assert(matched_id ~= nil, "The identifier can't be nil")
 
-    return Chadnode.new(matched_node, matched_id)
+    return Chadnode.new(matched_node, matched_id, end_character)
 end
 
 --- Set the comment node
@@ -79,7 +101,7 @@ end
 
 --- @param self Chadnode
 --- @param bufnr number
---- @optional opts table
+--- @param opts table | nil
 Chadnode.debug = function(self, bufnr, opts)
     opts = opts or {}
     local include_region = opts.include_region or false
@@ -102,8 +124,9 @@ end
 --- Print the human-readable representation of the current Chadnode
 --- @param self Chadnode: the node
 --- @param bufnr number: the buffer number
-Chadnode.print = function(self, bufnr)
-    print(vim.inspect(self:debug(bufnr)))
+--- @param opts table | nil
+Chadnode.print = function(self, bufnr, opts)
+    print(vim.inspect(self:debug(bufnr, opts)))
 end
 
 --- Get the node
@@ -140,10 +163,18 @@ Chadnode.to_string_preserve_indent = function(self, bufnr, target_row)
         table.insert(stringified_lines, stringified_comment)
     end
 
-    for _, line in ipairs(lines) do
+    for idx, line in ipairs(lines) do
         local relative_indent = line:match("^" .. original_indent .. "(%s*)")
-        table.insert(stringified_lines, target_indent .. (relative_indent or "") .. line:gsub("^%s*", ""))
+
+        local is_last_line = idx == #lines
+        if is_last_line and self.end_character ~= nil then
+            table.insert(stringified_lines,
+                target_indent .. (relative_indent or "") .. line:gsub("^%s*", "") .. self.end_character)
+        else
+            table.insert(stringified_lines, target_indent .. (relative_indent or "") .. line:gsub("^%s*", ""))
+        end
     end
+
 
     return table.concat(stringified_lines, "\n")
 end
@@ -165,13 +196,17 @@ Chadnode.next_sibling = function(self)
     return new_chad_node
 end
 
---- Calculate the "gap" between two nodes, where the gap is the number of rows between them.
+--- Calculate the vertical gap between two nodes, where the gap is the number of rows between them.
 --- @param self Chadnode: the first node
 --- @param other Chadnode: the second node
 --- @return number: the gap between the two nodes
 Chadnode.gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
-    assert(self.region.erow < other.region.srow, "Node 1 is not before Node 2 or they're overlaping")
+    assert(self.region.erow <= other.region.srow, "Node 1 is not before Node 2 or they're overlaping")
+
+    if self.region.erow == other.region.srow then
+        return 0
+    end
 
     -- If the other node has a comment node, we need to compare the other node's comment node to
     -- get the empty spaces

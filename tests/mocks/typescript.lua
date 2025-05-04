@@ -16,6 +16,26 @@ local node_with_comment = {
     region = Region.new(1, 1, 7, 1),
 }
 
+local interface_properties = {
+    content = {
+        'export interface SomeInterface {',
+        '  d: {',
+        '    baz: string;',
+        '    qux: number;',
+        '    extra: {',
+        '      zig: string;',
+        '    };',
+        '  };',
+        '  c: {',
+        '    foo: string;',
+        '    bar: boolean;',
+        '  };',
+        '  a: number;',
+        '}',
+    },
+    region = Region.new(2, 1, 13, 12),
+}
+
 local three_interfaces = {
     content = {
         'export interface B {',
@@ -207,6 +227,7 @@ local with_nested_comments = {
 
 return {
     commented_functions = commented_functions,
+    interface_properties = interface_properties,
     middle_size = middle_size,
     node_with_comment = node_with_comment,
     point_class = point_class,

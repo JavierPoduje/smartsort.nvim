@@ -41,9 +41,17 @@ M.query_by_node = function(node)
         return M._class_declaration_query()
     elseif node_type == "interface_declaration" then
         return M._interface_declaration_query()
+    elseif node_type == "property_signature" then
+        return M._property_signature_query()
     end
 
     error("Unsupported node type: " .. node_type)
+end
+
+M._property_signature_query = function()
+    return [[
+        (property_signature (property_identifier) @identifier) @block
+    ]]
 end
 
 --- Return the query for a lexical declaration

@@ -7,6 +7,7 @@ M.sortable = {
     "interface_declaration",
     "lexical_declaration",
     "method_definition",
+    "property_signature",
     -- "arrow_function"
 }
 

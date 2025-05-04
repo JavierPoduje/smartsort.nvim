@@ -65,6 +65,29 @@ describe("chadnodes: sort", function()
         }))
     end)
 
+    it("can sort peroperties of interfaces", function()
+        local mock = typescript_mocks.interface_properties
+        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+
+        cnodes:print(bufnr)
+
+        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
+            {
+                node = "interface A {\n  a: string;\n}",
+                sortable_idx = "A"
+            },
+            {
+                node = "export interface B {\n  b: number;\n}",
+                sortable_idx = "B"
+            },
+            {
+                node = "export interface C {\n  c: boolean;\n}",
+                sortable_idx = "C"
+            },
+        }))
+    end)
+
     it("should keep non-sortable nodes in their place", function()
         local mock = typescript_mocks.with_comment
         local bufnr, parser = utils.setup(mock.content, "typescript")
