@@ -9,6 +9,6 @@ export interface SomeInterface {
   b: {
     foo: string;
     bar: boolean;
-  };
+  }
   a: number;
 }

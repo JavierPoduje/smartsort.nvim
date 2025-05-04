@@ -1,6 +1,6 @@
 #!/bin/bash
 
-lang_files=(typescript,vue,php)
+languages=(typescript vue)
 
 for lang in "${languages[@]}"
 do
@@ -9,4 +9,3 @@ do
         -u scripts/ci.vim \
         -c "TSInstallSync $lang" -c "q"
 done
-

@@ -70,20 +70,26 @@ describe("chadnodes: sort", function()
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        cnodes:print(bufnr)
-
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
-                node = "interface A {\n  a: string;\n}",
-                sortable_idx = "A"
+                node = "a: number",
+                sortable_idx = "a"
             },
             {
-                node = "export interface B {\n  b: number;\n}",
-                sortable_idx = "B"
+                node = ";",
+                sortable_idx = ""
             },
             {
-                node = "export interface C {\n  c: boolean;\n}",
-                sortable_idx = "C"
+                node = "b: {\n    foo: string;\n    bar: boolean;\n  }",
+                sortable_idx = "b"
+            },
+            {
+                node = "c: {\n    baz: string;\n    qux: number;\n    extra: {\n      zig: string;\n    };\n  }",
+                sortable_idx = "c"
+            },
+            {
+                node = ";",
+                sortable_idx = ""
             },
         }))
     end)
