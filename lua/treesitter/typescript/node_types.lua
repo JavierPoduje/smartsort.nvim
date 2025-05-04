@@ -15,6 +15,8 @@ M.non_sortable = {
     -- "arrow_function",
 }
 
+--- Returns a list of the sortable and non-sortable nodes_types
+--- @return table: a list of node types
 M.sortable_and_non_sortable = function()
     local nodes = {}
     for _, node in ipairs(M.sortable) do

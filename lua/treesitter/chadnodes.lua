@@ -1,12 +1,8 @@
 local Chadnode = require("treesitter.chadnode")
+local Chadquery = require("treesitter.chadquery")
 local Region = require("region")
 local funcs = require("funcs")
-local lua_queries = require("treesitter.lua.queries")
 local ts_utils = require("nvim-treesitter.ts_utils")
-local typescript_queries = require("treesitter.typescript.queries")
-
-local lua_nodes = require("treesitter.lua.node_types")
-local typescript_nodes = require("treesitter.typescript.node_types")
 
 --- @class Chadnodes
 ---
@@ -209,39 +205,28 @@ Chadnodes.from_region = function(bufnr, region, parser)
         local child_id = child:id()
 
         if Region.from_node(child).srow + 1 >= region.srow then
-            if parser:lang() == "typescript" then
-                if typescript_queries.is_supported_node_type(child:type()) then
-                    local query = typescript_queries.build(parser:lang(), typescript_queries.query_by_node(child))
-                    for pattern, match, metadata in query:iter_matches(child, bufnr, child:start(), node:end_(), { max_start_depth = 1 }) do
-                        local cnode = Chadnode.from_query_match(query, match, bufnr)
-                        if not processed_nodes[child_id] then
-                            cnodes:add(cnode)
-                            processed_nodes[child_id] = true
-                        end
-                    end
-                else
-                    local cnode = Chadnode.new(child, nil)
+            if Chadquery.is_supported_node_type(parser:lang(), child) then
+                local query = Chadquery.build_query(parser:lang(), child)
+                local query_matches = query:iter_matches(
+                    child,
+                    bufnr,
+                    child:start(),
+                    node:end_(),
+                    { max_start_depth = 1 }
+                )
+
+                for pattern, match, metadata in query_matches do
+                    local cnode = Chadnode.from_query_match(query, match, bufnr)
                     if not processed_nodes[child_id] then
                         cnodes:add(cnode)
                         processed_nodes[child_id] = true
                     end
                 end
-            elseif parser:lang() == "lua" then
-                if lua_queries.is_supported_node_type(child:type()) then
-                    local query = lua_queries.build(parser:lang(), lua_queries.query_by_node(child))
-                    for pattern, match, metadata in query:iter_matches(child, bufnr, child:start(), node:end_(), { max_start_depth = 1 }) do
-                        local cnode = Chadnode.from_query_match(query, match, bufnr)
-                        if not processed_nodes[child_id] then
-                            cnodes:add(cnode)
-                            processed_nodes[child_id] = true
-                        end
-                    end
-                else
-                    local cnode = Chadnode.new(child, nil)
-                    if not processed_nodes[child_id] then
-                        cnodes:add(cnode)
-                        processed_nodes[child_id] = true
-                    end
+            else
+                local cnode = Chadnode.new(child, nil)
+                if not processed_nodes[child_id] then
+                    cnodes:add(cnode)
+                    processed_nodes[child_id] = true
                 end
             end
         end
@@ -383,14 +368,7 @@ Chadnodes._get_node_at_row = function(bufnr, row, parser)
     if node_at_cursor then
         --- @type TSNode | nil
         local current = node_at_cursor
-        local block_types = {}
-
-        if parser:lang() == "typescript" then
-            block_types = typescript_nodes.sortable_and_non_sortable()
-        elseif parser:lang() == "lua" then
-            block_types = lua_nodes.sortable_and_non_sortable()
-        end
-
+        local block_types = Chadquery.sort_and_non_sortable_nodes(parser:lang())
         assert(#block_types > 0, "No block types found")
 
         while current do
