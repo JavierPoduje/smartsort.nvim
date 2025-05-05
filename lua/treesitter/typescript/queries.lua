@@ -95,12 +95,4 @@ M._class_declaration_query = function()
     ]]
 end
 
---- @param lang string: the language to query
---- @param query_str string: the query string
---- @return vim.treesitter.Query
-M.build = function(lang, query_str)
-    local query = vim.treesitter.query.parse(lang, query_str)
-    return query
-end
-
 return M
