@@ -66,7 +66,10 @@ end
 --- @return string
 M._function_declaration_query = function()
     return [[
-        (function_declaration (identifier) @identifier) @block
+        [
+          (export_statement (function_declaration (identifier) @identifier)) @block
+          (function_declaration (identifier) @identifier) @block
+        ]
     ]]
 end
 
