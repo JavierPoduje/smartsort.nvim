@@ -16,7 +16,7 @@ M.sort = function(args)
     if region.srow == region.erow then
         M.sort_single_line(region, args)
     else
-        M.sort_lines(region)
+        M.sort_multiple_lines(region)
     end
 end
 
@@ -61,7 +61,7 @@ end
 
 --- Sort the selected lines
 --- @param region Region: the region to sort
-M.sort_lines = function(region)
+M.sort_multiple_lines = function(region)
     local parser = parsers.get_parser()
     local cnodes = Chadnodes.from_region(0, region, parser)
     local merged_cnodes = cnodes:merge_sortable_nodes_with_adjacent_non_sortable_nodes()

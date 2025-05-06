@@ -1,13 +1,12 @@
 local M = {}
 
 M.sortable = {
-    "assignment_statement",
-    "function_declaration",
-    "variable_declaration",
+    "rule_set",
 }
 
 M.non_sortable = {
     "comment",
+    "single_line_comment",
 }
 
 --- @param node_type string: the node type
@@ -33,3 +32,4 @@ M.sortable_and_non_sortable = function()
 end
 
 return M
+

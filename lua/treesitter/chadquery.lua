@@ -1,12 +1,14 @@
-local typescript_nodes = require("treesitter.typescript.node_types")
-local typescript_queries = require("treesitter.typescript.queries")
+local css_nodes = require("treesitter.css.node_types")
+local css_queries = require("treesitter.css.queries")
 
 local lua_nodes = require("treesitter.lua.node_types")
 local lua_queries = require("treesitter.lua.queries")
 
-local css_nodes = require("treesitter.css.node_types")
-local css_queries = require("treesitter.css.queries")
+local scss_nodes = require("treesitter.scss.node_types")
+local scss_queries = require("treesitter.scss.queries")
 
+local typescript_nodes = require("treesitter.typescript.node_types")
+local typescript_queries = require("treesitter.typescript.queries")
 
 --- @class Chadquery
 ---
@@ -27,7 +29,13 @@ Chadquery.__index = Chadquery
 --- @param lang string: the language to query
 --- @param node TSNode: the node
 Chadquery.build_query = function(lang, node)
-    assert(lang == "typescript" or lang == "lua" or lang == "css", "Unsupported language: " .. lang)
+    assert(
+        lang == "typescript" or
+        lang == "lua" or
+        lang == "css" or
+        lang == "scss",
+        "Unsupported language: " .. lang
+    )
     local query_by_node_callback = Chadquery._get_query_by_node_callback(lang)
     local query_str = query_by_node_callback(node)
     assert(query_str ~= nil, "query_str cannot be nil")
@@ -43,10 +51,33 @@ Chadquery.is_supported_node_type = function(lang, node)
     return Chadquery._get_is_supported_node_type_callback(lang)(node:type())
 end
 
+--- @param lang string: the language to query
+--- @param node_type string: the node type
+--- @return boolean: true if the node type can be linked to another sortable node in the given
+--- language, false otherwise.
+Chadquery.is_linkable = function(lang, node_type)
+    if lang == "typescript" then
+        return typescript_nodes.is_linkable(node_type)
+    elseif lang == "lua" then
+        return lua_nodes.is_linkable(node_type)
+    elseif lang == "css" then
+        return css_nodes.is_linkable(node_type)
+    elseif lang == "scss" then
+        return scss_nodes.is_linkable(node_type)
+    end
+    error("Unsupported language: " .. lang)
+end
+
 --- Returns a list of the sortable and non-sortable nodes_types for the given language
 --- @return table: a list of node types
 Chadquery.sort_and_non_sortable_nodes = function(lang)
-    assert(lang == "typescript" or lang == "lua" or lang == "css", "Unsupported language: " .. lang)
+    assert(
+        lang == "typescript" or
+        lang == "lua" or
+        lang == "css" or
+        lang == "scss",
+        "Unsupported language: " .. lang
+    )
     return Chadquery._get_sortable_and_non_sortable_callback(lang)()
 end
 
@@ -60,6 +91,8 @@ Chadquery._get_sortable_and_non_sortable_callback = function(lang)
         return lua_nodes.sortable_and_non_sortable
     elseif lang == "css" then
         return css_nodes.sortable_and_non_sortable
+    elseif lang == "scss" then
+        return scss_nodes.sortable_and_non_sortable
     end
     error("Unsupported language: " .. lang)
 end
@@ -74,6 +107,8 @@ Chadquery._get_is_supported_node_type_callback = function(lang)
         return lua_queries.is_supported_node_type
     elseif lang == "css" then
         return css_queries.is_supported_node_type
+    elseif lang == "scss" then
+        return scss_queries.is_supported_node_type
     end
 
     error("Unsupported language: " .. lang)
@@ -89,6 +124,8 @@ Chadquery._get_query_by_node_callback = function(lang)
         return lua_queries.query_by_node
     elseif lang == "css" then
         return css_queries.query_by_node
+    elseif lang == "scss" then
+        return scss_queries.query_by_node
     end
 
     error("Unsupported language: " .. lang)
