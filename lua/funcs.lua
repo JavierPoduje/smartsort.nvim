@@ -1,60 +1,5 @@
 local M = {}
 
---- Check if the column is the max column
----
---- @return boolean
-M.is_max_col = function(col)
-    return col == vim.v.maxcol
-end
-
-M.is_special_end_char = function(ch)
-    local end_chars = { ";" }
-    for _, end_char in ipairs(end_chars) do
-        if ch == end_char then
-            return true
-        end
-    end
-    return false
-end
-
---- Determines if a node is a direct child of a parent node in the tree structure
---- @param child TSNode: the child node to check
---- @param parent TSNode: the parent node to check against
---- @return boolean: true if the child is a direct child of the parent
-M.is_direct_child = function(child, parent)
-    -- Check if the immediate parent of the child is the parent we're checking against
-    -- print("parent", M.node_to_string(parent))
-    if child:parent():id() == parent:id() then
-        return true
-    end
-
-    -- Get all direct children of the parent
-    local direct_children = {}
-    for direct_child, _ in parent:iter_children() do
-        direct_children[direct_child:id()] = true
-    end
-
-    -- Check if the child is in the list of direct children
-    return direct_children[child:id()] == true
-end
-
---- Returns a sorted list of keys from a table
---- @param tbl table<string, any>
-M.sorted_keys = function(tbl)
-    local keys = {}
-    local idx = 1
-    for key in pairs(tbl) do
-        keys[idx] = key
-        idx = idx + 1
-    end
-    table.sort(keys)
-    return keys
-end
-
-M.bool2str = function(bool)
-    return bool and "true" or "false"
-end
-
 --- Check if a table contains a key
 ---
 --- @param tbl table
@@ -62,6 +7,24 @@ end
 --- @return boolean
 M.contains = function(tbl, key)
     return tbl[key] ~= nil
+end
+
+--- Get the indent of a line (zero-based)
+--- @param bufnr number: the buffer number
+--- @param row number: the row to get the indent of
+M.get_line_indent = function(bufnr, row)
+    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+    return line:match("^%s*")
+end
+
+--- @param node TSNode
+--- @return TSNode
+M.get_node = function(node)
+    return M.if_else(
+        M.contains(node, 2),
+        function() return node[2] end,
+        function() return node[4] end
+    )
 end
 
 --- Given a predicate, return the first value if true, else the second value
@@ -77,47 +40,21 @@ M.if_else = function(predicate, if_true, if_false)
     end
 end
 
-M.repeat_str = function(str, times)
-    local result = ""
-    for _ = 1, times do
-        result = result .. str
+--- Check if the column is the max column
+---
+--- @return boolean
+M.is_max_col = function(col)
+    return col == vim.v.maxcol
+end
+
+M.is_special_end_char = function(ch)
+    local end_chars = { ";" }
+    for _, end_char in ipairs(end_chars) do
+        if ch == end_char then
+            return true
+        end
     end
-    return result
-end
-
---- Return the string representation of a node
---- @param node TSNode
---- @return string
-M.node_to_string = function(node)
-    return vim.treesitter.get_node_text(node, 0)
-end
-
---- @param node TSNode
---- @return string
-M.get_function_name = function(node)
-    return M.if_else(
-        M.contains(node, 1),
-        function() return vim.treesitter.get_node_text(node[1], 0) end,
-        function() return vim.treesitter.get_node_text(node[3], 0) end
-    )
-end
-
---- @param node TSNode
---- @return TSNode
-M.get_node = function(node)
-    return M.if_else(
-        M.contains(node, 2),
-        function() return node[2] end,
-        function() return node[4] end
-    )
-end
-
---- Get the indent of a line (zero-based)
---- @param bufnr number: the buffer number
---- @param row number: the row to get the indent of
-M.get_line_indent = function(bufnr, row)
-    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
-    return line:match("^%s*")
+    return false
 end
 
 return M
