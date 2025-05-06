@@ -67,22 +67,7 @@ M.sort_lines = function(region)
     local merged_cnodes = cnodes:merge_sortable_nodes_with_adjacent_non_sortable_nodes()
     local gaps = merged_cnodes:gaps()
     local sorted_cnodes = merged_cnodes:sort()
-
-    local sorted_nodes_with_gaps = {}
-    for idx, cnode in ipairs(sorted_cnodes.nodes) do
-        local cnode_str = cnode:to_string_preserve_indent(0, cnode.region.srow)
-        -- add the node to the table line by line
-        for _, line in ipairs(vim.fn.split(cnode_str, "\n")) do
-            table.insert(sorted_nodes_with_gaps, line)
-        end
-        -- add the gap, if any
-        if idx <= #gaps then
-            for _ = 1, gaps[idx] do
-                table.insert(sorted_nodes_with_gaps, "")
-            end
-        end
-    end
-
+    local sorted_nodes_with_gaps = sorted_cnodes:stringify_into_table(gaps)
     vim.api.nvim_buf_set_lines(0, region.srow - 1, region.erow, true, sorted_nodes_with_gaps)
 end
 

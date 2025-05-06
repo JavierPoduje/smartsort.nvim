@@ -26,6 +26,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public print fun(self: Chadnodes, bufnr: number)
 --- @field public sort fun(self: Chadnodes): Chadnodes
 --- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
+--- @field public stringify_into_table fun(self: Chadnodes, gaps: number[]): string[]
 ---
 --- @field private _cnodes_by_idx fun(cnodes: Chadnode[]): table<string, Chadnode>
 --- @field private _get_idxs fun(cnodes: Chadnode[]): string[]
@@ -54,6 +55,28 @@ Chadnodes.from_chadnodes = function(parser, cnodes)
     self.parser = parser
     self.container_node = self._get_container_node(parser)
     return self
+end
+
+--- Return a list of strings where each item is a line of the string representation of the nodes.
+--- @param self Chadnodes
+--- @param gaps number[]: the gaps between the nodes
+--- @return string[]: the string representation of the nodes
+Chadnodes.stringify_into_table = function(self, gaps)
+    local nodes_as_str_table = {}
+    for idx, cnode in ipairs(self.nodes) do
+        local cnode_str = cnode:to_string_preserve_indent(0, cnode.region.srow)
+        -- add the node to the table line by line
+        for _, line in ipairs(vim.fn.split(cnode_str, "\n")) do
+            table.insert(nodes_as_str_table, line)
+        end
+        -- add the gap, if any
+        if idx <= #gaps then
+            for _ = 1, gaps[idx] do
+                table.insert(nodes_as_str_table, "")
+            end
+        end
+    end
+    return nodes_as_str_table
 end
 
 --- Return a human-readable representation of the current Chadnodes
