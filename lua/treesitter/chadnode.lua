@@ -1,9 +1,10 @@
 local Region = require('region')
 local f = require("funcs")
 
+
 --- @class Chadnode
 ---
---- @field public comment_node Chadnode: the comment node. This is used to store the comment node that belongs to the node
+--- @field public previous Chadnode: The previous node works as "attached" to the current node. So, it's not sortable by itself. It's more like a companion to the current node.
 --- @field public node TSNode: the node
 --- @field public region Region: the region of the node
 --- @field public sortable_idx string | nil: the index from which the node can be sorted
@@ -18,13 +19,13 @@ local f = require("funcs")
 --- @field public is_sortable fun(self: Chadnode): boolean
 --- @field public new fun(node: TSNode, sortable_idx: string | nil): Chadnode
 --- @field public next_sibling fun(self: Chadnode): Chadnode
+--- @field public parent_node fun(self: Chadnode): TSNode | nil
 --- @field public print fun(self: Chadnode, bufnr: number, opts: table | nil)
---- @field public set_comment fun(self: Chadnode, comment: Chadnode)
+--- @field public set_end_character fun(self: Chadnode, character: string)
+--- @field public set_previous fun(self: Chadnode, previous_cnode: Chadnode)
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public to_string_preserve_indent fun(self: Chadnode, bufnr: number, target_row: number): string
 --- @field public type fun(self: Chadnode): string
---- @field public set_end_character fun(self: Chadnode, character: string)
---- @field public parent_node fun(self: Chadnode): TSNode | nil
 
 local Chadnode = {}
 Chadnode.__index = Chadnode
@@ -40,9 +41,9 @@ function Chadnode.new(node, sortable_idx, end_character)
 
     local srow, scol, erow, ecol = node:range()
 
-    self.comment_node = nil
-    self.end_character = nil
+    self.end_character = end_character
     self.node = node
+    self.previous = nil
     self.region = Region.new(srow, scol, erow, ecol)
     self.sortable_idx = sortable_idx or nil
     return self
@@ -92,11 +93,11 @@ Chadnode.from_query_match = function(query, match, bufnr)
     return Chadnode.new(matched_node, matched_id, end_character)
 end
 
---- Set the comment node
+--- Set the previous node
 --- @param self Chadnode: the node
---- @param comment Chadnode: the comment node
-Chadnode.set_comment = function(self, comment)
-    self.comment_node = comment
+--- @param previous_cnode Chadnode: the previous node
+Chadnode.set_previous = function(self, previous_cnode)
+    self.previous = previous_cnode
 end
 
 --- @param self Chadnode
@@ -109,14 +110,14 @@ Chadnode.debug = function(self, bufnr, opts)
         return {
             node = self:to_string(bufnr),
             sortable_idx = self:get_sortable_idx(),
-            comment_node = self.comment_node and self.comment_node:to_string(bufnr) or nil,
+            previous = self.previous and self.previous:to_string(bufnr) or nil,
             region = self.region:tostr(),
         }
     else
         return {
             node = self:to_string(bufnr),
             sortable_idx = self:get_sortable_idx(),
-            comment_node = self.comment_node and self.comment_node:to_string(bufnr) or nil,
+            previous = self.previous and self.previous:to_string(bufnr) or nil,
         }
     end
 end
@@ -158,8 +159,8 @@ Chadnode.to_string_preserve_indent = function(self, bufnr, target_row)
     -- Adjust indentation for all lines
     local stringified_lines = {}
 
-    if self.comment_node ~= nil then
-        local stringified_comment = self.comment_node:to_string_preserve_indent(bufnr, self.comment_node.region.srow)
+    if self.previous ~= nil then
+        local stringified_comment = self.previous:to_string_preserve_indent(bufnr, self.previous.region.srow)
         table.insert(stringified_lines, stringified_comment)
     end
 
@@ -210,8 +211,8 @@ Chadnode.gap = function(self, other)
 
     -- If the other node has a comment node, we need to compare the other node's comment node to
     -- get the empty spaces
-    while other.comment_node ~= nil do
-        other = other.comment_node
+    while other.previous ~= nil do
+        other = other.previous
     end
 
     return other.region.srow - self.region.erow - 1

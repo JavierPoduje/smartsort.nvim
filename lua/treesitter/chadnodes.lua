@@ -152,7 +152,7 @@ Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self)
         elseif gap > 0 then
             cnodes:add(current_node)
         elseif Chadquery.is_linkable(self.parser:lang(), current_node:type()) and next_node ~= nil then
-            next_node:set_comment(current_node)
+            next_node:set_previous(current_node)
         else
             cnodes:add(current_node)
         end

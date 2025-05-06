@@ -23,7 +23,7 @@ describe("chadnode", function()
         equal(comment_cnode == nil, false)
 
         --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
-        cnode:set_comment(comment_cnode)
+        cnode:set_previous(comment_cnode)
         equal(
             true,
             vim.deep_equal(
