@@ -59,7 +59,7 @@ Chadnode.parent_node = function(self)
     return self.node:parent()
 end
 
---- Create a new Chadnode from a query match
+--- Set the end character of the chadnode
 --- @param self Chadnode: the node
 --- @param character string: the end character
 Chadnode.set_end_character = function(self, character)
@@ -122,19 +122,19 @@ Chadnode.debug = function(self, bufnr, opts)
     end
 end
 
+--- Get the node
+--- @param self Chadnode: the node
+--- @return TSNode: the node
+Chadnode.get = function(self)
+    return self.node
+end
+
 --- Print the human-readable representation of the current Chadnode
 --- @param self Chadnode: the node
 --- @param bufnr number: the buffer number
 --- @param opts table | nil
 Chadnode.print = function(self, bufnr, opts)
     print(vim.inspect(self:debug(bufnr, opts)))
-end
-
---- Get the node
---- @param self Chadnode: the node
---- @return TSNode: the node
-Chadnode.get = function(self)
-    return self.node
 end
 
 --- Return the string representation of a node
@@ -175,7 +175,6 @@ Chadnode.to_string_preserve_indent = function(self, bufnr, target_row)
             table.insert(stringified_lines, target_indent .. (relative_indent or "") .. line:gsub("^%s*", ""))
         end
     end
-
 
     return table.concat(stringified_lines, "\n")
 end
@@ -232,7 +231,7 @@ Chadnode.is_sortable = function(self)
     return self.sortable_idx ~= nil
 end
 
---- Return tru if the node is sortable, false otherwise.
+--- return the type of the chadnode
 --- @param self Chadnode: the node
 --- @return string
 Chadnode.type = function(self)
