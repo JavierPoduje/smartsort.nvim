@@ -246,7 +246,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
                     end
                 end
             else
-                local cnode = Chadnode.new(child, nil)
+                local cnode = Chadnode:new(child, nil)
                 if not processed_nodes[child_id] then
                     cnodes:add(cnode)
                     processed_nodes[child_id] = true

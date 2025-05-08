@@ -1,7 +1,6 @@
 local Region = require('region')
 local f = require("funcs")
 
-
 --- @class Chadnode
 ---
 --- @field public previous Chadnode: The previous node works as "attached" to the current node. So, it's not sortable by itself. It's more like a companion to the current node.
@@ -17,7 +16,7 @@ local f = require("funcs")
 --- @field public get_sortable_idx fun(self: Chadnode): string
 --- @field public has_next_sibling fun(self: Chadnode): boolean
 --- @field public is_sortable fun(self: Chadnode): boolean
---- @field public new fun(node: TSNode, sortable_idx: string | nil): Chadnode
+--- @field public new fun(self:Chadnode, node: TSNode, sortable_idx: string | nil): Chadnode
 --- @field public next_sibling fun(self: Chadnode): Chadnode
 --- @field public parent_node fun(self: Chadnode): TSNode | nil
 --- @field public print fun(self: Chadnode, bufnr: number, opts: table | nil)
@@ -28,25 +27,21 @@ local f = require("funcs")
 --- @field public type fun(self: Chadnode): string
 
 local Chadnode = {}
-Chadnode.__index = Chadnode
 
---- Create a new Chadnode
---- @param node TSNode: the node
---- @param sortable_idx string | nil: the index from which the node can be sorted
---- @param end_character string | nil: the end character of the node
-function Chadnode.new(node, sortable_idx, end_character)
-    local self = setmetatable({}, Chadnode)
-
-    assert(node ~= nil, "Can't create a Chadnode from this nil POS")
+function Chadnode:new(node, sortable_idx, end_character)
+    Chadnode.__index = Chadnode
+    local obj = {}
+    setmetatable(obj, Chadnode)
 
     local srow, scol, erow, ecol = node:range()
 
-    self.end_character = end_character
-    self.node = node
-    self.previous = nil
-    self.region = Region.new(srow, scol, erow, ecol)
-    self.sortable_idx = sortable_idx or nil
-    return self
+    obj.end_character = end_character
+    obj.node = node
+    obj.previous = nil
+    obj.region = Region.new(srow, scol, erow, ecol)
+    obj.sortable_idx = sortable_idx or nil
+
+    return obj
 end
 
 --- Get the parent node of the current node
@@ -90,7 +85,7 @@ Chadnode.from_query_match = function(query, match, bufnr)
     assert(matched_node ~= nil, "The whole node can't be nil")
     assert(matched_id ~= nil, "The identifier can't be nil")
 
-    return Chadnode.new(matched_node, matched_id, end_character)
+    return Chadnode:new(matched_node, matched_id, end_character)
 end
 
 --- Set the previous node
@@ -192,7 +187,7 @@ end
 Chadnode.next_sibling = function(self)
     local next_sibling = self.node:next_sibling()
     assert(next_sibling ~= nil, "The node has no next sibling")
-    local new_chad_node = Chadnode.new(next_sibling, nil)
+    local new_chad_node = Chadnode:new(next_sibling, nil)
     return new_chad_node
 end
 
