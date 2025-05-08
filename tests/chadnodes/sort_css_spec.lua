@@ -1,4 +1,4 @@
-local Chadnodes = require("treesitter.chadnodes")
+local Chadnodes = require("chadnodes")
 local css_mocks = require("tests.mocks.css")
 local utils = require("tests.utils")
 

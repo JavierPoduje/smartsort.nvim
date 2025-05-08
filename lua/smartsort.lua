@@ -1,7 +1,7 @@
 local f = require("funcs")
 local parsers = require("nvim-treesitter.parsers")
 local Region = require("region")
-local Chadnodes = require("treesitter.chadnodes")
+local Chadnodes = require("chadnodes")
 
 --- @class Args
 --- @field separator string: the separator to use between words

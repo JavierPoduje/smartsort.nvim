@@ -1,5 +1,5 @@
 local Chadnode = require("chadnode")
-local Chadquery = require("treesitter.chadquery")
+local Chadquery = require("chadquery")
 local Region = require("region")
 local funcs = require("funcs")
 local ts_utils = require("nvim-treesitter.ts_utils")

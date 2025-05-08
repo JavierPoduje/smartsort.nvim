@@ -1,4 +1,4 @@
-local Chadnodes = require("treesitter.chadnodes")
+local Chadnodes = require("chadnodes")
 local Region = require("region")
 local typescript_mocks = require("tests.mocks.typescript")
 local utils = require("tests.utils")
