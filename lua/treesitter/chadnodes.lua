@@ -1,4 +1,4 @@
-local Chadnode = require("treesitter.chadnode")
+local Chadnode = require("chadnode")
 local Chadquery = require("treesitter.chadquery")
 local Region = require("region")
 local funcs = require("funcs")

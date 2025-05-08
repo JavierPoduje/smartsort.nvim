@@ -4,12 +4,12 @@ local utils = require("tests.utils")
 
 --- @diagnostic disable-next-line: undefined-global
 local describe = describe
+--- @diagnostic disable-next-line: undefined-field
+local equal = assert.are.equal
 --- @diagnostic disable-next-line: undefined-global
 local it = it
 --- @diagnostic disable-next-line: undefined-field
 local truthy = assert.is.truthy
---- @diagnostic disable-next-line: undefined-field
-local equal = assert.are.equal
 
 describe("chadnode", function()
     it("chadnodes can have comments", function()
