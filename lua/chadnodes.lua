@@ -21,7 +21,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public merge_sortable_nodes_with_adjacent_non_sortable_nodes fun(self: Chadnodes): Chadnodes
---- @field public new fun(parser: vim.treesitter.LanguageTree): Chadnodes
+--- @field public new fun(self: Chadnodes, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
 --- @field public print fun(self: Chadnodes, bufnr: number)
 --- @field public sort fun(self: Chadnodes): Chadnodes
@@ -32,17 +32,21 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field private _get_idxs fun(cnodes: Chadnode[]): string[]
 
 local Chadnodes = {}
-Chadnodes.__index = Chadnodes
 
 --- Create a new Chadnodes
+--- @param self Chadnodes
 --- @param parser vim.treesitter.LanguageTree
 --- @return Chadnodes
-Chadnodes.new = function(parser)
-    local self = setmetatable({}, Chadnodes)
-    self.nodes = {}
-    self.container_node = nil
-    self.parser = parser
-    return self
+function Chadnodes:new(parser)
+    Chadnodes.__index = Chadnodes
+    local obj = {}
+    setmetatable(obj, Chadnodes)
+
+    obj.nodes = {}
+    obj.container_node = nil
+    obj.parser = parser
+
+    return obj
 end
 
 --- Create a new Chadnodes from an existing Chadnodes
@@ -121,7 +125,7 @@ end
 --- @return Chadnodes
 Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self)
     local gaps = self:gaps()
-    local cnodes = Chadnodes.new(self.parser)
+    local cnodes = Chadnodes:new(self.parser)
 
     for idx = 1, #gaps + 1 do
         if idx > #gaps then
@@ -218,7 +222,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
 
     local processed_nodes = {}
 
-    local cnodes = Chadnodes.new(parser)
+    local cnodes = Chadnodes:new(parser)
     for child, _ in parent:iter_children() do
         -- if the node is after the last line of the visually-selected area, stop
         if Region.from_node(child).erow >= region.erow then
@@ -264,7 +268,7 @@ end
 Chadnodes.sort = function(self)
     local non_sortables = self:get_non_sortable_nodes()
     local sortables = Chadnodes:sort_sortable_nodes(self:get_sortable_nodes())
-    local sorted_nodes = Chadnodes.new(self.parser)
+    local sorted_nodes = Chadnodes:new(self.parser)
 
     --- @type number
     local sortable_idx = 1
@@ -334,7 +338,7 @@ Chadnodes.sort_sortable_nodes = function(self, cnodes)
 
     table.sort(sorted_idx)
 
-    local sorted_cnodes = Chadnodes.new(self.parser)
+    local sorted_cnodes = Chadnodes:new(self.parser)
     for _, idx in ipairs(sorted_idx) do
         sorted_cnodes:add(cnodes_by_idx[idx])
     end
