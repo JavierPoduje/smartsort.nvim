@@ -234,7 +234,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
 
         if Region.from_node(child).srow + 1 >= region.srow then
             if chadquery:is_supported_node_type(child) then
-                local query = Chadquery.build_query(parser:lang(), child)
+                local query = chadquery:build_query(child)
                 local query_matches = query:iter_matches(
                     child,
                     bufnr,

@@ -1,7 +1,14 @@
 local css_node_types = require("treesitter.css.node_types")
+local css_queries = require("treesitter.css.queries")
+
 local lua_node_types = require("treesitter.lua.node_types")
+local lua_queries = require("treesitter.lua.queries")
+
 local scss_node_types = require("treesitter.scss.node_types")
+local scss_queries = require("treesitter.scss.queries")
+
 local typescript_node_types = require("treesitter.typescript.node_types")
+local typescript_queries = require("treesitter.typescript.queries")
 
 --- @class LanguageQuery
 ---
@@ -13,6 +20,7 @@ local typescript_node_types = require("treesitter.typescript.node_types")
 --- @field public is_linkable fun(self: LanguageQuery, node_type: string): boolean
 --- @field public is_supported_node_type fun(self: LanguageQuery, node_type: string): boolean
 --- @field public new fun(self: LanguageQuery, language: string): LanguageQuery
+--- @field public query_by_node fun(self: LanguageQuery, node: TSNode): string
 ---
 --- @field private _get_non_sortable_nodes_by_language fun(language: string): table
 --- @field private _get_sortable_nodes_by_language fun(language: string): table
@@ -78,6 +86,25 @@ LanguageQuery.is_supported_node_type = function(self, node_type)
         end
     end
     return false
+end
+
+
+--- Returns a function that returns the query_by_node func for the given language
+--- @param self LanguageQuery
+--- @param node TSNode: the node
+--- @return string: the query string
+LanguageQuery.query_by_node = function(self, node)
+    if self.language == "typescript" then
+        return typescript_queries.query_by_node(node)
+    elseif self.language == "lua" then
+        return lua_queries.query_by_node(node)
+    elseif self.language == "css" then
+        return css_queries.query_by_node(node)
+    elseif self.language == "scss" then
+        return scss_queries.query_by_node(node)
+    end
+
+    error("Unsupported language: " .. self.language)
 end
 
 --- HELPERS
