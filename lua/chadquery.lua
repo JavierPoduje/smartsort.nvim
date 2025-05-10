@@ -20,10 +20,9 @@ local typescript_queries = require("treesitter.typescript.queries")
 ---
 --- @field public new fun(language: string): Chadquery
 --- @field public build_query fun(lang: string, node: TSNode): Chadquery
---- @field public is_supported_node_type fun(lang: string, node: TSNode): boolean
+--- @field public is_supported_node_type fun(self: Chadquery, node: TSNode): boolean
 --- @field public sort_and_non_sortable_nodes fun(): table
 ---
---- @field private _get_is_supported_node_type_callback fun(lang: string): fun(lang: string): boolean
 --- @field private _get_query_by_node_callback fun(lang: string): fun(node: TSNode): string
 
 local Chadquery = {}
@@ -67,12 +66,11 @@ Chadquery.build_query = function(lang, node)
 end
 
 --- Returns true if the node_type is supported by the smartsort.nvim plugin
---- @param lang string: the language to query
+--- @param self Chadquery
 --- @param node TSNode: the node
 --- @return boolean
-Chadquery.is_supported_node_type = function(lang, node)
-    assert(node ~= nil, "node cannot be nil")
-    return Chadquery._get_is_supported_node_type_callback(lang)(node:type())
+Chadquery.is_supported_node_type = function(self, node)
+    return self.language_query:is_supported_node_type(node:type())
 end
 
 --- @param lang string: the language to query
@@ -97,23 +95,6 @@ end
 --- @return table: a list of strings representing the sortable and non-sortable nodes
 Chadquery.sort_and_non_sortable_nodes = function(self)
     return self.language_query:get_sortable_and_non_sortable_nodes()
-end
-
---- Returns a function that checks if the node_type is supported by the smartsort.nvim plugin
---- @param lang string: the language to query
---- @return (fun(lang: string): boolean): a function that checks if the node_type is supported
-Chadquery._get_is_supported_node_type_callback = function(lang)
-    if lang == "typescript" then
-        return typescript_queries.is_supported_node_type
-    elseif lang == "lua" then
-        return lua_queries.is_supported_node_type
-    elseif lang == "css" then
-        return css_queries.is_supported_node_type
-    elseif lang == "scss" then
-        return scss_queries.is_supported_node_type
-    end
-
-    error("Unsupported language: " .. lang)
 end
 
 --- Returns a function that returns the query_by_node func for the given language

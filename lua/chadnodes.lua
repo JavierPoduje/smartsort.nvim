@@ -221,6 +221,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
     end
 
     local processed_nodes = {}
+    local chadquery = Chadquery:new(parser:lang())
 
     local cnodes = Chadnodes:new(parser)
     for child, _ in parent:iter_children() do
@@ -232,7 +233,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
         local child_id = child:id()
 
         if Region.from_node(child).srow + 1 >= region.srow then
-            if Chadquery.is_supported_node_type(parser:lang(), child) then
+            if chadquery:is_supported_node_type(child) then
                 local query = Chadquery.build_query(parser:lang(), child)
                 local query_matches = query:iter_matches(
                     child,

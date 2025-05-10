@@ -11,6 +11,7 @@ local typescript_node_types = require("treesitter.typescript.node_types")
 ---
 --- @field public get_sortable_and_non_sortable_nodes fun(self: LanguageQuery): table
 --- @field public is_linkable fun(self: LanguageQuery, node_type: string): boolean
+--- @field public is_supported_node_type fun(self: LanguageQuery, node_type: string): boolean
 --- @field public new fun(self: LanguageQuery, language: string): LanguageQuery
 ---
 --- @field private _get_non_sortable_nodes_by_language fun(language: string): table
@@ -64,6 +65,19 @@ LanguageQuery.get_sortable_and_non_sortable_nodes = function(self)
         table.insert(nodes, node)
     end
     return nodes
+end
+
+--- @param self LanguageQuery
+--- @param node_type string: the type of the node
+--- @return boolean
+LanguageQuery.is_supported_node_type = function(self, node_type)
+    assert(node_type ~= nil, "node cannot be nil")
+    for _, supported_node_type in ipairs(self.sortable_nodes) do
+        if node_type == supported_node_type then
+            return true
+        end
+    end
+    return false
 end
 
 --- HELPERS
