@@ -379,6 +379,8 @@ Chadnodes._get_node_at_row = function(bufnr, row, parser)
         return nil
     end
 
+    local chadquery = Chadquery:new(parser:lang())
+
     local first_line = lines[1]
     local first_non_empty_char = first_line:find("%S") or 1
 
@@ -395,7 +397,7 @@ Chadnodes._get_node_at_row = function(bufnr, row, parser)
     if node_at_cursor then
         --- @type TSNode | nil
         local current = node_at_cursor
-        local block_types = Chadquery.sort_and_non_sortable_nodes(parser:lang())
+        local block_types = chadquery:sort_and_non_sortable_nodes()
         assert(#block_types > 0, "No block types found")
 
         while current do

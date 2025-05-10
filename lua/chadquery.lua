@@ -1,3 +1,5 @@
+local LanguageQuery = require("treesitter.language_query")
+
 local css_nodes = require("treesitter.css.node_types")
 local css_queries = require("treesitter.css.queries")
 
@@ -12,18 +14,40 @@ local typescript_queries = require("treesitter.typescript.queries")
 
 --- @class Chadquery
 ---
---- @field public lang string: the language to query
+--- @field public language string: the language to query
 --- @field public query vim.treesitter.Query: the query
+--- @field public language_query LanguageQuery: the language query
 ---
+--- @field public new fun(language: string): Chadquery
 --- @field public build_query fun(lang: string, node: TSNode): Chadquery
 --- @field public is_supported_node_type fun(lang: string, node: TSNode): boolean
---- @field public sort_and_non_sortable_nodes fun(lang: string): boolean
+--- @field public sort_and_non_sortable_nodes fun(): table
+---
 --- @field private _get_is_supported_node_type_callback fun(lang: string): fun(lang: string): boolean
 --- @field private _get_query_by_node_callback fun(lang: string): fun(node: TSNode): string
---- @field private _get_sortable_and_non_sortable_callback fun(lang: string): fun(): table
 
 local Chadquery = {}
-Chadquery.__index = Chadquery
+
+--- @param language string: the language to query from
+--- @return Chadquery: a new Chadquery object
+function Chadquery:new(language)
+    Chadquery.__index = Chadquery
+    local obj = {}
+    setmetatable(obj, Chadquery)
+
+    assert(
+        language == "typescript" or
+        language == "lua" or
+        language == "css" or
+        language == "scss",
+        "Unsupported language: " .. language
+    )
+
+    obj.language = language
+    obj.language_query = LanguageQuery:new(language)
+
+    return obj
+end
 
 --- Return a new Query object from the given land and node
 --- @param lang string: the language to query
@@ -69,32 +93,10 @@ Chadquery.is_linkable = function(lang, node_type)
 end
 
 --- Returns a list of the sortable and non-sortable nodes_types for the given language
---- @return table: a list of node types
-Chadquery.sort_and_non_sortable_nodes = function(lang)
-    assert(
-        lang == "typescript" or
-        lang == "lua" or
-        lang == "css" or
-        lang == "scss",
-        "Unsupported language: " .. lang
-    )
-    return Chadquery._get_sortable_and_non_sortable_callback(lang)()
-end
-
---- Returns the sortable_and_non_sortable function for the given language
---- @param lang string: the language to query
---- @return (fun(): table): a function that returns the sortable_and_non_sortable function
-Chadquery._get_sortable_and_non_sortable_callback = function(lang)
-    if lang == "typescript" then
-        return typescript_nodes.sortable_and_non_sortable
-    elseif lang == "lua" then
-        return lua_nodes.sortable_and_non_sortable
-    elseif lang == "css" then
-        return css_nodes.sortable_and_non_sortable
-    elseif lang == "scss" then
-        return scss_nodes.sortable_and_non_sortable
-    end
-    error("Unsupported language: " .. lang)
+--- @param self Chadquery: the Chadquery object
+--- @return table: a list of strings representing the sortable and non-sortable nodes
+Chadquery.sort_and_non_sortable_nodes = function(self)
+    return self.language_query:get_sortable_and_non_sortable_nodes()
 end
 
 --- Returns a function that checks if the node_type is supported by the smartsort.nvim plugin

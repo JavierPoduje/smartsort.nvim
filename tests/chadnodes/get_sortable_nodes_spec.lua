@@ -9,7 +9,7 @@ local it = it
 --- @diagnostic disable-next-line: undefined-field
 local truthy = assert.is.truthy
 
-describe("chadnodes: get_sortable_nodes", function()
+describe("chadnodes", function()
     it("get_sortable_nodes shouldn't consider non-sortable nodes", function()
         local mock = typescript_mocks.with_comment
         local bufnr, parser = utils.setup(mock.content, "typescript")
