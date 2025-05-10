@@ -52,7 +52,7 @@ end
 --- @param node_type string: the node type
 --- @return boolean: true if the node type can be linked to another sortable node, false otherwise.
 LanguageQuery.is_linkable = function(self, node_type)
-    for _, node in ipairs(self.non_sortable) do
+    for _, node in ipairs(self.non_sortable_nodes) do
         if node == node_type then
             return true
         end

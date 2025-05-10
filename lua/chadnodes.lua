@@ -126,6 +126,7 @@ end
 Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self)
     local gaps = self:gaps()
     local cnodes = Chadnodes:new(self.parser)
+    local chadquery = Chadquery:new(self.parser:lang())
 
     for idx = 1, #gaps + 1 do
         if idx > #gaps then
@@ -155,7 +156,7 @@ Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self)
             prev_node:set_end_character(current_node:type())
         elseif gap > 0 then
             cnodes:add(current_node)
-        elseif Chadquery.is_linkable(self.parser:lang(), current_node:type()) and next_node ~= nil then
+        elseif chadquery:is_linkable(current_node:type()) and next_node ~= nil then
             next_node:set_previous(current_node)
         else
             cnodes:add(current_node)

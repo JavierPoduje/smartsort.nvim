@@ -1,19 +1,15 @@
 local LanguageQuery = require("treesitter.language_query")
 
-local css_nodes = require("treesitter.css.node_types")
-local lua_nodes = require("treesitter.lua.node_types")
-local scss_nodes = require("treesitter.scss.node_types")
-local typescript_nodes = require("treesitter.typescript.node_types")
-
 --- @class Chadquery
 ---
 --- @field public language string: the language to query
 --- @field public query vim.treesitter.Query: the query
 --- @field public language_query LanguageQuery: the language query
 ---
---- @field public new fun(language: string): Chadquery
 --- @field public build_query fun(self: Chadquery, node: TSNode): vim.treesitter.Query
+--- @field public is_linkable fun(self: Chadquery, node_type: string): boolean
 --- @field public is_supported_node_type fun(self: Chadquery, node: TSNode): boolean
+--- @field public new fun(language: string): Chadquery
 --- @field public sort_and_non_sortable_nodes fun(): table
 
 local Chadquery = {}
@@ -64,20 +60,11 @@ Chadquery.is_supported_node_type = function(self, node)
     return self.language_query:is_supported_node_type(node:type())
 end
 
---- @param lang string: the language to query
+--- @param self Chadquery
 --- @param node_type string: the node type
 --- @return boolean: true if the node type can be linked to another sortable node in the given language, false otherwise.
-Chadquery.is_linkable = function(lang, node_type)
-    if lang == "typescript" then
-        return typescript_nodes.is_linkable(node_type)
-    elseif lang == "lua" then
-        return lua_nodes.is_linkable(node_type)
-    elseif lang == "css" then
-        return css_nodes.is_linkable(node_type)
-    elseif lang == "scss" then
-        return scss_nodes.is_linkable(node_type)
-    end
-    error("Unsupported language: " .. lang)
+Chadquery.is_linkable = function(self, node_type)
+    return self.language_query:is_linkable(node_type)
 end
 
 --- Returns a list of the sortable and non-sortable nodes_types for the given language
