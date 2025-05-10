@@ -52,19 +52,19 @@ Chadquery.build_query = function(self, node)
     return vim.treesitter.query.parse(self.language, query_str)
 end
 
+--- @param self Chadquery
+--- @param node_type string: the node type
+--- @return boolean: true if the node type can be linked to another sortable node in the given language, false otherwise.
+Chadquery.is_linkable = function(self, node_type)
+    return self.language_query:is_linkable(node_type)
+end
+
 --- Returns true if the node_type is supported by the smartsort.nvim plugin
 --- @param self Chadquery
 --- @param node TSNode: the node
 --- @return boolean
 Chadquery.is_supported_node_type = function(self, node)
     return self.language_query:is_supported_node_type(node:type())
-end
-
---- @param self Chadquery
---- @param node_type string: the node type
---- @return boolean: true if the node type can be linked to another sortable node in the given language, false otherwise.
-Chadquery.is_linkable = function(self, node_type)
-    return self.language_query:is_linkable(node_type)
 end
 
 --- Returns a list of the sortable and non-sortable nodes_types for the given language
