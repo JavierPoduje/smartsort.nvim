@@ -9,22 +9,21 @@ M.contains = function(tbl, key)
     return tbl[key] ~= nil
 end
 
---- Get the indent of a line (zero-based)
---- @param bufnr number: the buffer number
---- @param row number: the row to get the indent of
-M.get_line_indent = function(bufnr, row)
-    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
-    return line:match("^%s*")
-end
 
---- @param node TSNode
---- @return TSNode
-M.get_node = function(node)
-    return M.if_else(
-        M.contains(node, 2),
-        function() return node[2] end,
-        function() return node[4] end
-    )
+--- Returns a merged table containing all elements from the input tables.
+--- It does not modify the original tables.
+---
+--- @param ... table One or more tables to merge.
+--- @return table A new table containing all elements from the input tables.
+M.merge_tables = function(...)
+    local args = { ... }
+    local output = {}
+    for _, current_table in ipairs(args) do
+        for _, node in ipairs(current_table) do
+            table.insert(output, node)
+        end
+    end
+    return output
 end
 
 --- Given a predicate, return the first value if true, else the second value
@@ -40,21 +39,19 @@ M.if_else = function(predicate, if_true, if_false)
     end
 end
 
---- Check if the column is the max column
----
---- @return boolean
-M.is_max_col = function(col)
-    return col == vim.v.maxcol
+--- Return the string representation of a node
+--- @param node TSNode
+--- @return string
+M.node_to_string = function(node)
+    return vim.treesitter.get_node_text(node, 0)
 end
 
-M.is_special_end_char = function(ch)
-    local end_chars = { ";" }
-    for _, end_char in ipairs(end_chars) do
-        if ch == end_char then
-            return true
-        end
-    end
-    return false
+--- Get the indent of a line (zero-based)
+--- @param bufnr number: the buffer number
+--- @param row number: the row to get the indent of
+M.get_line_indent = function(bufnr, row)
+    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+    return line:match("^%s*")
 end
 
 return M

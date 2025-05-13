@@ -1,3 +1,5 @@
+local f = require("funcs")
+
 local css_node_types = require("treesitter.css.node_types")
 local css_queries = require("treesitter.css.queries")
 
@@ -9,6 +11,9 @@ local scss_queries = require("treesitter.scss.queries")
 
 local typescript_node_types = require("treesitter.typescript.node_types")
 local typescript_queries = require("treesitter.typescript.queries")
+
+local vue_node_types = require("treesitter.vue.node_types")
+local vue_queries = require("treesitter.vue.queries")
 
 --- @class LanguageQuery
 ---
@@ -35,10 +40,11 @@ function LanguageQuery:new(language)
     setmetatable(obj, LanguageQuery)
 
     assert(
-        language == "typescript" or
-        language == "lua" or
         language == "css" or
-        language == "scss",
+        language == "lua" or
+        language == "scss" or
+        language == "typescript" or
+        language == "vue",
         "Unsupported language: " .. language
     )
 
@@ -64,15 +70,7 @@ end
 --- @param self LanguageQuery
 --- @return table: list of strings with the sortable and non-sortable nodes merged
 LanguageQuery.get_sortable_and_non_sortable_nodes = function(self)
-    local nodes = {}
-
-    for _, node in ipairs(self.sortable_nodes) do
-        table.insert(nodes, node)
-    end
-    for _, node in ipairs(self.non_sortable_nodes) do
-        table.insert(nodes, node)
-    end
-    return nodes
+    return f.merge_tables(self.sortable_nodes, self.non_sortable_nodes)
 end
 
 --- @param self LanguageQuery
@@ -102,6 +100,8 @@ LanguageQuery.query_by_node = function(self, node)
         return css_queries.query_by_node(node)
     elseif self.language == "scss" then
         return scss_queries.query_by_node(node)
+    elseif self.language == "vue" then
+        return vue_queries.query_by_node(node)
     end
 
     error("Unsupported language: " .. self.language)
@@ -120,6 +120,13 @@ LanguageQuery._get_non_sortable_nodes_by_language = function(language)
         return scss_node_types.non_sortable
     elseif language == "typescript" then
         return typescript_node_types.non_sortable
+    elseif language == "vue" then
+        return f.merge_tables(
+            vue_node_types.non_sortable,
+            typescript_node_types.non_sortable,
+            css_node_types.non_sortable,
+            scss_node_types.non_sortable
+        )
     end
 
     error("Unsupported language: " .. language)
@@ -136,6 +143,13 @@ LanguageQuery._get_sortable_nodes_by_language = function(language)
         return scss_node_types.sortable
     elseif language == "typescript" then
         return typescript_node_types.sortable
+    elseif language == "vue" then
+        return f.merge_tables(
+            vue_node_types.sortable,
+            typescript_node_types.sortable,
+            css_node_types.sortable,
+            scss_node_types.sortable
+        )
     end
 
     error("Unsupported language: " .. language)

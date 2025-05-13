@@ -221,6 +221,16 @@ Chadnodes.from_region = function(bufnr, region, parser)
         parent = root
     end
 
+    --- this actually works!!!!
+    local embedded_typescript = vim.treesitter.query.parse("typescript", [[
+        (lexical_declaration (variable_declarator (identifier) @identifier)) @block
+    ]])
+    for id, embedded_node in embedded_typescript:iter_captures(parent, bufnr, 0, -1) do
+        print("embedded_node")
+        print(vim.inspect(funcs.node_to_string(embedded_node)))
+        print("---")
+    end
+
     local processed_nodes = {}
     local chadquery = Chadquery:new(parser:lang())
 
@@ -393,7 +403,7 @@ Chadnodes._get_node_at_row = function(bufnr, row, parser)
     vim.api.nvim_win_set_cursor(0, { row, first_non_empty_char - 1 })
 
     -- Get the node at cursor (most indented node)
-    local node_at_cursor = ts_utils.get_node_at_cursor()
+    local node_at_cursor = ts_utils.get_node_at_cursor(0, false)
 
     -- Walk up the tree to find a suitable block node
     if node_at_cursor then

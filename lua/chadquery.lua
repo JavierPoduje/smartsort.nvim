@@ -22,10 +22,11 @@ function Chadquery:new(language)
     setmetatable(obj, Chadquery)
 
     assert(
-        language == "typescript" or
-        language == "lua" or
         language == "css" or
-        language == "scss",
+        language == "lua" or
+        language == "scss" or
+        language == "typescript" or
+        language == "vue",
         "Unsupported language: " .. language
     )
 
@@ -41,10 +42,11 @@ end
 --- @return vim.treesitter.Query: the query
 Chadquery.build_query = function(self, node)
     assert(
-        self.language == "typescript" or
-        self.language == "lua" or
         self.language == "css" or
-        self.language == "scss",
+        self.language == "lua" or
+        self.language == "scss" or
+        self.language == "typescript" or
+        self.language == "vue",
         "Unsupported language: " .. self.language
     )
     local query_str = self.language_query:query_by_node(node)
