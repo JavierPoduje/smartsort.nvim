@@ -20,7 +20,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public get fun(self: Chadnodes): Chadnode[]
 --- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
---- @field public merge_sortable_nodes_with_adjacent_non_sortable_nodes fun(self: Chadnodes): Chadnodes
+--- @field public merge_sortable_nodes_with_adjacent_non_sortable_nodes fun(self: Chadnodes, region: Region): Chadnodes
 --- @field public new fun(self: Chadnodes, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
 --- @field public print fun(self: Chadnodes, bufnr: number)
@@ -122,11 +122,12 @@ end
 
 --- Merge the sortable nodes with their adjacent non-sortable nodes. currently, it only works with comments and the final ";".
 --- @param self Chadnodes
+--- @param region Region
 --- @return Chadnodes
-Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self)
+Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self, region)
     local gaps = self:gaps()
     local cnodes = Chadnodes:new(self.parser)
-    local chadquery = Chadquery:new(self.parser:lang())
+    local chadquery = Chadquery:new(self.parser:lang(), region)
 
     for idx = 1, #gaps + 1 do
         if idx > #gaps then
@@ -152,7 +153,7 @@ Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self)
 
         assert(current_node ~= nil, "Chadnode not found")
 
-        if gap == 0 and funcs.is_special_end_char(current_node:type()) and prev_node ~= nil then
+        if gap == -1 and funcs.is_special_end_char(current_node:type()) and prev_node ~= nil then
             prev_node:set_end_character(current_node:type())
         elseif gap > 0 then
             cnodes:add(current_node)
@@ -212,7 +213,7 @@ end
 --- @param parser vim.treesitter.LanguageTree
 --- @return Chadnodes, TSNode
 Chadnodes.from_region = function(bufnr, region, parser)
-    local node = Chadnodes._get_node_at_row(bufnr, region.srow, parser)
+    local node = Chadnodes._get_node_at_row(bufnr, region, parser)
     assert(node ~= nil, "No node found")
 
     local parent = node:parent()
@@ -221,18 +222,25 @@ Chadnodes.from_region = function(bufnr, region, parser)
         parent = root
     end
 
+    -- for child, _ in parent:iter_children() do
+    --     if Region.from_node(child).erow >= region.erow then
+    --         break
+    --     end
+    --     print("child:type()", child:type())
+    -- end
+
     --- this actually works!!!!
-    local embedded_typescript = vim.treesitter.query.parse("typescript", [[
-        (lexical_declaration (variable_declarator (identifier) @identifier)) @block
-    ]])
-    for id, embedded_node in embedded_typescript:iter_captures(parent, bufnr, 0, -1) do
-        print("embedded_node")
-        print(vim.inspect(funcs.node_to_string(embedded_node)))
-        print("---")
-    end
+    -- local embedded_typescript = vim.treesitter.query.parse("typescript", [[
+    --     (lexical_declaration (variable_declarator (identifier) @identifier)) @block
+    -- ]])
+    -- for id, embedded_node in embedded_typescript:iter_captures(parent, bufnr, 0, -1) do
+    --     print("embedded_node")
+    --     print(vim.inspect(funcs.node_to_string(embedded_node)))
+    --     print("---")
+    -- end
 
     local processed_nodes = {}
-    local chadquery = Chadquery:new(parser:lang())
+    local chadquery = Chadquery:new(parser:lang(), region)
 
     local cnodes = Chadnodes:new(parser)
     for child, _ in parent:iter_children() do
@@ -250,7 +258,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
                     child,
                     bufnr,
                     child:start(),
-                    node:end_(),
+                    child:end_() + 1,
                     { max_start_depth = 1 }
                 )
 
@@ -382,16 +390,17 @@ end
 
 --- Get the node at the given row
 --- @param bufnr number
---- @param row number
+--- @param region Region
 --- @param parser vim.treesitter.LanguageTree
 --- @return TSNode | nil
-Chadnodes._get_node_at_row = function(bufnr, row, parser)
+Chadnodes._get_node_at_row = function(bufnr, region, parser)
+    local row = region.srow
     local lines = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)
     if #lines == 0 then
         return nil
     end
 
-    local chadquery = Chadquery:new(parser:lang())
+    local chadquery = Chadquery:new(parser:lang(), region)
 
     local first_line = lines[1]
     local first_non_empty_char = first_line:find("%S") or 1

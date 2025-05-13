@@ -26,6 +26,17 @@ M.merge_tables = function(...)
     return output
 end
 
+---- TODO: make this language aware. Different languages can have different end characters
+M.is_special_end_char = function(ch)
+    local end_chars = { ";" }
+    for _, end_char in ipairs(end_chars) do
+        if ch == end_char then
+            return true
+        end
+    end
+    return false
+end
+
 --- Given a predicate, return the first value if true, else the second value
 --- @param predicate boolean
 --- @param if_true function<any>

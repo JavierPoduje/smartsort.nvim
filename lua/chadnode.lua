@@ -200,7 +200,7 @@ Chadnode.gap = function(self, other)
     assert(self.region.erow <= other.region.srow, "Node 1 is not before Node 2 or they're overlaping")
 
     if self.region.erow == other.region.srow then
-        return 0
+        return -1
     end
 
     -- If the other node has a comment node, we need to compare the other node's comment node to

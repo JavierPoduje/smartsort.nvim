@@ -5,9 +5,15 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const another = ref('another');
-const title =
+const zzzz = ref('another');
+const cccc =
   ref('Hello World');
+
+const aaaa = {
+  a: 1,
+  b: 2,
+  c: 3,
+}
 </script>
 
 <style lang="scss" module>

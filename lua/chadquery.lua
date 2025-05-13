@@ -15,8 +15,9 @@ local LanguageQuery = require("treesitter.language_query")
 local Chadquery = {}
 
 --- @param language string: the language to query from
+--- @param region Region: the region to query from
 --- @return Chadquery: a new Chadquery object
-function Chadquery:new(language)
+function Chadquery:new(language, region)
     Chadquery.__index = Chadquery
     local obj = {}
     setmetatable(obj, Chadquery)
@@ -31,7 +32,11 @@ function Chadquery:new(language)
     )
 
     obj.language = language
-    obj.language_query = LanguageQuery:new(language)
+    if language == "vue" then
+        local embedded_language = Chadquery:_get_language_to_work_with(region)
+        obj.language = embedded_language
+        obj.language_query = LanguageQuery:new(embedded_language)
+    end
 
     return obj
 end
@@ -74,6 +79,15 @@ end
 --- @return table: a list of strings representing the sortable and non-sortable nodes
 Chadquery.sort_and_non_sortable_nodes = function(self)
     return self.language_query:get_sortable_and_non_sortable_nodes()
+end
+
+--- Returns the language that will be used to make queries
+--- @param self Chadquery
+--- @param region Region: the region to query from
+--- @return string: the language to use
+Chadquery._get_language_to_work_with = function(self, region)
+    --- TODO: implement this function properly
+    return "typescript"
 end
 
 return Chadquery
