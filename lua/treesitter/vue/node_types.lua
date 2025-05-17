@@ -1,6 +1,8 @@
 local M = {}
 
-M.sortable = {}
+M.sortable = {
+    "directive_attribute",
+}
 
 M.non_sortable = {}
 

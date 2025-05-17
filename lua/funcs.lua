@@ -31,7 +31,7 @@ end
 
 ---- TODO: make this language aware. Different languages can have different end characters
 M.is_special_end_char = function(ch)
-    local end_chars = { ";" }
+    local end_chars = { ";", "/>" }
     for _, end_char in ipairs(end_chars) do
         if ch == end_char then
             return true

@@ -16,6 +16,8 @@ M.query_by_node = function(node)
 
     if node_type == "script_element" then
         return M._script_element_query()
+    elseif node_type == "directive_attribute" then
+        return M._directive_attribute_query()
     end
 
     error("Unsupported node type: " .. node_type)
@@ -30,6 +32,12 @@ M.embedded_languages_queries = function()
             query = M._embedded_typescript_query(),
         },
     }
+end
+
+M._directive_attribute_query = function()
+    return [[
+        (directive_attribute (directive_value) @identifier) @block
+    ]]
 end
 
 --- Return the query for a class_declaration
