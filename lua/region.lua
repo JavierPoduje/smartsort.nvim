@@ -5,6 +5,7 @@
 --- @field erow number: the end row
 --- @field ecol number: the end column
 ---
+--- @field contains fun(self: Region, other: Region): boolean
 --- @field from_node fun(node: TSNode): Region
 --- @field from_selection fun(): Region
 --- @field new fun(srow: number, scol: number, erow: number, ecol: number): Region
@@ -33,6 +34,24 @@ Region.new = function(srow, scol, erow, ecol)
     self.ecol = ecol
 
     return self
+end
+
+--- Check if the current Region "contains" another Region
+--- @param self Region: the region to debug
+--- @param other Region: the region to check
+--- @return boolean
+Region.contains = function(self, other)
+    return self.srow <= other.srow and self.erow >= other.erow
+end
+
+Region.__tostring = function(self)
+    return string.format(
+        "{srow: %d, scol: %d, erow: %d, ecol: %d}",
+        self.srow,
+        self.scol,
+        self.erow,
+        self.ecol
+    )
 end
 
 --- Print the human-readable representation of the current Region

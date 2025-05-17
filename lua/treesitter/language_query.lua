@@ -21,6 +21,7 @@ local vue_queries = require("treesitter.vue.queries")
 --- @field public sortable_nodes table: the sortable nodes
 --- @field public non_sortable_nodes table: the non-sortable nodes
 ---
+--- @field public embedded_languages_queries fun(self: LanguageQuery): table
 --- @field public get_sortable_and_non_sortable_nodes fun(self: LanguageQuery): table
 --- @field public is_linkable fun(self: LanguageQuery, node_type: string): boolean
 --- @field public is_supported_node_type fun(self: LanguageQuery, node_type: string): boolean
@@ -53,6 +54,17 @@ function LanguageQuery:new(language)
     obj.sortable_nodes = LanguageQuery._get_sortable_nodes_by_language(language)
 
     return obj
+end
+
+--- Returns a list of queries for the embedded languages
+--- @param self LanguageQuery
+--- @return EmbeddedLanguageQuery[]
+LanguageQuery.embedded_languages_queries = function(self)
+    --- TODO: all languages `queries` should have their method `embedded_languages_queries` defined
+    if self.language == "vue" then
+        return vue_queries.embedded_languages_queries()
+    end
+    return {}
 end
 
 --- @param node_type string: the node type

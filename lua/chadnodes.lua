@@ -127,7 +127,9 @@ end
 Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self, region)
     local gaps = self:gaps()
     local cnodes = Chadnodes:new(self.parser)
-    local chadquery = Chadquery:new(self.parser:lang(), region)
+    local chadquery = Chadquery:new(self.parser:lang(), {
+        region = region,
+    })
 
     for idx = 1, #gaps + 1 do
         if idx > #gaps then
@@ -222,25 +224,11 @@ Chadnodes.from_region = function(bufnr, region, parser)
         parent = root
     end
 
-    -- for child, _ in parent:iter_children() do
-    --     if Region.from_node(child).erow >= region.erow then
-    --         break
-    --     end
-    --     print("child:type()", child:type())
-    -- end
-
-    --- this actually works!!!!
-    -- local embedded_typescript = vim.treesitter.query.parse("typescript", [[
-    --     (lexical_declaration (variable_declarator (identifier) @identifier)) @block
-    -- ]])
-    -- for id, embedded_node in embedded_typescript:iter_captures(parent, bufnr, 0, -1) do
-    --     print("embedded_node")
-    --     print(vim.inspect(funcs.node_to_string(embedded_node)))
-    --     print("---")
-    -- end
-
     local processed_nodes = {}
-    local chadquery = Chadquery:new(parser:lang(), region)
+    local chadquery = Chadquery:new(parser:lang(), {
+        region = region,
+        root_node = parser:parse()[1]:root(),
+    })
 
     local cnodes = Chadnodes:new(parser)
     for child, _ in parent:iter_children() do
@@ -400,7 +388,10 @@ Chadnodes._get_node_at_row = function(bufnr, region, parser)
         return nil
     end
 
-    local chadquery = Chadquery:new(parser:lang(), region)
+    local chadquery = Chadquery:new(parser:lang(), {
+        region = region,
+        root_node = parser:parse()[1]:root(),
+    })
 
     local first_line = lines[1]
     local first_non_empty_char = first_line:find("%S") or 1

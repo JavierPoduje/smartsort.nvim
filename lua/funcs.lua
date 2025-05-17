@@ -19,6 +19,9 @@ M.merge_tables = function(...)
     local args = { ... }
     local output = {}
     for _, current_table in ipairs(args) do
+        assert(current_table ~= nil, "Expected a table, got nil")
+        assert(type(current_table) == "table", "Expected a table, got " .. type(current_table))
+
         for _, node in ipairs(current_table) do
             table.insert(output, node)
         end
