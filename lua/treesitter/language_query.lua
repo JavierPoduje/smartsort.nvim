@@ -15,6 +15,11 @@ local typescript_queries = require("treesitter.typescript.queries")
 local vue_node_types = require("treesitter.vue.node_types")
 local vue_queries = require("treesitter.vue.queries")
 
+--- @class EndChar
+--- @field public behavior Behavior: the behavior of the character
+--- @field public char string: the character
+--- @field public gap number: the gap between the character and the next node
+
 --- @class LanguageQuery
 ---
 --- @field public language string: the language to work with
@@ -22,6 +27,7 @@ local vue_queries = require("treesitter.vue.queries")
 --- @field public non_sortable_nodes table: the non-sortable nodes
 ---
 --- @field public embedded_languages_queries fun(self: LanguageQuery): table
+--- @field public get_end_chars fun(self: LanguageQuery): EndChar[]
 --- @field public get_sortable_and_non_sortable_nodes fun(self: LanguageQuery): table
 --- @field public is_linkable fun(self: LanguageQuery, node_type: string): boolean
 --- @field public is_supported_node_type fun(self: LanguageQuery, node_type: string): boolean
@@ -63,6 +69,18 @@ LanguageQuery.embedded_languages_queries = function(self)
     --- TODO: all languages `queries` should have their method `embedded_languages_queries` defined
     if self.language == "vue" then
         return vue_queries.embedded_languages_queries()
+    end
+    return {}
+end
+
+--- Returns a list of queries for the embedded languages
+--- @param self LanguageQuery
+--- @return EndChar[]
+LanguageQuery.get_end_chars = function(self)
+    if self.language == "vue" then
+        return vue_node_types.end_chars
+    elseif self.language == "typescript" then
+        return typescript_node_types.end_chars
     end
     return {}
 end

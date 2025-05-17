@@ -1,3 +1,5 @@
+local Behavior = require("treesitter/behavior")
+
 local M = {}
 
 M.sortable = {
@@ -12,7 +14,14 @@ M.sortable = {
 
 M.non_sortable = {
     "comment",
-    -- "arrow_function",
+}
+
+M.end_chars = {
+    {
+        char = ";",
+        behavior = Behavior.Attached,
+        gap = 0,
+    }
 }
 
 return M

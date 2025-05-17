@@ -1,5 +1,5 @@
+const title =             'Hello World';
 const another = 'another';
-const title = 'Hello World';
 
 /**
  * This is a comment

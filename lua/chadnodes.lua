@@ -136,7 +136,7 @@ Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self,
             local current_node = self:node_by_idx(idx)
             assert(current_node ~= nil, "Chadnode not found")
 
-            if funcs.is_special_end_char(current_node:type()) then
+            if chadquery:is_special_end_char(current_node:type()) then
                 local prev_node = self:node_by_idx(idx - 1)
                 if prev_node ~= nil then
                     prev_node:set_end_character(current_node:type())
