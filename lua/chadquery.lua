@@ -1,6 +1,5 @@
 local LanguageQuery = require("treesitter.language_query")
 local Region = require("region")
-local f = require("funcs")
 
 --- @class OptionsForEmbeddedLanguages
 --- @field region? Region: the visually selected region
