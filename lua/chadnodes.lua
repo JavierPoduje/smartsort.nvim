@@ -259,12 +259,6 @@ Chadnodes.from_region = function(bufnr, region, parser)
             break
         end
 
-        -- print("child node: ", funcs.node_to_string(child))
-        -- print("number of nodes", #cnodes.nodes)
-        -- if #cnodes.nodes > 0 then
-        --     print("last node: ", funcs.node_to_string(cnodes.nodes[#cnodes.nodes].node))
-        -- end
-
         local child_id = child:id()
 
         if Region.from_node(child).srow + 1 >= region.srow then
@@ -312,7 +306,6 @@ end
 --- @param self Chadnodes
 --- @return Chadnodes
 Chadnodes.sort = function(self)
-    self:print(0)
     local non_sortables = self:get_non_sortable_nodes()
     local sortables = Chadnodes:sort_sortable_nodes(self:get_sortable_nodes())
     local sorted_nodes = Chadnodes:new(self.parser)
