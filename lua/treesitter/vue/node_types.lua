@@ -1,5 +1,3 @@
-local Behavior = require("treesitter/behavior")
-
 local M = {}
 
 M.sortable = {
@@ -11,8 +9,8 @@ M.non_sortable = {}
 M.end_chars = {
     {
         char = "/>",
-        behavior = Behavior.Deattached,
         gap = 0,
+        is_attached = false,
     }
 }
 
