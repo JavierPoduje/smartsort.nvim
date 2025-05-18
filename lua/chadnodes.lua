@@ -159,13 +159,6 @@ Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self,
                         prev_node:set_end_character(end_char)
                     else
                         cnodes:add(current_node)
-                    -- else
-                    --     print("here baby")
-                    --     local gap_as_str = funcs.repeat_str(" ", current_node.end_character.gap)
-                    --     local end_char_as_str = current_node.end_character.char
-                    --     local str_to_add = gap_as_str .. end_char_as_str
-                    --     prev_node:print(0)
-                    --     prev_node:set_end_character(str_to_add)
                     end
                 end
             else
@@ -183,14 +176,9 @@ Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self,
         assert(current_node ~= nil, "Chadnode not found")
 
         local end_char = chadquery:get_special_end_char(current_node:type())
-        local is_special_end_char = chadquery:is_special_end_char(current_node:type())
 
         if gap == -1 and end_char ~= nil and prev_node ~= nil and end_char.is_attached then
-            print("#3")
             prev_node:set_end_character(end_char)
-        elseif gap == -1 and is_special_end_char and prev_node ~= nil and end_char ~= nil and not end_char.is_attached then
-            print("#4")
-            cnodes:add(current_node)
         elseif gap > 0 then
             cnodes:add(current_node)
         elseif chadquery:is_linkable(current_node:type()) and next_node ~= nil then
