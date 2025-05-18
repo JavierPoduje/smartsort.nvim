@@ -13,7 +13,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public _get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree): TSNode
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode)
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
---- @field public debug fun(self: Chadnodes, bufnr: number): table<any>
+--- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
 --- @field public from_chadnodes fun(parser: vim.treesitter.LanguageTree, cnodes: Chadnodes): Chadnodes
 --- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public gaps fun(self: Chadnodes): number[]
@@ -23,7 +23,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public merge_sortable_nodes_with_adjacent_non_sortable_nodes fun(self: Chadnodes, region: Region): Chadnodes
 --- @field public new fun(self: Chadnodes, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
---- @field public print fun(self: Chadnodes, bufnr: number)
+--- @field public print fun(self: Chadnodes, bufnr: number, opts: table | nil)
 --- @field public sort fun(self: Chadnodes): Chadnodes
 --- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
 --- @field public stringify_into_table fun(self: Chadnodes, gaps: number[]): string[]
@@ -68,6 +68,19 @@ end
 Chadnodes.stringify_into_table = function(self, gaps)
     local nodes_as_str_table = {}
     for idx, cnode in ipairs(self.nodes) do
+        if cnode.end_character ~= nil and not cnode.end_character.is_attached then
+            local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
+            assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a end_character to it")
+            assert(idx == #self.nodes, "Trying to add a end_character to a node that is not the last one")
+
+            local gap_as_str = funcs.repeat_str(" ", cnode.end_character.gap)
+            local end_char = cnode.end_character.char
+            local str_to_add = gap_as_str .. end_char
+            previous_node_as_str = previous_node_as_str .. str_to_add
+            nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
+            break
+        end
+
         local cnode_str = cnode:to_string_preserve_indent(0, cnode.region.srow)
         -- add the node to the table line by line
         for _, line in ipairs(vim.fn.split(cnode_str, "\n")) do
@@ -86,10 +99,11 @@ end
 --- Return a human-readable representation of the current Chadnodes
 --- @param self Chadnodes
 --- @param bufnr number
-Chadnodes.debug = function(self, bufnr)
+--- @param opts table | nil
+Chadnodes.debug = function(self, bufnr, opts)
     local debug_tbl = {}
     for _, node in ipairs(self.nodes) do
-        table.insert(debug_tbl, node:debug(bufnr))
+        table.insert(debug_tbl, node:debug(bufnr, opts))
     end
     return debug_tbl
 end
@@ -97,8 +111,9 @@ end
 --- Print the string representation of the current Chadnodes
 --- @param self Chadnodes
 --- @param bufnr number
-Chadnodes.print = function(self, bufnr)
-    print(vim.inspect(self:debug(bufnr)))
+--- @param opts table | nil
+Chadnodes.print = function(self, bufnr, opts)
+    print(vim.inspect(self:debug(bufnr, opts)))
 end
 
 --- Get the gaps between the nodes. It'll always have a length of `#nodes - 1`.
@@ -138,11 +153,20 @@ Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self,
 
             if chadquery:is_special_end_char(current_node:type()) then
                 local prev_node = self:node_by_idx(idx - 1)
-                local special_end_char_is_attached = chadquery:special_end_char_is_attached(current_node:type())
-                if prev_node ~= nil and special_end_char_is_attached then
-                    prev_node:set_end_character(current_node:type())
-                else
-                    cnodes:add(current_node)
+                local end_char = current_node.end_character
+                if prev_node ~= nil and end_char ~= nil then
+                    if end_char.is_attached then
+                        prev_node:set_end_character(end_char)
+                    else
+                        cnodes:add(current_node)
+                    -- else
+                    --     print("here baby")
+                    --     local gap_as_str = funcs.repeat_str(" ", current_node.end_character.gap)
+                    --     local end_char_as_str = current_node.end_character.char
+                    --     local str_to_add = gap_as_str .. end_char_as_str
+                    --     prev_node:print(0)
+                    --     prev_node:set_end_character(str_to_add)
+                    end
                 end
             else
                 cnodes:add(current_node)
@@ -158,9 +182,14 @@ Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self,
 
         assert(current_node ~= nil, "Chadnode not found")
 
-        if gap == -1 and chadquery:is_special_end_char(current_node:type()) and prev_node ~= nil then
-            prev_node:set_end_character(current_node:type())
-        elseif gap == -1 and not chadquery:special_end_char_is_attached(current_node:type()) then
+        local end_char = chadquery:get_special_end_char(current_node:type())
+        local is_special_end_char = chadquery:is_special_end_char(current_node:type())
+
+        if gap == -1 and end_char ~= nil and prev_node ~= nil and end_char.is_attached then
+            print("#3")
+            prev_node:set_end_character(end_char)
+        elseif gap == -1 and is_special_end_char and prev_node ~= nil and end_char ~= nil and not end_char.is_attached then
+            print("#4")
             cnodes:add(current_node)
         elseif gap > 0 then
             cnodes:add(current_node)
@@ -242,6 +271,12 @@ Chadnodes.from_region = function(bufnr, region, parser)
             break
         end
 
+        -- print("child node: ", funcs.node_to_string(child))
+        -- print("number of nodes", #cnodes.nodes)
+        -- if #cnodes.nodes > 0 then
+        --     print("last node: ", funcs.node_to_string(cnodes.nodes[#cnodes.nodes].node))
+        -- end
+
         local child_id = child:id()
 
         if Region.from_node(child).srow + 1 >= region.srow then
@@ -264,6 +299,16 @@ Chadnodes.from_region = function(bufnr, region, parser)
                 end
             else
                 local cnode = Chadnode:new(child, nil)
+
+                -- TODO: move this into it's own function later
+                local end_char = chadquery:get_special_end_char(cnode:type())
+                if end_char ~= nil and not end_char.is_attached then
+                    local last_cnode = cnodes:node_by_idx(#cnodes.nodes)
+                    assert(last_cnode ~= nil, "last_cnode not found and already looking for a special end character?")
+                    end_char.gap = last_cnode:horizontal_gap(cnode)
+                    cnode:set_end_character(end_char)
+                end
+
                 if not processed_nodes[child_id] then
                     cnodes:add(cnode)
                     processed_nodes[child_id] = true
@@ -279,6 +324,7 @@ end
 --- @param self Chadnodes
 --- @return Chadnodes
 Chadnodes.sort = function(self)
+    self:print(0)
     local non_sortables = self:get_non_sortable_nodes()
     local sortables = Chadnodes:sort_sortable_nodes(self:get_sortable_nodes())
     local sorted_nodes = Chadnodes:new(self.parser)

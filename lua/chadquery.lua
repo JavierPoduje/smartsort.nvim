@@ -12,12 +12,12 @@ local Region = require("region")
 --- @field public language_query LanguageQuery: the language query
 ---
 --- @field public build_query fun(self: Chadquery, node: TSNode): vim.treesitter.Query
+--- @field public get_special_end_char fun(self: Chadquery, node: string): EndChar | nil
 --- @field public is_linkable fun(self: Chadquery, node_type: string): boolean
 --- @field public is_special_end_char fun(self: Chadquery, char: string): boolean
 --- @field public is_supported_node_type fun(self: Chadquery, node: TSNode): boolean
 --- @field public new fun(language: string, options: OptionsForEmbeddedLanguages): Chadquery
 --- @field public sort_and_non_sortable_nodes fun(): table
---- @field public special_end_char_is_attached fun(self: Chadquery, char: string): boolean
 
 local Chadquery = {}
 
@@ -88,21 +88,21 @@ Chadquery.is_special_end_char = function(self, char)
             return true
         end
     end
-    return false;
+    return false
 end
 
---- Returns true if the special end character is attached to the node
+--- Returns the special end char for the given language if it's an special end char
 --- @param self Chadquery
 --- @param char string: the character to check
---- @return boolean: value of end_char's is_attached property
-Chadquery.special_end_char_is_attached = function(self, char)
+--- @return EndChar | nil
+Chadquery.get_special_end_char = function(self, char)
     local end_chars = self.language_query:get_end_chars()
     for _, end_char in ipairs(end_chars) do
         if end_char.char == char then
-            return end_char.is_attached
+            return end_char
         end
     end
-    return false;
+    return nil
 end
 
 --- Returns true if the node_type is supported by the smartsort.nvim plugin

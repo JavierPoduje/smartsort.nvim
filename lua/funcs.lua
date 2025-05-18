@@ -29,6 +29,18 @@ M.merge_tables = function(...)
     return output
 end
 
+--- Returns a string with the given string repeated the specified number of times.
+--- @param str string: the string to repeat
+--- @param times number: the number of times to repeat the string
+--- @return string: the repeated string
+M.repeat_str = function(str, times)
+    local result = ""
+    for _ = 1, times do
+        result = result .. str
+    end
+    return result
+end
+
 --- Given a predicate, return the first value if true, else the second value
 --- @param predicate boolean
 --- @param if_true function<any>

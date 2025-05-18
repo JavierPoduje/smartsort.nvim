@@ -7,7 +7,7 @@ local f = require("funcs")
 --- @field public node TSNode: the node
 --- @field public region Region: the region of the node
 --- @field public sortable_idx string | nil: the index from which the node can be sorted
---- @field public end_character string | nil: the end character of the node
+--- @field public end_character EndChar: the end character of the node
 ---
 --- @field public debug fun(self: Chadnode, bufnr: number, opts: table | nil): table<any>
 --- @field public from_query_match fun(query: vim.treesitter.Query, match: table<integer, TSNode>, bufnr: number): Chadnode
@@ -15,12 +15,13 @@ local f = require("funcs")
 --- @field public get fun(self: Chadnode): TSNode
 --- @field public get_sortable_idx fun(self: Chadnode): string
 --- @field public has_next_sibling fun(self: Chadnode): boolean
+--- @field public horizontal_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public is_sortable fun(self: Chadnode): boolean
 --- @field public new fun(self:Chadnode, node: TSNode, sortable_idx: string | nil): Chadnode
 --- @field public next_sibling fun(self: Chadnode): Chadnode
 --- @field public parent_node fun(self: Chadnode): TSNode | nil
 --- @field public print fun(self: Chadnode, bufnr: number, opts: table | nil)
---- @field public set_end_character fun(self: Chadnode, character: string)
+--- @field public set_end_character fun(self: Chadnode, character: EndChar)
 --- @field public set_previous fun(self: Chadnode, previous_cnode: Chadnode)
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public to_string_preserve_indent fun(self: Chadnode, bufnr: number, target_row: number): string
@@ -28,14 +29,14 @@ local f = require("funcs")
 
 local Chadnode = {}
 
-function Chadnode:new(node, sortable_idx, end_character)
+function Chadnode:new(node, sortable_idx)
     Chadnode.__index = Chadnode
     local obj = {}
     setmetatable(obj, Chadnode)
 
     local srow, scol, erow, ecol = node:range()
 
-    obj.end_character = end_character
+    obj.end_character = nil
     obj.node = node
     obj.previous = nil
     obj.region = Region.new(srow, scol, erow, ecol)
@@ -56,7 +57,7 @@ end
 
 --- Set the end character of the chadnode
 --- @param self Chadnode: the node
---- @param character string: the end character
+--- @param character EndChar: the end character
 Chadnode.set_end_character = function(self, character)
     self.end_character = character
 end
@@ -70,8 +71,6 @@ Chadnode.from_query_match = function(query, match, bufnr)
     local matched_node = nil
     -- @type string
     local matched_id = nil
-    -- @type string
-    local end_character = nil
 
     for id, nodes in pairs(match) do
         local capture_name = query.captures[id]
@@ -85,7 +84,7 @@ Chadnode.from_query_match = function(query, match, bufnr)
     assert(matched_node ~= nil, "The whole node can't be nil")
     assert(matched_id ~= nil, "The identifier can't be nil")
 
-    return Chadnode:new(matched_node, matched_id, end_character)
+    return Chadnode:new(matched_node, matched_id)
 end
 
 --- Set the previous node
@@ -101,7 +100,16 @@ end
 Chadnode.debug = function(self, bufnr, opts)
     opts = opts or {}
     local include_region = opts.include_region or false
-    if include_region then
+    local include_end_char = opts.include_end_char or false
+
+    if include_end_char then
+        return {
+            node = self:to_string(bufnr),
+            sortable_idx = self:get_sortable_idx(),
+            previous = self.previous and self.previous:to_string(bufnr) or nil,
+            end_char = vim.inspect(self.end_character),
+        }
+    elseif include_region then
         return {
             node = self:to_string(bufnr),
             sortable_idx = self:get_sortable_idx(),
@@ -189,6 +197,16 @@ Chadnode.next_sibling = function(self)
     assert(next_sibling ~= nil, "The node has no next sibling")
     local new_chad_node = Chadnode:new(next_sibling, nil)
     return new_chad_node
+end
+
+--- Calculate the horizontal gap between two nodes, where the gap is the number of columns between them.
+--- @param self Chadnode: the first node
+--- @param other Chadnode: the second node
+--- @return number: the gap between the two nodes
+Chadnode.horizontal_gap = function(self, other)
+    assert(other ~= nil, "The given node can't be nil")
+    assert(self.region.srow == other.region.srow, "horizontal gap can only be calculated between nodes in the same row")
+    return other.region.scol - self.region.ecol
 end
 
 --- Calculate the vertical gap between two nodes, where the gap is the number of rows between them.
