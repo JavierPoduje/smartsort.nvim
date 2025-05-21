@@ -147,7 +147,9 @@ LanguageQuery._get_non_sortable_nodes_by_language = function(language)
     elseif language == "lua" then
         return lua_node_types.non_sortable
     elseif language == "scss" then
-        return scss_node_types.non_sortable
+        return f.merge_tables(
+            scss_node_types.non_sortable,
+            css_node_types.non_sortable)
     elseif language == "typescript" then
         return typescript_node_types.non_sortable
     elseif language == "vue" then
@@ -170,7 +172,9 @@ LanguageQuery._get_sortable_nodes_by_language = function(language)
     elseif language == "lua" then
         return lua_node_types.sortable
     elseif language == "scss" then
-        return scss_node_types.sortable
+        return f.merge_tables(
+            scss_node_types.sortable,
+            css_node_types.sortable)
     elseif language == "typescript" then
         return typescript_node_types.sortable
     elseif language == "vue" then
@@ -178,8 +182,7 @@ LanguageQuery._get_sortable_nodes_by_language = function(language)
             vue_node_types.sortable,
             typescript_node_types.sortable,
             css_node_types.sortable,
-            scss_node_types.sortable
-        )
+            scss_node_types.sortable)
     end
 
     error("Unsupported language: " .. language)
