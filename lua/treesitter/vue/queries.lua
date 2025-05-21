@@ -25,11 +25,10 @@ M.embedded_languages_queries = function()
             language = "typescript",
             query = M._embedded_typescript_query(),
         },
-        -- TODO: ass javascript support!!!!
-        -- {
-        --     language = "javascript",
-        --     query = M._embedded_javascript_query(),
-        -- },
+        {
+            language = "javascript",
+            query = M._embedded_javascript_query(),
+        },
         {
             language = "scss",
             query = M._embedded_scss_query(),
@@ -69,11 +68,11 @@ M._embedded_typescript_query = function()
     ]]
 end
 
--- M._embedded_javascript_query = function()
---     return [[
---         (script_element) @block
---     ]]
--- end
+M._embedded_javascript_query = function()
+    return [[
+        (script_element) @block
+    ]]
+end
 
 M._embedded_scss_query = function()
     return [[

@@ -12,6 +12,9 @@ local scss_queries = require("treesitter.scss.queries")
 local typescript_node_types = require("treesitter.typescript.node_types")
 local typescript_queries = require("treesitter.typescript.queries")
 
+local javascript_node_types = require("treesitter.javascript.node_types")
+local javascript_queries = require("treesitter.javascript.queries")
+
 local vue_node_types = require("treesitter.vue.node_types")
 local vue_queries = require("treesitter.vue.queries")
 
@@ -51,8 +54,9 @@ function LanguageQuery:new(language)
         language == "lua" or
         language == "scss" or
         language == "typescript" or
+        language == "javascript" or
         language == "vue",
-        "Unsupported language: " .. language
+        "Unsupported language: typescript" .. language
     )
 
     obj.language = language
@@ -81,6 +85,8 @@ LanguageQuery.get_end_chars = function(self)
         return vue_node_types.end_chars
     elseif self.language == "typescript" then
         return typescript_node_types.end_chars
+    elseif self.language == "javascript" then
+        return javascript_node_types.end_chars
     end
     return {}
 end
@@ -124,6 +130,8 @@ end
 LanguageQuery.query_by_node = function(self, node)
     if self.language == "typescript" then
         return typescript_queries.query_by_node(node)
+    elseif self.language == "javascript" then
+        return javascript_queries.query_by_node(node)
     elseif self.language == "lua" then
         return lua_queries.query_by_node(node)
     elseif self.language == "css" then
@@ -152,6 +160,8 @@ LanguageQuery._get_non_sortable_nodes_by_language = function(language)
             css_node_types.non_sortable)
     elseif language == "typescript" then
         return typescript_node_types.non_sortable
+    elseif language == "javascript" then
+        return javascript_node_types.non_sortable
     elseif language == "vue" then
         return f.merge_arrays(
             vue_node_types.non_sortable,
@@ -177,6 +187,8 @@ LanguageQuery._get_sortable_nodes_by_language = function(language)
             css_node_types.sortable)
     elseif language == "typescript" then
         return typescript_node_types.sortable
+    elseif language == "javascript" then
+        return javascript_node_types.sortable
     elseif language == "vue" then
         return f.merge_arrays(
             vue_node_types.sortable,

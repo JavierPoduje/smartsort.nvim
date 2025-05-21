@@ -35,6 +35,7 @@ function Chadquery:new(language, options)
         language == "lua" or
         language == "scss" or
         language == "typescript" or
+        language == "javascript" or
         language == "vue",
         "Unsupported language: " .. language
     )
@@ -62,6 +63,7 @@ Chadquery.build_query = function(self, node)
         self.language == "lua" or
         self.language == "scss" or
         self.language == "typescript" or
+        self.language == "javascript" or
         self.language == "vue",
         "Unsupported language: " .. self.language
     )

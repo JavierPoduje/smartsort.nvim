@@ -1,3 +1,6 @@
+local merge_tables = require("funcs").merge_tables
+local javascript_queries = require("treesitter.javascript.queries")
+
 --- This module provides functions to build and manage queries for different node types in a tree-sitter parser.
 --- All queries should have two matches:
 --- * The first match is @block (the node itself), which is used to identify the node in the tree.
@@ -26,25 +29,6 @@ M._property_signature_query = function()
     ]]
 end
 
---- Return the query for a lexical declaration
---- @return string
-M._lexical_declaration_query = function()
-    return [[
-        (lexical_declaration (variable_declarator (identifier) @identifier)) @block
-    ]]
-end
-
---- Return the query for a function declaration
---- @return string
-M._function_declaration_query = function()
-    return [[
-        [
-          (export_statement (function_declaration (identifier) @identifier)) @block
-          (function_declaration (identifier) @identifier) @block
-        ]
-    ]]
-end
-
 --- Return the query for a function declaration
 --- @return string
 M._interface_declaration_query = function()
@@ -56,27 +40,12 @@ M._interface_declaration_query = function()
     ]]
 end
 
-M._method_definition_query = function()
-    return [[
-        (method_definition (property_identifier) @identifier) @block
-    ]]
-end
-
---- Return the query for a class_declaration
---- @return string
-M._class_declaration_query = function()
-    return [[
-        (class_declaration (type_identifier) @identifier) @block
-    ]]
-end
-
-M.query_by_node_as_table = {
-    function_declaration = M._function_declaration_query(),
-    lexical_declaration = M._lexical_declaration_query(),
-    method_definition = M._method_definition_query(),
-    class_declaration = M._class_declaration_query(),
-    interface_declaration = M._interface_declaration_query(),
-    property_signature = M._property_signature_query(),
-}
+M.query_by_node_as_table = merge_tables(
+    {
+        interface_declaration = M._interface_declaration_query(),
+        property_signature = M._property_signature_query(),
+    },
+    javascript_queries.query_by_node_as_table
+)
 
 return M
