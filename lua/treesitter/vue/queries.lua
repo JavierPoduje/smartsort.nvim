@@ -25,6 +25,10 @@ M.embedded_languages_queries = function()
             language = "typescript",
             query = M._embedded_typescript_query(),
         },
+        {
+            language = "scss",
+            query = M._embedded_scss_query(),
+        },
     }
 end
 
@@ -50,6 +54,20 @@ M._embedded_typescript_query = function()
               attribute (
                 quoted_attribute_value (attribute_value) @lang
               ) (#eq? @lang "ts")
+            )
+          )
+        ) @block
+    ]]
+end
+
+M._embedded_scss_query = function()
+    return [[
+        (style_element
+          (start_tag
+            (
+              attribute (
+                quoted_attribute_value (attribute_value) @lang
+              ) (#eq? @lang "scss")
             )
           )
         ) @block

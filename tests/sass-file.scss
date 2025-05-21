@@ -5,5 +5,10 @@
     1px
     solid
     black;
+
+  &:hover {
+    background-color: yellow;
+    color: blue;
+  }
 }
 
