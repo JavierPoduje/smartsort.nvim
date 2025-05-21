@@ -12,15 +12,9 @@ local M = {}
 --- @param node TSNode: the type of the node
 --- @return string
 M.query_by_node = function(node)
-    local node_type = node:type()
-
-    if node_type == "script_element" then
-        return M._script_element_query()
-    elseif node_type == "directive_attribute" then
-        return M._directive_attribute_query()
-    end
-
-    error("Unsupported node type: " .. node_type)
+    local query = M.query_by_node_as_table[node:type()]
+    assert(query ~= nil, "Unsupported node type: " .. node:type())
+    return query
 end
 
 --- Retuns a list of queries for the embedded languages
@@ -61,5 +55,10 @@ M._embedded_typescript_query = function()
         ) @block
     ]]
 end
+
+M.query_by_node_as_table = {
+    script_element = M._script_element_query(),
+    directive_attribute = M._directive_attribute_query(),
+}
 
 return M

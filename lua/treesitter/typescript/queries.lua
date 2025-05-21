@@ -15,21 +15,9 @@ M.query_by_node = function(node)
         node_type = node:child(1):type()
     end
 
-    if node_type == "function_declaration" then
-        return M._function_declaration_query()
-    elseif node_type == "lexical_declaration" then
-        return M._lexical_declaration_query()
-    elseif node_type == "method_definition" then
-        return M._method_definition_query()
-    elseif node_type == "class_declaration" then
-        return M._class_declaration_query()
-    elseif node_type == "interface_declaration" then
-        return M._interface_declaration_query()
-    elseif node_type == "property_signature" then
-        return M._property_signature_query()
-    end
-
-    error("Unsupported node type: " .. node_type)
+    local query = M.query_by_node_as_table[node:type()]
+    assert(query ~= nil, "Unsupported node type: " .. node:type())
+    return query
 end
 
 M._property_signature_query = function()
@@ -81,5 +69,14 @@ M._class_declaration_query = function()
         (class_declaration (type_identifier) @identifier) @block
     ]]
 end
+
+M.query_by_node_as_table = {
+    function_declaration = M._function_declaration_query(),
+    lexical_declaration = M._lexical_declaration_query(),
+    method_definition = M._method_definition_query(),
+    class_declaration = M._class_declaration_query(),
+    interface_declaration = M._interface_declaration_query(),
+    property_signature = M._property_signature_query(),
+}
 
 return M

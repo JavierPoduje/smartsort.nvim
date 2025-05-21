@@ -1,3 +1,5 @@
+local merge_tables = require("funcs").merge_tables
+
 local css_queries = require("treesitter.css.queries")
 
 local M = {}
@@ -5,9 +7,14 @@ local M = {}
 --- @param node TSNode: the type of the node
 --- @return string
 M.query_by_node = function(node)
-    -- no custom queries defined for sass just yet, so just use the css ones
-    return css_queries.query_by_node(node)
+    local query = M.query_by_node_as_table[node:type()]
+    assert(query ~= nil, "Unsupported node type: " .. node:type())
+    return query
 end
 
-return M
+M.query_by_node_as_table = merge_tables(
+    {},
+    css_queries.query_by_node_as_table
+)
 
+return M
