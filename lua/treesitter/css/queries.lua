@@ -7,9 +7,17 @@ M.query_by_node = function(node)
 
     if node_type == "rule_set" then
         return M._rule_set_query()
+    elseif node_type == "declaration" then
+        return M._declaration_query()
     end
 
     error("Unsupported node type: " .. node_type)
+end
+
+M._declaration_query = function()
+    return [[
+        (declaration (property_name) @identifier) @block
+    ]]
 end
 
 M._rule_set_query = function()

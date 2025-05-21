@@ -1,6 +1,7 @@
 local M = {}
 
 M.sortable = {
+    "declaration",
     "rule_set",
 }
 
