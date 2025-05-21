@@ -7,7 +7,7 @@
     :aaa="aaa" />
 </template>
 
-<script setup lang="ts">
+<script>
 import { one, two, three, four } from './my-module';
 import { ref } from 'vue';
 
