@@ -100,7 +100,7 @@ end
 --- @param self LanguageQuery
 --- @return table: list of strings with the sortable and non-sortable nodes merged
 LanguageQuery.get_sortable_and_non_sortable_nodes = function(self)
-    return f.merge_tables(self.sortable_nodes, self.non_sortable_nodes)
+    return f.merge_arrays(self.sortable_nodes, self.non_sortable_nodes)
 end
 
 --- @param self LanguageQuery
@@ -147,13 +147,13 @@ LanguageQuery._get_non_sortable_nodes_by_language = function(language)
     elseif language == "lua" then
         return lua_node_types.non_sortable
     elseif language == "scss" then
-        return f.merge_tables(
+        return f.merge_arrays(
             scss_node_types.non_sortable,
             css_node_types.non_sortable)
     elseif language == "typescript" then
         return typescript_node_types.non_sortable
     elseif language == "vue" then
-        return f.merge_tables(
+        return f.merge_arrays(
             vue_node_types.non_sortable,
             typescript_node_types.non_sortable,
             css_node_types.non_sortable,
@@ -172,13 +172,13 @@ LanguageQuery._get_sortable_nodes_by_language = function(language)
     elseif language == "lua" then
         return lua_node_types.sortable
     elseif language == "scss" then
-        return f.merge_tables(
+        return f.merge_arrays(
             scss_node_types.sortable,
             css_node_types.sortable)
     elseif language == "typescript" then
         return typescript_node_types.sortable
     elseif language == "vue" then
-        return f.merge_tables(
+        return f.merge_arrays(
             vue_node_types.sortable,
             typescript_node_types.sortable,
             css_node_types.sortable,

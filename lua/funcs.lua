@@ -16,6 +16,52 @@ end
 --- @param ... table One or more tables to merge.
 --- @return table A new table containing all elements from the input tables.
 M.merge_tables = function(...)
+    local merged = {}
+    local tables_to_merge = { ... } -- Collect all arguments into a table
+
+    -- Helper function to copy a table deeply
+    local function deep_copy(original)
+        local copy = {}
+        for k, v in pairs(original) do
+            if type(v) == "table" then
+                copy[k] = deep_copy(v)
+            else
+                copy[k] = v
+            end
+        end
+        return copy
+    end
+
+    -- Iterate through each table provided as an argument
+    for _, current_table in ipairs(tables_to_merge) do
+        assert(
+            type(current_table) == "table",
+            "Expected a table, but got " .. type(current_table)
+        )
+
+        for k, v in pairs(current_table) do
+            if type(v) == "table" and type(merged[k]) == "table" then
+                -- Recursive call for nested tables, merging existing with current
+                merged[k] = M.merge_tables(merged[k], v)
+            elseif type(v) == "table" then
+                -- If 'v' is a table but 'merged[k]' is not, deep copy 'v'
+                merged[k] = deep_copy(v)
+            else
+                -- Overwrite with value from the current_table
+                merged[k] = v
+            end
+        end
+    end
+
+    return merged
+end
+
+--- Returns a merged table containing all elements from the input tables.
+--- It does not modify the original tables.
+---
+--- @param ... table One or more arrays
+--- @return table A new table containing all elements from the input tables.
+M.merge_arrays = function(...)
     local args = { ... }
     local output = {}
     for _, current_table in ipairs(args) do

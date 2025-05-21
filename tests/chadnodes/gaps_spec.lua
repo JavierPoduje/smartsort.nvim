@@ -9,6 +9,7 @@ local it = it
 --- @diagnostic disable-next-line: undefined-field
 local same = assert.are.same
 
+
 describe("chadnodes: gaps", function()
     it("should detect 'empty' gaps", function()
         local mock = typescript_mocks.without_gap
