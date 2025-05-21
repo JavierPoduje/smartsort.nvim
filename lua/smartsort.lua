@@ -30,6 +30,11 @@ end
 --- @param region Region: the region to sort
 --- @param args Args: the arguments to use
 M.sort_single_line = function(region, args)
+    if args.separator == nil then
+        print("Separator is required")
+        return
+    end
+
     assert(args.separator ~= nil, "Separator is required")
 
     local separator = args.separator

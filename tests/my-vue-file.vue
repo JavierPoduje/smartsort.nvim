@@ -8,6 +8,7 @@
 </template>
 
 <script setup lang="ts">
+import { one, two, three, four } from './my-module';
 import { ref } from 'vue';
 
 const bbb = ref('another');

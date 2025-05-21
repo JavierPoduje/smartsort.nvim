@@ -29,6 +29,13 @@ M.merge_tables = function(...)
     return output
 end
 
+--- Check if the column is the max column
+--- @param col number: the column to check
+--- @return boolean
+M.is_max_col = function(col)
+    return col == vim.v.maxcol
+end
+
 --- Returns a string with the given string repeated the specified number of times.
 --- @param str string: the string to repeat
 --- @param times number: the number of times to repeat the string
