@@ -29,6 +29,10 @@ M.embedded_languages_queries = function()
             language = "scss",
             query = M._embedded_scss_query(),
         },
+        {
+            language = "css",
+            query = M._embedded_css_query(),
+        }
     }
 end
 
@@ -71,6 +75,12 @@ M._embedded_scss_query = function()
             )
           )
         ) @block
+    ]]
+end
+
+M._embedded_css_query = function()
+    return [[
+        (style_element (start_tag)) @block
     ]]
 end
 

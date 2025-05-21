@@ -16,7 +16,7 @@ const aaa =
   ref('Hello World')
 </script>
 
-<style lang="scss" module>
+<style module>
 .title {
   color: blue;
   font-size: 20px;
