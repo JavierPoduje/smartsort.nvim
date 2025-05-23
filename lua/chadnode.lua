@@ -74,6 +74,7 @@ Chadnode.from_query_match = function(query, match, bufnr)
 
     for id, nodes in pairs(match) do
         local capture_name = query.captures[id]
+
         if capture_name == "identifier" then
             matched_id = vim.treesitter.get_node_text(nodes[1], bufnr)
         elseif capture_name == "block" then

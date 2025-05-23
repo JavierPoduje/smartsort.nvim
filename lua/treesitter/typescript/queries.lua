@@ -1,11 +1,6 @@
 local merge_tables = require("funcs").merge_tables
 local javascript_queries = require("treesitter.javascript.queries")
 
---- This module provides functions to build and manage queries for different node types in a tree-sitter parser.
---- All queries should have two matches:
---- * The first match is @block (the node itself), which is used to identify the node in the tree.
---- * The second match is the @identifier, which is later used to sort the block of code.
-
 local M = {}
 
 --- @param node TSNode: the type of the node
@@ -18,8 +13,8 @@ M.query_by_node = function(node)
         node_type = node:child(1):type()
     end
 
-    local query = M.query_by_node_as_table[node:type()]
-    assert(query ~= nil, "Unsupported node type: " .. node:type())
+    local query = M.query_by_node_as_table[node_type]
+    assert(query ~= nil, "Unsupported node type: " .. node_type)
     return query
 end
 

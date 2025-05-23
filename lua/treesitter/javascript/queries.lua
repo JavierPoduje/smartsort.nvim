@@ -10,8 +10,8 @@ M.query_by_node = function(node)
         node_type = node:child(1):type()
     end
 
-    local query = M.query_by_node_as_table[node:type()]
-    assert(query ~= nil, "Unsupported node type: " .. node:type())
+    local query = M.query_by_node_as_table[node_type]
+    assert(query ~= nil, "Unsupported node type: " .. node_type)
     return query
 end
 
@@ -19,7 +19,10 @@ end
 --- @return string
 M._class_declaration_query = function()
     return [[
-        (class_declaration (type_identifier) @identifier) @block
+        [
+            (export_statement (class_declaration (type_identifier) @identifier))
+            (class_declaration (type_identifier) @identifier)
+        ] @block
     ]]
 end
 
@@ -28,9 +31,9 @@ end
 M._function_declaration_query = function()
     return [[
         [
-          (export_statement (function_declaration (identifier) @identifier)) @block
-          (function_declaration (identifier) @identifier) @block
-        ]
+            (export_statement (function_declaration (identifier) @identifier))
+            (function_declaration (identifier) @identifier)
+        ] @block
     ]]
 end
 
@@ -38,13 +41,19 @@ end
 --- @return string
 M._lexical_declaration_query = function()
     return [[
-        (lexical_declaration (variable_declarator (identifier) @identifier)) @block
+        [
+           (export_statement (lexical_declaration (variable_declarator (identifier) @identifier)))
+           (lexical_declaration (variable_declarator (identifier) @identifier))
+        ] @block
     ]]
 end
 
 M._method_definition_query = function()
     return [[
-        (method_definition (property_identifier) @identifier) @block
+        [
+            (export_statement (method_definition (property_identifier) @identifier))
+            (method_definition (property_identifier) @identifier)
+        ] @block
     ]]
 end
 
