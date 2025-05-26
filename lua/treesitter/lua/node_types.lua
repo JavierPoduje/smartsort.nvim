@@ -11,4 +11,15 @@ M.non_sortable = {
     "comment",
 }
 
+M.end_chars = {
+    {
+        char = ",",
+        gap = {
+            vertical_gap = 0,
+            horizontal_gap = 0,
+        },
+        is_attached = true,
+    }
+}
+
 return M

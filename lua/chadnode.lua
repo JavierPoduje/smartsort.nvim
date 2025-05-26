@@ -103,7 +103,15 @@ Chadnode.debug = function(self, bufnr, opts)
     local include_region = opts.include_region or false
     local include_end_char = opts.include_end_char or false
 
-    if include_end_char then
+    if include_region and include_end_char then
+        return {
+            end_char = vim.inspect(self.end_character),
+            node = self:to_string(bufnr),
+            previous = self.previous and self.previous:to_string(bufnr) or nil,
+            region = self.region:tostr(),
+            sortable_idx = self:get_sortable_idx(),
+        }
+    elseif include_end_char then
         return {
             node = self:to_string(bufnr),
             sortable_idx = self:get_sortable_idx(),
@@ -174,7 +182,7 @@ Chadnode.to_string_preserve_indent = function(self, bufnr, target_row)
         local is_last_line = idx == #lines
         if is_last_line and self.end_character ~= nil then
             table.insert(stringified_lines,
-                target_indent .. (relative_indent or "") .. line:gsub("^%s*", "") .. self.end_character)
+                target_indent .. (relative_indent or "") .. line:gsub("^%s*", "") .. self.end_character.char)
         else
             table.insert(stringified_lines, target_indent .. (relative_indent or "") .. line:gsub("^%s*", ""))
         end
@@ -200,16 +208,17 @@ Chadnode.next_sibling = function(self)
     return new_chad_node
 end
 
+--- TODO: change this function to `calculate_horizontal_gap`
 --- Calculate the horizontal gap between two nodes, where the gap is the number of columns between them.
 --- @param self Chadnode: the first node
 --- @param other Chadnode: the second node
 --- @return number: the gap between the two nodes
 Chadnode.horizontal_gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
-    assert(self.region.srow == other.region.srow, "horizontal gap can only be calculated between nodes in the same row")
     return other.region.scol - self.region.ecol
 end
 
+--- TODO: change this function to `calculate_vertical_gap` to avoid confusion with `horizontal_gap`
 --- Calculate the vertical gap between two nodes, where the gap is the number of rows between them.
 --- @param self Chadnode: the first node
 --- @param other Chadnode: the second node
@@ -217,10 +226,6 @@ end
 Chadnode.gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
     assert(self.region.erow <= other.region.srow, "Node 1 is not before Node 2 or they're overlaping")
-
-    if self.region.erow == other.region.srow then
-        return -1
-    end
 
     -- If the other node has a comment node, we need to compare the other node's comment node to
     -- get the empty spaces

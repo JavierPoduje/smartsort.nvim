@@ -16,12 +16,18 @@ M.non_sortable = {
 M.end_chars = {
     {
         char = ";",
-        gap = 0,
+        gap = {
+            vertical_gap = 0,
+            horizontal_gap = 0,
+        },
         is_attached = true,
     },
     {
         char = ",",
-        gap = 0,
+        gap = {
+            vertical_gap = 0,
+            horizontal_gap = 0,
+        },
         is_attached = true,
     }
 }
