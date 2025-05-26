@@ -2,7 +2,7 @@
 --- @field args Args: the arguments to use
 
 
-vim.api.nvim_create_user_command('SmartReload', function()
+vim.api.nvim_create_user_command('SReload', function()
     require('lazy.core.loader').reload('smartsort.nvim')
 end, {
     range = true,

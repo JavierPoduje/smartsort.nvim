@@ -1,3 +1,5 @@
+local javascript_node_types = require("treesitter.javascript.node_types")
+
 local M = {}
 
 M.sortable = {
@@ -7,6 +9,7 @@ M.sortable = {
     "interface_declaration",
     "lexical_declaration",
     "method_definition",
+    "pair",
     "property_signature",
 }
 

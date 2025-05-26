@@ -1,4 +1,4 @@
-const title =             'Hello World';
+const title = 'Hello World';
 const another = 'another';
 
 /**

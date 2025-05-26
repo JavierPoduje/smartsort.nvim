@@ -50,10 +50,13 @@ end
 
 M._method_definition_query = function()
     return [[
-        [
-            (export_statement (method_definition (property_identifier) @identifier))
-            (method_definition (property_identifier) @identifier)
-        ] @block
+        (method_definition (property_identifier) @identifier) @block
+    ]]
+end
+
+M._pair_query = function()
+    return [[
+        (pair (property_identifier) @identifier) @block
     ]]
 end
 
@@ -62,6 +65,7 @@ M.query_by_node_as_table = {
     function_declaration = M._function_declaration_query(),
     lexical_declaration = M._lexical_declaration_query(),
     method_definition = M._method_definition_query(),
+    pair = M._pair_query(),
 }
 
 return M

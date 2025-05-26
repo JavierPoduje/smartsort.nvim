@@ -6,6 +6,7 @@ M.sortable = {
     "function_declaration",
     "lexical_declaration",
     "method_definition",
+    "pair",
 }
 
 M.non_sortable = {
@@ -15,6 +16,11 @@ M.non_sortable = {
 M.end_chars = {
     {
         char = ";",
+        gap = 0,
+        is_attached = true,
+    },
+    {
+        char = ",",
         gap = 0,
         is_attached = true,
     }
