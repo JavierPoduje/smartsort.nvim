@@ -2,9 +2,11 @@ local f = require("funcs")
 local parsers = require("nvim-treesitter.parsers")
 local Region = require("region")
 local Chadnodes = require("chadnodes")
+local ts_utils = require("nvim-treesitter.ts_utils")
 
 --- @class Args
 --- @field separator string: the separator to use between words
+--- @field use_optional_strategy? boolean: whether to use the optional strategy or not
 
 local M = {}
 
@@ -15,6 +17,8 @@ M.sort = function(args)
 
     if region.srow == region.erow then
         M.sort_single_line(region, args)
+    elseif args.use_optional_strategy then
+        M.sort_multiple_lines_with_optional_strategy(region)
     else
         M.sort_multiple_lines(region)
     end
@@ -74,6 +78,19 @@ M.sort_multiple_lines = function(region)
     local sorted_cnodes = merged_cnodes:sort()
     local sorted_nodes_with_gaps = sorted_cnodes:stringify_into_table(gaps)
     vim.api.nvim_buf_set_lines(0, region.srow - 1, region.erow, true, sorted_nodes_with_gaps)
+end
+
+M.sort_multiple_lines_with_optional_strategy = function(region)
+    local parser = parsers.get_parser()
+    local cnodes = Chadnodes.from_region(0, region, parser)
+    local merged_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)
+    merged_cnodes:print(0)
+
+    local fst = cnodes:node_by_idx(1)
+    local scd = cnodes:node_by_idx(2)
+    assert(fst ~= nil, "First node cannot be nil")
+    assert(scd ~= nil, "Second node cannot be nil")
+    ts_utils.swap_nodes(fst:get(), scd:get(), 0)
 end
 
 --- Insert the string into the buffer in a single line in a specific range

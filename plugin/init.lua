@@ -11,6 +11,21 @@ end, {
 
 --- Sort the visually selected lines
 --- @param opts Options: the options to use
+vim.api.nvim_create_user_command('Smr', function(opts)
+    --- @diagnostic disable-next-line: param-type-mismatch
+    local args = vim.fn.split(opts.args, " \\s*")
+
+    require('smartsort').sort({
+        separator = args[1] or nil,
+        use_optional_strategy = true,
+    })
+end, {
+    range = true,
+    nargs = '?',
+})
+
+--- Sort the visually selected lines
+--- @param opts Options: the options to use
 vim.api.nvim_create_user_command('Smartsort', function(opts)
     --- @diagnostic disable-next-line: param-type-mismatch
     local args = vim.fn.split(opts.args, " \\s*")

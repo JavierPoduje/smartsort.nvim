@@ -279,7 +279,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
                     { max_start_depth = 1 }
                 )
 
-                for pattern, match, metadata in query_matches do
+                for _, match, _ in query_matches do
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
                     if not processed_nodes[child_id] then
                         cnodes:add(cnode)
