@@ -13,7 +13,7 @@ M.sortable = {
     "property_signature",
 }
 
-M.non_sortable = {
+M.linkable = {
     "comment",
 }
 

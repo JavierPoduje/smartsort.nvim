@@ -9,7 +9,7 @@ M.sortable = {
     "pair",
 }
 
-M.non_sortable = {
+M.linkable = {
     "comment",
 }
 

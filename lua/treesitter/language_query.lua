@@ -26,17 +26,17 @@ local vue_queries = require("treesitter.vue.queries")
 ---
 --- @field public language string: the language to work with
 --- @field public sortable_nodes table: the sortable nodes
---- @field public non_sortable_nodes table: the non-sortable nodes
+--- @field public linkable_nodes table: the non-sortable nodes
 ---
 --- @field public embedded_languages_queries fun(self: LanguageQuery): table
 --- @field public get_end_chars fun(self: LanguageQuery): EndChar[]
---- @field public get_sortable_and_non_sortable_nodes fun(self: LanguageQuery): table
+--- @field public get_sortable_and_linkable_nodes fun(self: LanguageQuery): table
 --- @field public is_linkable fun(self: LanguageQuery, node_type: string): boolean
 --- @field public is_supported_node_type fun(self: LanguageQuery, node_type: string): boolean
 --- @field public new fun(self: LanguageQuery, language: string): LanguageQuery
 --- @field public query_by_node fun(self: LanguageQuery, node: TSNode): string
 ---
---- @field private _get_non_sortable_nodes_by_language fun(language: string): table
+--- @field private _get_linkable_nodes_by_language fun(language: string): table
 --- @field private _get_sortable_nodes_by_language fun(language: string): table
 
 local LanguageQuery = {}
@@ -59,7 +59,7 @@ function LanguageQuery:new(language)
     )
 
     obj.language = language
-    obj.non_sortable_nodes = LanguageQuery._get_non_sortable_nodes_by_language(language)
+    obj.linkable_nodes = LanguageQuery._get_linkable_nodes_by_language(language)
     obj.sortable_nodes = LanguageQuery._get_sortable_nodes_by_language(language)
 
     return obj
@@ -93,7 +93,7 @@ end
 --- @param node_type string: the node type
 --- @return boolean: true if the node type can be linked to another sortable node, false otherwise.
 LanguageQuery.is_linkable = function(self, node_type)
-    for _, node in ipairs(self.non_sortable_nodes) do
+    for _, node in ipairs(self.linkable_nodes) do
         if node == node_type then
             return true
         end
@@ -104,8 +104,8 @@ end
 
 --- @param self LanguageQuery
 --- @return table: list of strings with the sortable and non-sortable nodes merged
-LanguageQuery.get_sortable_and_non_sortable_nodes = function(self)
-    return f.merge_arrays(self.sortable_nodes, self.non_sortable_nodes)
+LanguageQuery.get_sortable_and_linkable_nodes = function(self)
+    return f.merge_arrays(self.sortable_nodes, self.linkable_nodes)
 end
 
 --- @param self LanguageQuery
@@ -148,25 +148,25 @@ end
 
 --- @param language string: the language to get the non-sortable nodes for
 --- @return table: list of strings representing the non-sortable nodes
-LanguageQuery._get_non_sortable_nodes_by_language = function(language)
+LanguageQuery._get_linkable_nodes_by_language = function(language)
     if language == "css" then
-        return css_node_types.non_sortable
+        return css_node_types.linkable
     elseif language == "lua" then
-        return lua_node_types.non_sortable
+        return lua_node_types.linkable
     elseif language == "scss" then
         return f.merge_arrays(
-            scss_node_types.non_sortable,
-            css_node_types.non_sortable)
+            scss_node_types.linkable,
+            css_node_types.linkable)
     elseif language == "typescript" then
-        return typescript_node_types.non_sortable
+        return typescript_node_types.linkable
     elseif language == "javascript" then
-        return javascript_node_types.non_sortable
+        return javascript_node_types.linkable
     elseif language == "vue" then
         return f.merge_arrays(
-            vue_node_types.non_sortable,
-            typescript_node_types.non_sortable,
-            css_node_types.non_sortable,
-            scss_node_types.non_sortable
+            vue_node_types.linkable,
+            typescript_node_types.linkable,
+            css_node_types.linkable,
+            scss_node_types.linkable
         )
     end
 

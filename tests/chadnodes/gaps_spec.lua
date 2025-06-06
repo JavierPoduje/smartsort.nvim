@@ -36,7 +36,7 @@ describe("chadnodes: gaps", function()
     --     local mock = typescript_mocks.commented_functions
     --     local bufnr, parser = utils.setup(mock.content, "typescript")
     --     local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
-    --         :merge_sortable_nodes_with_adjacent_non_sortable_nodes()
+    --         :merge_sortable_nodes_with_adjacent_linkable_nodes()
     --     same(cnodes:gaps(), { 1, 1 })
     -- end)
 end)

@@ -7,7 +7,7 @@ M.sortable = {
     "variable_declaration",
 }
 
-M.non_sortable = {
+M.linkable = {
     "comment",
 }
 

@@ -64,8 +64,8 @@ import { bar, baz, foo } from 'module';
 - For example, a function like `const foo = () => {}` in JavaScript will be sorted based on the name `foo`, because that's their identifier.
 
 #### What happens with blocks of code that don't have an identifier? for example, comments?
-- If they are not defined neither in `sortable` nor `non_sortable` in the language definition inside `Smartsort.nvim`, they will be ignored and not sorted. In other words, They will keep their original position while other blocks of code are sorted around them.
-- If they are defined as `non_sortable`, there are two possibilities:
+- If they are not defined neither in `sortable` nor `linkable` in the language definition inside `Smartsort.nvim`, they will be ignored and not sorted. In other words, They will keep their original position while other blocks of code are sorted around them.
+- If they are defined as `linkable`, there are two possibilities:
     - If the node is not "attached" to any other node after it, meaning, there's a newline between them, it'll be ignroed just like the previous case.
     - Otherwise, it will be "attached" to the next node and sorted with it. This is useful for comments that are attached to a block of code, like:
     ```javascript

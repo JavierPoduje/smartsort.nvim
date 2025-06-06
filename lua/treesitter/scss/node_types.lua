@@ -4,7 +4,7 @@ M.sortable = {
     "rule_set",
 }
 
-M.non_sortable = {
+M.linkable = {
     "comment",
     "single_line_comment",
 }

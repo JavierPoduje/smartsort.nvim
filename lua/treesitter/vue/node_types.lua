@@ -4,7 +4,7 @@ M.sortable = {
     "directive_attribute",
 }
 
-M.non_sortable = {}
+M.linkable = {}
 
 M.end_chars = {
     {

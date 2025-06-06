@@ -9,14 +9,14 @@ local it = it
 --- @diagnostic disable-next-line: undefined-field
 local truthy = assert.is.truthy
 
-describe("chadnodes: get_non_sortable_nodes", function()
-    it("get_non_sortable_nodes shouldn't consider sortable nodes", function()
+describe("chadnodes: get_linkable_nodes", function()
+    it("get_linkable_nodes shouldn't consider sortable nodes", function()
         local mock = typescript_mocks.with_comment
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
-        local non_sortables = cnodes:get_non_sortable_nodes()
+        local linkables = cnodes:get_linkable_nodes()
 
-        truthy(vim.deep_equal(Chadnodes.from_chadnodes(parser, non_sortables):debug(bufnr), {
+        truthy(vim.deep_equal(Chadnodes.from_chadnodes(parser, linkables):debug(bufnr), {
             {
                 node = "// this is a comment",
                 sortable_idx = ""

@@ -17,7 +17,7 @@ local Region = require("region")
 --- @field public is_special_end_char fun(self: Chadquery, char: string): boolean
 --- @field public is_supported_node_type fun(self: Chadquery, node: TSNode): boolean
 --- @field public new fun(language: string, options: OptionsForEmbeddedLanguages): Chadquery
---- @field public sort_and_non_sortable_nodes fun(): table
+--- @field public sort_and_linkable_nodes fun(): table
 
 local Chadquery = {}
 
@@ -118,8 +118,8 @@ end
 --- Returns a list of the sortable and non-sortable nodes_types for the given language
 --- @param self Chadquery: the Chadquery object
 --- @return table: a list of strings representing the sortable and non-sortable nodes
-Chadquery.sort_and_non_sortable_nodes = function(self)
-    return self.language_query:get_sortable_and_non_sortable_nodes()
+Chadquery.sort_and_linkable_nodes = function(self)
+    return self.language_query:get_sortable_and_linkable_nodes()
 end
 
 --- Returns the language that will be used to make queries

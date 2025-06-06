@@ -17,9 +17,9 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public from_chadnodes fun(parser: vim.treesitter.LanguageTree, cnodes: Chadnodes): Chadnodes
 --- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public get fun(self: Chadnodes): Chadnode[]
---- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
+--- @field public get_linkable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
---- @field public merge_sortable_nodes_with_adjacent_non_sortable_nodes fun(self: Chadnodes, region: Region): Chadnodes
+--- @field public merge_sortable_nodes_with_adjacent_linkable_nodes fun(self: Chadnodes, region: Region): Chadnodes
 --- @field public new fun(self: Chadnodes, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
 --- @field public print fun(self: Chadnodes, bufnr: number, opts: table | nil)
@@ -143,7 +143,7 @@ end
 --- @param self Chadnodes
 --- @param region Region
 --- @return Chadnodes
-Chadnodes.merge_sortable_nodes_with_adjacent_non_sortable_nodes = function(self, region)
+Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, region)
     local gaps = self:vertical_gaps()
     local cnodes = Chadnodes:new(self.parser)
     local chadquery = Chadquery:new(self.parser:lang(), {
@@ -316,14 +316,14 @@ end
 --- @param self Chadnodes
 --- @return Chadnodes
 Chadnodes.sort = function(self)
-    local non_sortables = self:get_non_sortable_nodes()
+    local linkables = self:get_linkable_nodes()
     local sortables = Chadnodes:sort_sortable_nodes(self:get_sortable_nodes())
     local sorted_nodes = Chadnodes:new(self.parser)
 
     --- @type number
     local sortable_idx = 1
     --- @type number
-    local non_sortable_idx = 1
+    local linkable_idx = 1
     for _, is_sortable in pairs(self:cnode_is_sortable_by_idx()) do
         if is_sortable then
             local cnode = sortables:node_by_idx(sortable_idx)
@@ -331,10 +331,10 @@ Chadnodes.sort = function(self)
             sorted_nodes:add(cnode)
             sortable_idx = sortable_idx + 1
         else
-            local cnode = non_sortables[non_sortable_idx]
+            local cnode = linkables[linkable_idx]
             assert(cnode ~= nil, "Chadnode not found")
             sorted_nodes:add(cnode)
-            non_sortable_idx = non_sortable_idx + 1
+            linkable_idx = linkable_idx + 1
         end
     end
 
@@ -357,7 +357,7 @@ end
 --- Get the non-sortable nodes
 --- @param self Chadnodes
 --- @return Chadnode[]
-Chadnodes.get_non_sortable_nodes = function(self)
+Chadnodes.get_linkable_nodes = function(self)
     local sortable_nodes = {}
     for _, node in ipairs(self.nodes) do
         if not node:is_sortable() then
@@ -451,7 +451,7 @@ Chadnodes._get_node_at_row = function(bufnr, region, parser)
     if node_at_cursor then
         --- @type TSNode | nil
         local current = node_at_cursor
-        local block_types = chadquery:sort_and_non_sortable_nodes()
+        local block_types = chadquery:sort_and_linkable_nodes()
         assert(#block_types > 0, "No block types found")
 
         while current do
