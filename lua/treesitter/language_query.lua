@@ -22,11 +22,6 @@ local vue_queries = require("treesitter.vue.queries")
 --- @field public horizontal_gap number: the vertical gap between the two nodes
 --- @field public vertical_gap number: the vertical gap between the two nodes
 
---- @class EndChar
---- @field public char string: the character
---- @field public gap Gap: the Gap between the character and the next node
---- @field public is_attached boolean: true if the character is attached to the node
-
 --- @class LanguageQuery
 ---
 --- @field public language string: the language to work with

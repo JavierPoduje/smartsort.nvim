@@ -18,27 +18,13 @@ M.query_by_node = function(node)
     return query
 end
 
-M._property_signature_query = function()
-    return [[
-        (property_signature (property_identifier) @identifier) @block
-    ]]
-end
-
---- Return the query for a function declaration
---- @return string
-M._interface_declaration_query = function()
-    return [[
-        [
-           (interface_declaration (type_identifier) @identifier)
-           (export_statement (interface_declaration (type_identifier) @identifier))
-         ] @block
-    ]]
-end
-
 M.query_by_node_as_table = merge_tables(
     {
-        interface_declaration = M._interface_declaration_query(),
-        property_signature = M._property_signature_query(),
+        interface_declaration = [[ [
+           (interface_declaration (type_identifier) @identifier)
+           (export_statement (interface_declaration (type_identifier) @identifier))
+        ] @block ]],
+        property_signature = [[ (property_signature (property_identifier) @identifier) @block ]],
     },
     javascript_queries.query_by_node_as_table
 )

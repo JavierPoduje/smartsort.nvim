@@ -8,44 +8,23 @@ M.query_by_node = function(node)
     return query
 end
 
-
-M._field_query = function()
-    return [[
-        (field (identifier) @identifier) @block
-    ]]
-end
-
-M._function_declaration_query = function()
-    return [[
-        (function_declaration (identifier) @identifier) @block
-    ]]
-end
-
-M._assignment_statement_query = function()
-    return [[
+M.query_by_node_as_table = {
+    assignment_statement = [[
         (assignment_statement
           (variable_list
             (dot_index_expression
               field: (identifier) @identifier))
-          ) @block
-    ]]
-end
-
-M._variable_declaration_query = function()
-    return [[
+        ) @block
+    ]],
+    field = [[ (field (identifier) @identifier) @block ]],
+    function_declaration = [[ (function_declaration (identifier) @identifier) @block ]],
+    variable_declaration = [[
         (variable_declaration
             (assignment_statement
                 (variable_list (identifier) @identifier)
             )
         ) @block
-    ]]
-end
-
-M.query_by_node_as_table = {
-    assignment_statement = M._assignment_statement_query(),
-    field = M._field_query(),
-    function_declaration = M._function_declaration_query(),
-    variable_declaration = M._variable_declaration_query(),
+    ]],
 }
 
 return M

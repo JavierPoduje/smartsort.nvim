@@ -8,21 +8,9 @@ M.query_by_node = function(node)
     return query
 end
 
-M._declaration_query = function()
-    return [[
-        (declaration (property_name) @identifier) @block
-    ]]
-end
-
-M._rule_set_query = function()
-    return [[
-        (rule_set (selectors) @identifier) @block
-    ]]
-end
-
 M.query_by_node_as_table = {
-    rule_set = M._rule_set_query(),
-    declaration = M._declaration_query(),
+    declaration = [[ (declaration (property_name) @identifier) @block ]],
+    rule_set = [[ (rule_set (selectors) @identifier) @block ]],
 }
 
 return M

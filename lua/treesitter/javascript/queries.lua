@@ -15,57 +15,21 @@ M.query_by_node = function(node)
     return query
 end
 
---- Return the query for a class_declaration
---- @return string
-M._class_declaration_query = function()
-    return [[
-        [
-            (export_statement (class_declaration (type_identifier) @identifier))
-            (class_declaration (type_identifier) @identifier)
-        ] @block
-    ]]
-end
-
---- Return the query for a function declaration
---- @return string
-M._function_declaration_query = function()
-    return [[
-        [
-            (export_statement (function_declaration (identifier) @identifier))
-            (function_declaration (identifier) @identifier)
-        ] @block
-    ]]
-end
-
---- Return the query for a lexical declaration
---- @return string
-M._lexical_declaration_query = function()
-    return [[
-        [
-           (export_statement (lexical_declaration (variable_declarator (identifier) @identifier)))
-           (lexical_declaration (variable_declarator (identifier) @identifier))
-        ] @block
-    ]]
-end
-
-M._method_definition_query = function()
-    return [[
-        (method_definition (property_identifier) @identifier) @block
-    ]]
-end
-
-M._pair_query = function()
-    return [[
-        (pair (property_identifier) @identifier) @block
-    ]]
-end
-
 M.query_by_node_as_table = {
-    class_declaration = M._class_declaration_query(),
-    function_declaration = M._function_declaration_query(),
-    lexical_declaration = M._lexical_declaration_query(),
-    method_definition = M._method_definition_query(),
-    pair = M._pair_query(),
+    class_declaration = [[ [
+        (export_statement (class_declaration (type_identifier) @identifier))
+        (class_declaration (type_identifier) @identifier)
+    ] @block ]],
+    function_declaration = [[ [
+        (export_statement (function_declaration (identifier) @identifier))
+        (function_declaration (identifier) @identifier)
+    ] @block ]],
+    lexical_declaration = [[  [
+       (export_statement (lexical_declaration (variable_declarator (identifier) @identifier)))
+       (lexical_declaration (variable_declarator (identifier) @identifier))
+    ] @block ]],
+    method_definition = [[ (method_definition (property_identifier) @identifier) @block ]],
+    pair = [[ (pair (property_identifier) @identifier) @block ]],
 }
 
 return M

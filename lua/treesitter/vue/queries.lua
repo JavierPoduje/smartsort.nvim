@@ -1,8 +1,3 @@
---- This module provides functions to build and manage queries for different node types in a tree-sitter parser.
---- All queries should have two matches:
---- * The first match is @block (the node itself), which is used to identify the node in the tree.
---- * The second match is the @identifier, which is later used to sort the block of code.
-
 --- @class EmbeddedLanguageQuery
 --- @field language string: the language of the query
 --- @field query string: the query string
@@ -38,20 +33,6 @@ M.embedded_languages_queries = function()
             query = M._embedded_css_query(),
         }
     }
-end
-
-M._directive_attribute_query = function()
-    return [[
-        (directive_attribute (directive_value) @identifier) @block
-    ]]
-end
-
---- Return the query for a class_declaration
---- @return string
-M._script_element_query = function()
-    return [[
-        (script_element) @injection
-    ]]
 end
 
 M._embedded_typescript_query = function()
@@ -95,8 +76,8 @@ M._embedded_css_query = function()
 end
 
 M.query_by_node_as_table = {
-    script_element = M._script_element_query(),
-    directive_attribute = M._directive_attribute_query(),
+    script_element = [[ (script_element) @injection ]],
+    directive_attribute = [[ (directive_attribute (directive_value) @identifier) @block ]],
 }
 
 return M
