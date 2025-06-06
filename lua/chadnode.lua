@@ -103,35 +103,21 @@ Chadnode.debug = function(self, bufnr, opts)
     local include_region = opts.include_region or false
     local include_end_char = opts.include_end_char or false
 
-    if include_region and include_end_char then
-        return {
-            end_char = vim.inspect(self.end_character),
-            node = self:to_string(bufnr),
-            previous = self.previous and self.previous:to_string(bufnr) or nil,
-            region = self.region:tostr(),
-            sortable_idx = self:get_sortable_idx(),
-        }
-    elseif include_end_char then
-        return {
-            node = self:to_string(bufnr),
-            sortable_idx = self:get_sortable_idx(),
-            previous = self.previous and self.previous:to_string(bufnr) or nil,
-            end_char = vim.inspect(self.end_character),
-        }
-    elseif include_region then
-        return {
-            node = self:to_string(bufnr),
-            sortable_idx = self:get_sortable_idx(),
-            previous = self.previous and self.previous:to_string(bufnr) or nil,
-            region = self.region:tostr(),
-        }
-    else
-        return {
-            node = self:to_string(bufnr),
-            sortable_idx = self:get_sortable_idx(),
-            previous = self.previous and self.previous:to_string(bufnr) or nil,
-        }
+    local output = {
+        node = self:to_string(bufnr),
+        sortable_idx = self:get_sortable_idx(),
+        previous = self.previous and self.previous:to_string(bufnr) or nil,
+    }
+
+    if include_region then
+        output = f.merge_tables(output, { region = self.region:tostr() })
     end
+
+    if include_end_char then
+        output = f.merge_tables(output, { end_char = vim.inspect(self.end_character) })
+    end
+
+    return output
 end
 
 --- Get the node
