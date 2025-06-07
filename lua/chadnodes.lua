@@ -273,7 +273,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
 
         local child_id = child:id()
 
-        if Region.from_node(child).srow + 1 >= region.srow and not processed_nodes[child_id] then
+        if Region.from_node(child).srow + 1 >= region.srow then
             if chadquery:is_supported_node_type(child) then
                 local query = chadquery:build_query(child)
                 local query_matches = query:iter_matches(
@@ -286,8 +286,10 @@ Chadnodes.from_region = function(bufnr, region, parser)
 
                 for _, match, _ in query_matches do
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
-                    cnodes:add(cnode)
-                    processed_nodes[child_id] = true
+                    if not processed_nodes[child_id] then
+                        cnodes:add(cnode)
+                        processed_nodes[child_id] = true
+                    end
                 end
             else
                 local current_cnode = Chadnode:new(child, nil)
@@ -304,8 +306,10 @@ Chadnodes.from_region = function(bufnr, region, parser)
                     end
                 end
 
-                cnodes:add(current_cnode)
-                processed_nodes[child_id] = true
+                if not processed_nodes[child_id] then
+                    cnodes:add(current_cnode)
+                    processed_nodes[child_id] = true
+                end
             end
         end
     end
