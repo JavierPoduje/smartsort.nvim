@@ -1,3 +1,5 @@
+local funcs = require("funcs")
+
 --- @class EndChar
 ---
 --- @field public char string: the character
@@ -9,6 +11,7 @@
 --- @field public get_vertical_gap fun(self: EndChar): number
 --- @field public new fun(char: string, gap: Gap, is_attached: boolean): EndChar
 --- @field public set_gaps fun(self: EndChar, endchar_cnode: Chadnode, other: Chadnode)
+--- @field public stringify fun(self: EndChar): string
 
 local EndChar = {}
 
@@ -47,6 +50,16 @@ EndChar.set_gaps = function(self, endchar_cnode, other)
     if self.gap.vertical_gap == -1 then
         self.gap.horizontal_gap = other:horizontal_gap(endchar_cnode)
     end
+end
+
+--- @param self EndChar
+--- @return string: the string representation of the endchar
+EndChar.stringify = function(self)
+    local gap_as_str = funcs.repeat_str(" ", self.gap.vertical_gap)
+    if self.gap.vertical_gap == 0 and self.gap.horizontal_gap > 0 then
+        gap_as_str = funcs.repeat_str(" ", self.gap.horizontal_gap)
+    end
+    return gap_as_str .. self.char
 end
 
 return EndChar
