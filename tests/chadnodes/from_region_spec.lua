@@ -18,15 +18,15 @@ describe("chadnodes: from_region", function()
 
         truthy(vim.deep_equal(cnodes:debug(bufnr), {
             {
-                node = 'const foo = () => {\n  console.log("foo");\n};',
+                ts_node = 'const foo = () => {\n  console.log("foo");\n};',
                 sort_key = "foo"
             },
             {
-                node = "// this is a comment",
+                ts_node  = "// this is a comment",
                 sort_key = ""
             },
             {
-                node = 'function bar() {\n  console.log("bar");\n}',
+                ts_node = 'function bar() {\n  console.log("bar");\n}',
                 sort_key = "bar"
             }
         }))
@@ -39,23 +39,23 @@ describe("chadnodes: from_region", function()
 
         truthy(vim.deep_equal(cnodes:debug(bufnr), {
             {
-                node = "/**\n * This is a comment\n */",
+                ts_node = "/**\n * This is a comment\n */",
                 sort_key = ""
             },
             {
-                node = 'const foo = () => {\n  console.log("foo");\n};',
+                ts_node = 'const foo = () => {\n  console.log("foo");\n};',
                 sort_key = "foo"
             },
             {
-                node = "// this is a comment",
+                ts_node = "// this is a comment",
                 sort_key = ""
             },
             {
-                node = '// this comment "belongs" to the function',
+                ts_node = '// this comment "belongs" to the function',
                 sort_key = ""
             },
             {
-                node = 'function bar() {\n  console.log("bar");\n}',
+                ts_node = 'function bar() {\n  console.log("bar");\n}',
                 sort_key = "bar"
             }
         }))
@@ -68,7 +68,7 @@ describe("chadnodes: from_region", function()
 
         truthy(vim.deep_equal(cnodes:debug(bufnr), {
             {
-                node = 'const foo = () => {\n  console.log("foo");\n};',
+                ts_node = 'const foo = () => {\n  console.log("foo");\n};',
                 sort_key = "foo"
             },
         }))
@@ -81,27 +81,27 @@ describe("chadnodes: from_region", function()
 
         truthy(vim.deep_equal(cnodes:debug(bufnr), {
             {
-                node = "// this is a comment",
+                ts_node = "// this is a comment",
                 sort_key = ""
             },
             {
-                node = "// comment attached to the function zit",
+                ts_node = "// comment attached to the function zit",
                 sort_key = ""
             },
             {
-                node = 'const zit = () => {\n  console.log("zit");\n};',
+                ts_node = 'const zit = () => {\n  console.log("zit");\n};',
                 sort_key = "zit"
             },
             {
-                node = "// nested comment",
+                ts_node = "// nested comment",
                 sort_key = ""
             },
             {
-                node = "/**\n * This is a comment\n */",
+                ts_node = "/**\n * This is a comment\n */",
                 sort_key = ""
             },
             {
-                node = 'function bar() {\n  console.log("bar");\n}',
+                ts_node = 'function bar() {\n  console.log("bar");\n}',
                 sort_key = "bar"
             }
         }))

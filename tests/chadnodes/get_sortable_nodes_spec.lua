@@ -18,11 +18,11 @@ describe("chadnodes", function()
 
         truthy(vim.deep_equal(Chadnodes.from_chadnodes(parser, sortables):debug(bufnr), {
             {
-                node = 'const foo = () => {\n  console.log("foo");\n};',
+                ts_node = 'const foo = () => {\n  console.log("foo");\n};',
                 sort_key = "foo"
             },
             {
-                node = 'function bar() {\n  console.log("bar");\n}',
+                ts_node = 'function bar() {\n  console.log("bar");\n}',
                 sort_key = "bar"
             }
         }))

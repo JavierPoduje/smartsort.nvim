@@ -17,11 +17,11 @@ describe("chadnodes: sort - typescript", function()
 
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
-                node = 'function bar() {\n  console.log("bar");\n}',
+                ts_node = 'function bar() {\n  console.log("bar");\n}',
                 sort_key = "bar"
             },
             {
-                node = 'const foo = () => {\n  console.log("foo");\n};',
+                ts_node = 'const foo = () => {\n  console.log("foo");\n};',
                 sort_key = "foo"
             },
         }))
@@ -34,11 +34,11 @@ describe("chadnodes: sort - typescript", function()
 
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
-                node = "class AClass {\n  a: number;\n  constructor(x: number, y: number) {\n    this.a = x;\n  }\n}",
+                ts_node = "class AClass {\n  a: number;\n  constructor(x: number, y: number) {\n    this.a = x;\n  }\n}",
                 sort_key = "AClass"
             },
             {
-                node = "class BClass {\n  b: number;\n  constructor(b: number) {\n    this.b = b;\n  }\n}",
+                ts_node = "class BClass {\n  b: number;\n  constructor(b: number) {\n    this.b = b;\n  }\n}",
                 sort_key = "BClass"
             },
         }))
@@ -51,15 +51,15 @@ describe("chadnodes: sort - typescript", function()
 
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
-                node = "interface A {\n  a: string;\n}",
+                ts_node = "interface A {\n  a: string;\n}",
                 sort_key = "A"
             },
             {
-                node = "export interface B {\n  b: number;\n}",
+                ts_node = "export interface B {\n  b: number;\n}",
                 sort_key = "B"
             },
             {
-                node = "export interface C {\n  c: boolean;\n}",
+                ts_node = "export interface C {\n  c: boolean;\n}",
                 sort_key = "C"
             },
         }))
@@ -72,23 +72,23 @@ describe("chadnodes: sort - typescript", function()
 
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
-                node = "a: number",
+                ts_node = "a: number",
                 sort_key = "a"
             },
             {
-                node = ";",
+                ts_node = ";",
                 sort_key = ""
             },
             {
-                node = "b: {\n    foo: string;\n    bar: boolean;\n  }",
+                ts_node = "b: {\n    foo: string;\n    bar: boolean;\n  }",
                 sort_key = "b"
             },
             {
-                node = "c: {\n    baz: string;\n    qux: number;\n    extra: {\n      zig: string;\n    };\n  }",
+                ts_node = "c: {\n    baz: string;\n    qux: number;\n    extra: {\n      zig: string;\n    };\n  }",
                 sort_key = "c"
             },
             {
-                node = ";",
+                ts_node = ";",
                 sort_key = ""
             },
         }))
@@ -101,15 +101,15 @@ describe("chadnodes: sort - typescript", function()
 
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
-                node = 'function bar() {\n  console.log("bar");\n}',
+                ts_node = 'function bar() {\n  console.log("bar");\n}',
                 sort_key = "bar"
             },
             {
-                node = "// this is a comment",
+                ts_node = "// this is a comment",
                 sort_key = ""
             },
             {
-                node = 'const foo = () => {\n  console.log("foo");\n};',
+                ts_node = 'const foo = () => {\n  console.log("foo");\n};',
                 sort_key = "foo"
             },
         }))

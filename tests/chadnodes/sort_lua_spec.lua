@@ -17,11 +17,11 @@ describe("chadnodes: sort - lua", function()
 
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
-                node = 'M.a = function()\n    print("another guy called a")\nend',
+                ts_node = 'M.a = function()\n    print("another guy called a")\nend',
                 sort_key = "a"
             },
             {
-                node = 'M.b = function()\n    print("this is b")\nend',
+                ts_node = 'M.b = function()\n    print("this is b")\nend',
                 sort_key = "b"
             }
         }))
@@ -34,23 +34,23 @@ describe("chadnodes: sort - lua", function()
 
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
-                node = 'local varA = "something"',
+                ts_node = 'local varA = "something"',
                 sort_key = "varA"
             },
             {
-                node = "--- @type boolean",
+                ts_node = "--- @type boolean",
                 sort_key = ""
             },
             {
-                node = "local varB = false",
+                ts_node = "local varB = false",
                 sort_key = "varB"
             },
             {
-                node = "--- @type string",
+                ts_node = "--- @type string",
                 sort_key = ""
             },
             {
-                node = 'local varC = "something"',
+                ts_node = 'local varC = "something"',
                 sort_key = "varC"
             }
         }))

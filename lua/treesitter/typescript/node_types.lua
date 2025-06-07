@@ -1,31 +1,16 @@
+local merge_tables = require("funcs").merge_tables
 local javascript_node_types = require("treesitter.javascript.node_types")
 
 local M = {}
 
-M.end_chars = {
-    {
-        char = ";",
-        gap = {
-            vertical_gap = 0,
-            horizontal_gap = 0,
-        },
-        is_attached = true,
-    }
-}
+M.end_chars = merge_tables({}, javascript_node_types.end_chars)
 
-M.linkable = {
-    "comment",
-}
+M.linkable = merge_tables({}, javascript_node_types.linkable)
 
-M.sortable = {
-    "class_declaration",
-    "export_statement",
-    "function_declaration",
+M.sortable = merge_tables({
     "interface_declaration",
-    "lexical_declaration",
-    "method_definition",
     "pair",
     "property_signature",
-}
+}, javascript_node_types.sortable)
 
 return M

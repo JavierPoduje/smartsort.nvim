@@ -18,7 +18,7 @@ describe("chadnodes: get_linkable_nodes", function()
 
         truthy(vim.deep_equal(Chadnodes.from_chadnodes(parser, linkables):debug(bufnr), {
             {
-                node = "// this is a comment",
+                ts_node = "// this is a comment",
                 sort_key = ""
             },
         }))

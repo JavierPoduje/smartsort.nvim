@@ -3,7 +3,7 @@ local f = require("funcs")
 
 -- @field public [x] end_character EndChar: The end character of the node.
 -- @field public [x] attached_suffix_cnode Chadnode | nil: The node used to handle/represent the end_character if it exists and EndChar.is_attached is true.
--- @field public [] ts_node TSNode: The primary Tree-sitter syntax node.
+-- @field public [wip] ts_node TSNode: The primary Tree-sitter syntax node.
 -- @field public [x] attached_prefix_node Chadnode | nil: A node that is attached to and precedes the current node, considered a companion for sorting and processing.
 -- @field public [x] region Region: The source code region of the node.
 -- @field public [x] sort_key string | nil: The key used for sorting this node.
@@ -12,7 +12,7 @@ local f = require("funcs")
 ---
 --- @field public end_character EndChar: The end character properties of the node, if the node itself is an end-character.
 --- @field public attached_suffix_cnode Chadnode | nil: The node used to handle/represent the end_character if it exists and EndChar.is_attached is true.
---- @field public node TSNode: the node
+--- @field public ts_node TSNode: The primary Tree-sitter syntax node.
 --- @field public attached_prefix_cnode Chadnode: A node that is attached to and precedes the current node, considered a companion for sorting and processing.
 --- @field public region Region: The source code region of the node.
 --- @field public sort_key string | nil: The key used for sorting this node.
@@ -47,7 +47,7 @@ function Chadnode:new(node, sort_key)
 
     obj.end_character = nil
     obj.attached_suffix_cnode = nil
-    obj.node = node
+    obj.ts_node = node
     obj.attached_prefix_cnode = nil
     obj.region = Region.new(srow, scol, erow, ecol)
     obj.sort_key = sort_key or nil
@@ -56,13 +56,13 @@ function Chadnode:new(node, sort_key)
 end
 
 --- Get the parent node of the current node
---- @param self Chadnode: the node
+--- @param self Chadnode
 --- @return TSNode | nil: the parent node
 Chadnode.parent_node = function(self)
-    if self.node == nil then
+    if self.ts_node == nil then
         return nil
     end
-    return self.node:parent()
+    return self.ts_node:parent()
 end
 
 --- Set the end character of the chadnode
@@ -123,7 +123,7 @@ Chadnode.debug = function(self, bufnr, opts)
     local include_attached_suffix_cnode = opts.include_attached_suffix_cnode or false
 
     local output = {
-        node = self:to_string(bufnr),
+        ts_node = self:to_string(bufnr),
         sort_key = self:get_sort_key(),
         attached_prefix_cnode = self.attached_prefix_cnode and self.attached_prefix_cnode:to_string(bufnr) or nil,
     }
@@ -143,15 +143,15 @@ Chadnode.debug = function(self, bufnr, opts)
     return output
 end
 
---- Get the node
---- @param self Chadnode: the node
+--- Get the ts_node
+--- @param self Chadnode
 --- @return TSNode: the node
 Chadnode.get = function(self)
-    return self.node
+    return self.ts_node
 end
 
 --- Print the human-readable representation of the current Chadnode
---- @param self Chadnode: the node
+--- @param self Chadnode
 --- @param bufnr number: the buffer number
 --- @param opts table | nil
 Chadnode.print = function(self, bufnr, opts)
@@ -159,19 +159,19 @@ Chadnode.print = function(self, bufnr, opts)
 end
 
 --- Return the string representation of a node
---- @param self Chadnode: the node
+--- @param self Chadnode
 --- @return string
 Chadnode.to_string = function(self, bufnr)
-    return vim.treesitter.get_node_text(self.node, bufnr)
+    return vim.treesitter.get_node_text(self.ts_node, bufnr)
 end
 
 --- Return the string representation of a node, preserving the indent
---- @param self Chadnode: the node
+--- @param self Chadnode
 --- @param bufnr number: the buffer number
 --- @param target_row number: the row to insert the node. The node will be indented to match this row's indentation.
 --- @return string
 Chadnode.stringify = function(self, bufnr, target_row)
-    local text = vim.treesitter.get_node_text(self.node, bufnr)
+    local text = vim.treesitter.get_node_text(self.ts_node, bufnr)
     local lines = vim.split(text, "\n")
 
     local original_indent = f.get_line_indent(bufnr, self.region.srow)
@@ -202,7 +202,7 @@ Chadnode.get_sort_key = function(self)
 end
 
 --- Calculate the horizontal gap between two nodes, where the gap is the number of columns between them.
---- @param self Chadnode: the first node
+--- @param self Chadnode
 --- @param other Chadnode: the second node
 --- @return number: the gap between the two nodes
 Chadnode.calculate_horizontal_gap = function(self, other)
@@ -229,10 +229,10 @@ Chadnode.calculate_vertical_gap = function(self, other)
 end
 
 --- Check if the node has a next sibling
---- @param self Chadnode: the node
+--- @param self Chadnode
 --- @return boolean: whether the node has a next sibling
 Chadnode.has_next_sibling = function(self)
-    return self.node:next_sibling() ~= nil
+    return self.ts_node:next_sibling() ~= nil
 end
 
 --- Return tru if the node is sortable, false otherwise.
@@ -249,10 +249,10 @@ Chadnode.is_endchar_node = function(self)
 end
 
 --- return the type of the chadnode
---- @param self Chadnode: the node
+--- @param self Chadnode
 --- @return string
 Chadnode.type = function(self)
-    return self.node:type()
+    return self.ts_node:type()
 end
 
 return Chadnode
