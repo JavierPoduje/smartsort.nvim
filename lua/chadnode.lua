@@ -1,6 +1,13 @@
 local Region = require('region')
 local f = require("funcs")
 
+-- @field public end_character EndChar: The end character of the node.
+-- @field public attached_suffix_node Chadnode | nil: The node used to handle/represent the end_character if it exists and EndChar.is_attached is true.
+-- @field public ts_node TSNode: The primary Tree-sitter syntax node.
+-- @field public attached_prefix_node Chadnode | nil: A node that is attached to and precedes the current node, considered a companion for sorting and processing.
+-- @field public region Region: The source code region of the node.
+-- @field public sort_key string | nil: The key used for sorting this node.
+
 --- @class Chadnode
 ---
 --- @field public end_character EndChar: the end character of the node

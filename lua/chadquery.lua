@@ -1,6 +1,8 @@
 local LanguageQuery = require("treesitter.language_query")
 local Region = require("region")
 local EndChar = require("end_char")
+local f = require("funcs")
+local config = require("config")
 
 --- @class OptionsForEmbeddedLanguages
 --- @field region? Region: the visually selected region
@@ -32,12 +34,7 @@ function Chadquery:new(language, options)
     setmetatable(obj, Chadquery)
 
     assert(
-        language == "css" or
-        language == "lua" or
-        language == "scss" or
-        language == "typescript" or
-        language == "javascript" or
-        language == "vue",
+        not f.table_contains(config.supported_languages, language)
         "Unsupported language: " .. language
     )
 
@@ -60,12 +57,7 @@ end
 --- @return vim.treesitter.Query: the query
 Chadquery.build_query = function(self, node)
     assert(
-        self.language == "css" or
-        self.language == "lua" or
-        self.language == "scss" or
-        self.language == "typescript" or
-        self.language == "javascript" or
-        self.language == "vue",
+        not f.table_contains({ "css", "javascript", "lua", "scss", "typescript", "vue" }, self.language)
         "Unsupported language: " .. self.language
     )
     local query_str = self.language_query:query_by_node(node)
