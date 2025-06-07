@@ -66,9 +66,9 @@ end
 --- @param endchar_cnode Chadnode: the cnode to which end_char belongs
 --- @param other Chadnode: the node right before the end_char cnode
 EndChar.set_gaps = function(self, endchar_cnode, other)
-    self.gap.vertical_gap = other:gap(endchar_cnode)
+    self.gap.vertical_gap = other:calculate_vertical_gap(endchar_cnode)
     if self.gap.vertical_gap == -1 then
-        self.gap.horizontal_gap = other:horizontal_gap(endchar_cnode)
+        self.gap.horizontal_gap = other:calculate_horizontal_gap(endchar_cnode)
     end
 end
 

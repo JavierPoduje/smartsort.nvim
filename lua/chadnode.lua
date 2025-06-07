@@ -4,31 +4,29 @@ local f = require("funcs")
 --- @class Chadnode
 ---
 --- @field public end_character EndChar: the end character of the node
---- // TODO change this to other thing. `next` concept is already used for the next cnode
 --- @field public next Chadnode: The next node is used to "save" the end_char if exists and this EndChar has is_attached=true.
 --- @field public node TSNode: the node
 --- @field public previous Chadnode: The previous node works as "attached" to the current node. So, it's not sortable by itself. It's more like a companion to the current node.
 --- @field public region Region: the region of the node
 --- @field public sortable_idx string | nil: the index from which the node can be sorted
 ---
+--- @field public calculate_vertical_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public debug fun(self: Chadnode, bufnr: number, opts: table | nil): table<any>
 --- @field public from_query_match fun(query: vim.treesitter.Query, match: table<integer, TSNode>, bufnr: number): Chadnode
---- @field public gap fun(self: Chadnode, other: Chadnode): number
 --- @field public get fun(self: Chadnode): TSNode
 --- @field public get_sortable_idx fun(self: Chadnode): string
 --- @field public has_next_sibling fun(self: Chadnode): boolean
---- @field public horizontal_gap fun(self: Chadnode, other: Chadnode): number
+--- @field public calculate_horizontal_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public is_endchar_node fun(self: Chadnode): boolean
 --- @field public is_sortable fun(self: Chadnode): boolean
 --- @field public new fun(self:Chadnode, node: TSNode, sortable_idx: string | nil): Chadnode
---- @field public next_sibling fun(self: Chadnode): Chadnode
 --- @field public parent_node fun(self: Chadnode): TSNode | nil
 --- @field public print fun(self: Chadnode, bufnr: number, opts: table | nil)
 --- @field public set_end_character fun(self: Chadnode, character: EndChar)
 --- @field public set_next fun(self: Chadnode, next_cnode: Chadnode)
 --- @field public set_previous fun(self: Chadnode, previous_cnode: Chadnode)
---- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public stringify fun(self: Chadnode, bufnr: number, target_row: number): string
+--- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public type fun(self: Chadnode): string
 
 local Chadnode = {}
@@ -72,9 +70,9 @@ end
 --- @param match table<integer, TSNode>: the match
 --- @param bufnr number: the buffer number
 Chadnode.from_query_match = function(query, match, bufnr)
-    -- @type TSNode
+    --- @type TSNode
     local matched_node = nil
-    -- @type string
+    --- @type string
     local matched_id = nil
 
     for id, nodes in pairs(match) do
@@ -196,22 +194,11 @@ Chadnode.get_sortable_idx = function(self)
     return self.sortable_idx or ''
 end
 
---- Get the next `Chadnode` sibling
---- @param self Chadnode: the node
---- @return Chadnode: the next sibling
-Chadnode.next_sibling = function(self)
-    local next_sibling = self.node:next_sibling()
-    assert(next_sibling ~= nil, "The node has no next sibling")
-    local new_chad_node = Chadnode:new(next_sibling, nil)
-    return new_chad_node
-end
-
---- TODO: change this function to `calculate_horizontal_gap`
 --- Calculate the horizontal gap between two nodes, where the gap is the number of columns between them.
 --- @param self Chadnode: the first node
 --- @param other Chadnode: the second node
 --- @return number: the gap between the two nodes
-Chadnode.horizontal_gap = function(self, other)
+Chadnode.calculate_horizontal_gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
     return other.region.scol - self.region.ecol
 end
@@ -221,7 +208,7 @@ end
 --- @param self Chadnode: the first node
 --- @param other Chadnode: the second node
 --- @return number: the gap between the two nodes
-Chadnode.gap = function(self, other)
+Chadnode.calculate_vertical_gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
     assert(self.region.erow <= other.region.srow, "Node 1 is not before Node 2 or they're overlaping")
 
