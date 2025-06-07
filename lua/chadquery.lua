@@ -1,5 +1,6 @@
 local LanguageQuery = require("treesitter.language_query")
 local Region = require("region")
+local EndChar = require("end_char")
 
 --- @class OptionsForEmbeddedLanguages
 --- @field region? Region: the visually selected region
@@ -12,7 +13,7 @@ local Region = require("region")
 --- @field public language_query LanguageQuery: the language query
 ---
 --- @field public build_query fun(self: Chadquery, node: TSNode): vim.treesitter.Query
---- @field public get_special_end_char fun(self: Chadquery, node: string): EndChar | nil
+--- @field public get_endchar_from_str fun(self: Chadquery, node: string): EndChar | nil
 --- @field public is_linkable fun(self: Chadquery, node_type: string): boolean
 --- @field public is_special_end_char fun(self: Chadquery, char: string): boolean
 --- @field public is_supported_node_type fun(self: Chadquery, node: TSNode): boolean
@@ -97,11 +98,11 @@ end
 --- @param self Chadquery
 --- @param char string: the character to check
 --- @return EndChar | nil
-Chadquery.get_special_end_char = function(self, char)
+Chadquery.get_endchar_from_str = function(self, char)
     local end_chars = self.language_query:get_end_chars()
     for _, end_char in ipairs(end_chars) do
         if end_char.char == char then
-            return end_char
+            return EndChar:new(end_char.char, end_char.gap, end_char.is_attached)
         end
     end
     return nil

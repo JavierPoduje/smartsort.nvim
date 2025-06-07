@@ -1,6 +1,5 @@
 local Chadnode = require("chadnode")
 local Chadquery = require("chadquery")
-local EndChar = require("end_char")
 local Region = require("region")
 local funcs = require("funcs")
 local ts_utils = require("nvim-treesitter.ts_utils")
@@ -188,7 +187,7 @@ Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, reg
 
         assert(current_node ~= nil, "Chadnode not found")
 
-        local end_char = chadquery:get_special_end_char(current_node:type())
+        local end_char = chadquery:get_endchar_from_str(current_node:type())
 
         if vertical_gaps == 0 and end_char ~= nil and prev_node ~= nil and end_char.is_attached then
             prev_node:set_next(current_node)
@@ -274,7 +273,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
 
         local child_id = child:id()
 
-        if Region.from_node(child).srow + 1 >= region.srow then
+        if Region.from_node(child).srow + 1 >= region.srow and not processed_nodes[child_id] then
             if chadquery:is_supported_node_type(child) then
                 local query = chadquery:build_query(child)
                 local query_matches = query:iter_matches(
@@ -287,34 +286,26 @@ Chadnodes.from_region = function(bufnr, region, parser)
 
                 for _, match, _ in query_matches do
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
-                    if not processed_nodes[child_id] then
-                        cnodes:add(cnode)
-                        processed_nodes[child_id] = true
-                    end
+                    cnodes:add(cnode)
+                    processed_nodes[child_id] = true
                 end
             else
                 local current_cnode = Chadnode:new(child, nil)
+                local end_char = chadquery:get_endchar_from_str(current_cnode:type())
 
-                -- TODO: move this into it's own function later
-                local raw_end_char = chadquery:get_special_end_char(current_cnode:type())
-                if raw_end_char ~= nil then
+                if end_char ~= nil then
                     local last_cnode = cnodes:node_by_idx(#cnodes.nodes)
                     assert(last_cnode ~= nil, "last_cnode not found and already looking for a special end character?")
 
-                    local end_char = EndChar:new(raw_end_char.char, raw_end_char.gap, raw_end_char.is_attached)
                     end_char:set_gaps(current_cnode, last_cnode)
-
                     current_cnode:set_end_character(end_char)
-
                     if end_char.is_attached then
                         last_cnode:set_next(current_cnode)
                     end
                 end
 
-                if not processed_nodes[child_id] then
-                    cnodes:add(current_cnode)
-                    processed_nodes[child_id] = true
-                end
+                cnodes:add(current_cnode)
+                processed_nodes[child_id] = true
             end
         end
     end
