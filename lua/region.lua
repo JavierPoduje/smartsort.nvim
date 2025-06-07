@@ -64,7 +64,7 @@ end
 --- @param self Region: the region to debug
 Region.tostr = function(self)
     return string.format(
-        "Region(%d, %d, %d, %d)",
+        "{ srow:%d, scol:%d, erow:%d, ecol:%d }",
         self.srow,
         self.scol,
         self.erow,

@@ -1,4 +1,5 @@
 return {
+    -- this is a comment
     someValue = "value",
     anotherValue = {
         "value1",

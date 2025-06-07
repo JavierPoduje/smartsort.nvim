@@ -1,5 +1,6 @@
 local Chadnode = require("chadnode")
 local Chadquery = require("chadquery")
+local EndChar = require("end_char")
 local Region = require("region")
 local funcs = require("funcs")
 local ts_utils = require("nvim-treesitter.ts_utils")
@@ -67,36 +68,68 @@ end
 --- @return string[]: the string representation of the nodes
 Chadnodes.stringify_into_table = function(self, gaps)
     local nodes_as_str_table = {}
-    for idx, cnode in ipairs(self.nodes) do
-        if cnode.end_character ~= nil and not cnode.end_character.is_attached then
-            local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
-            assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a end_character to it")
-            assert(idx == #self.nodes, "Trying to add a end_character to a node that is not the last one")
 
-            local gap_as_str = funcs.repeat_str(" ", cnode.end_character.gap.vertical_gap)
-            if cnode.end_character.gap.vertical_gap == 0 and cnode.end_character.gap.horizontal_gap > 0 then
-                gap_as_str = funcs.repeat_str(" ", cnode.end_character.gap.horizontal_gap)
+    for idx, cnode in ipairs(self.nodes) do
+        -- cnode:print(0, { include_end_char = true, include_next = true })
+        if not cnode:is_endchar_node() then
+            cnode:print(0)
+            local endchar_as_str = ""
+            if cnode.next ~= nil then
+                local endchar = cnode.next.end_character
+                local gap_as_str = funcs.repeat_str(" ", endchar.gap.vertical_gap)
+                if endchar.gap.vertical_gap == 0 and endchar.gap.horizontal_gap > 0 then
+                    gap_as_str = funcs.repeat_str(" ", endchar.gap.horizontal_gap)
+                end
+                endchar_as_str = gap_as_str .. endchar.char
             end
 
-            local end_char = cnode.end_character.char
-            local str_to_add = gap_as_str .. end_char
-            previous_node_as_str = previous_node_as_str .. str_to_add
-            nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
-            break
-        end
+            local cnode_str = cnode:to_string_preserve_indent(0, cnode.region.srow)
+            -- add the node to the table line by line
+            for _, line in ipairs(vim.fn.split(cnode_str .. endchar_as_str, "\n")) do
+                table.insert(nodes_as_str_table, line)
+            end
 
-        local cnode_str = cnode:to_string_preserve_indent(0, cnode.region.srow)
-        -- add the node to the table line by line
-        for _, line in ipairs(vim.fn.split(cnode_str, "\n")) do
-            table.insert(nodes_as_str_table, line)
-        end
-        -- add the gap, if any
-        if idx <= #gaps then
-            for _ = 1, gaps[idx] do
-                table.insert(nodes_as_str_table, "")
+            -- add the gap, if any
+            if idx <= #gaps then
+                for _ = 1, gaps[idx] do
+                    table.insert(nodes_as_str_table, "")
+                end
+            end
+        elseif cnode:is_endchar_node() and not cnode.end_character.is_attached then
+            print("#1")
+            if cnode.end_character ~= nil then
+                print("#2")
+                local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
+                assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a end_character to it")
+                assert(idx == #self.nodes, "Trying to add a end_character to a node that is not the last one")
+
+                local gap_as_str = funcs.repeat_str(" ", cnode.end_character.gap.vertical_gap)
+                if cnode.end_character.gap.vertical_gap == 0 and cnode.end_character.gap.horizontal_gap > 0 then
+                    gap_as_str = funcs.repeat_str(" ", cnode.end_character.gap.horizontal_gap)
+                end
+
+                local end_char = cnode.end_character.char
+                local str_to_add = gap_as_str .. end_char
+                previous_node_as_str = previous_node_as_str .. str_to_add
+                nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
+                break
+            end
+            print("#3")
+
+            local cnode_str = cnode:to_string_preserve_indent(0, cnode.region.srow)
+            -- add the node to the table line by line
+            for _, line in ipairs(vim.fn.split(cnode_str, "\n")) do
+                table.insert(nodes_as_str_table, line)
+            end
+            -- add the gap, if any
+            if idx <= #gaps then
+                for _ = 1, gaps[idx] do
+                    table.insert(nodes_as_str_table, "")
+                end
             end
         end
     end
+
     return nodes_as_str_table
 end
 
@@ -185,7 +218,7 @@ Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, reg
         local end_char = chadquery:get_special_end_char(current_node:type())
 
         if vertical_gaps == 0 and end_char ~= nil and prev_node ~= nil and end_char.is_attached then
-            prev_node:set_end_character(end_char)
+            prev_node:set_next(current_node)
         elseif vertical_gaps > 0 then
             cnodes:add(current_node)
         elseif chadquery:is_linkable(current_node:type()) and next_node ~= nil then
@@ -279,7 +312,7 @@ Chadnodes.from_region = function(bufnr, region, parser)
                     { max_start_depth = 1 }
                 )
 
-                for pattern, match, metadata in query_matches do
+                for _, match, _ in query_matches do
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
                     if not processed_nodes[child_id] then
                         cnodes:add(cnode)
@@ -287,22 +320,26 @@ Chadnodes.from_region = function(bufnr, region, parser)
                     end
                 end
             else
-                local cnode = Chadnode:new(child, nil)
+                local current_cnode = Chadnode:new(child, nil)
 
                 -- TODO: move this into it's own function later
-                local end_char = chadquery:get_special_end_char(cnode:type())
-                if end_char ~= nil then
+                local raw_end_char = chadquery:get_special_end_char(current_cnode:type())
+                if raw_end_char ~= nil then
                     local last_cnode = cnodes:node_by_idx(#cnodes.nodes)
                     assert(last_cnode ~= nil, "last_cnode not found and already looking for a special end character?")
-                    end_char.gap.vertical_gap = last_cnode:gap(cnode)
-                    if end_char.gap.vertical_gap == -1 then
-                        end_char.gap.horizontal_gap = last_cnode:horizontal_gap(cnode)
+
+                    local end_char = EndChar:new(raw_end_char.char, raw_end_char.gap, raw_end_char.is_attached)
+                    end_char:set_gaps(current_cnode, last_cnode)
+
+                    current_cnode:set_end_character(end_char)
+
+                    if end_char.is_attached then
+                        last_cnode:set_next(current_cnode)
                     end
-                    cnode:set_end_character(end_char)
                 end
 
                 if not processed_nodes[child_id] then
-                    cnodes:add(cnode)
+                    cnodes:add(current_cnode)
                     processed_nodes[child_id] = true
                 end
             end

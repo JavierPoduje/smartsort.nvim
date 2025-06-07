@@ -8,6 +8,7 @@
 --- @field public get_horizontal_gap fun(self: EndChar): number
 --- @field public get_vertical_gap fun(self: EndChar): number
 --- @field public new fun(char: string, gap: Gap, is_attached: boolean): EndChar
+--- @field public set_gaps fun(self: EndChar, endchar_cnode: Chadnode, other: Chadnode)
 
 local EndChar = {}
 
@@ -20,10 +21,16 @@ function EndChar:new(char, gap, is_attached)
     setmetatable(obj, EndChar)
 
     obj.char = char
-    obj.gap = gap or { vertical_gap = 0, horizontal_gap = 0 }
+    obj.gap = gap
     obj.is_attached = is_attached
 
     return obj
+end
+
+--- @param self EndChar
+--- @return number: the horizontal gap
+EndChar.get_horizontal_gap = function(self)
+    return self.gap.horizontal_gap or 0
 end
 
 --- @param self EndChar
@@ -33,9 +40,13 @@ EndChar.get_vertical_gap = function(self)
 end
 
 --- @param self EndChar
---- @return number: the horizontal gap
-EndChar.get_horizontal_gap = function(self)
-    return self.gap.horizontal_gap or 0
+--- @param endchar_cnode Chadnode: the cnode to which end_char belongs
+--- @param other Chadnode: the node right before the end_char cnode
+EndChar.set_gaps = function(self, endchar_cnode, other)
+    self.gap.vertical_gap = other:gap(endchar_cnode)
+    if self.gap.vertical_gap == -1 then
+        self.gap.horizontal_gap = other:horizontal_gap(endchar_cnode)
+    end
 end
 
 return EndChar

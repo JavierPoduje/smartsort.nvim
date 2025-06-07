@@ -3,11 +3,13 @@ local f = require("funcs")
 
 --- @class Chadnode
 ---
---- @field public previous Chadnode: The previous node works as "attached" to the current node. So, it's not sortable by itself. It's more like a companion to the current node.
+--- @field public end_character EndChar: the end character of the node
+--- // TODO change this to other thing. `next` concept is already used for the next cnode
+--- @field public next Chadnode: The next node is used to "save" the end_char if exists and this EndChar has is_attached=true.
 --- @field public node TSNode: the node
+--- @field public previous Chadnode: The previous node works as "attached" to the current node. So, it's not sortable by itself. It's more like a companion to the current node.
 --- @field public region Region: the region of the node
 --- @field public sortable_idx string | nil: the index from which the node can be sorted
---- @field public end_character EndChar: the end character of the node
 ---
 --- @field public debug fun(self: Chadnode, bufnr: number, opts: table | nil): table<any>
 --- @field public from_query_match fun(query: vim.treesitter.Query, match: table<integer, TSNode>, bufnr: number): Chadnode
@@ -16,12 +18,14 @@ local f = require("funcs")
 --- @field public get_sortable_idx fun(self: Chadnode): string
 --- @field public has_next_sibling fun(self: Chadnode): boolean
 --- @field public horizontal_gap fun(self: Chadnode, other: Chadnode): number
+--- @field public is_endchar_node fun(self: Chadnode): boolean
 --- @field public is_sortable fun(self: Chadnode): boolean
 --- @field public new fun(self:Chadnode, node: TSNode, sortable_idx: string | nil): Chadnode
 --- @field public next_sibling fun(self: Chadnode): Chadnode
 --- @field public parent_node fun(self: Chadnode): TSNode | nil
 --- @field public print fun(self: Chadnode, bufnr: number, opts: table | nil)
 --- @field public set_end_character fun(self: Chadnode, character: EndChar)
+--- @field public set_next fun(self: Chadnode, next_cnode: Chadnode)
 --- @field public set_previous fun(self: Chadnode, previous_cnode: Chadnode)
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public to_string_preserve_indent fun(self: Chadnode, bufnr: number, target_row: number): string
@@ -37,6 +41,7 @@ function Chadnode:new(node, sortable_idx)
     local srow, scol, erow, ecol = node:range()
 
     obj.end_character = nil
+    obj.next = nil
     obj.node = node
     obj.previous = nil
     obj.region = Region.new(srow, scol, erow, ecol)
@@ -88,6 +93,13 @@ Chadnode.from_query_match = function(query, match, bufnr)
     return Chadnode:new(matched_node, matched_id)
 end
 
+--- Set the next node
+--- @param self Chadnode: the node
+--- @param next_cnode Chadnode: the next node
+Chadnode.set_next = function(self, next_cnode)
+    self.next = next_cnode
+end
+
 --- Set the previous node
 --- @param self Chadnode: the node
 --- @param previous_cnode Chadnode: the previous node
@@ -100,8 +112,10 @@ end
 --- @param opts table | nil
 Chadnode.debug = function(self, bufnr, opts)
     opts = opts or {}
+
     local include_region = opts.include_region or false
     local include_end_char = opts.include_end_char or false
+    local include_next = opts.include_next or false
 
     local output = {
         node = self:to_string(bufnr),
@@ -115,6 +129,10 @@ Chadnode.debug = function(self, bufnr, opts)
 
     if include_end_char then
         output = f.merge_tables(output, { end_char = vim.inspect(self.end_character) })
+    end
+
+    if include_next and self.next ~= nil then
+        output = f.merge_tables(output, { next = self.next:to_string(bufnr) })
     end
 
     return output
@@ -234,6 +252,12 @@ end
 --- @return boolean: whether the node is sortable
 Chadnode.is_sortable = function(self)
     return self.sortable_idx ~= nil
+end
+
+--- Return true if the cnode is a end_char node, false otherwise.
+--- @param self Chadnode
+Chadnode.is_endchar_node = function(self)
+    return self.end_character ~= nil
 end
 
 --- return the type of the chadnode

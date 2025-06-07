@@ -86,6 +86,12 @@ LanguageQuery.get_end_chars = function(self)
         return typescript_node_types.end_chars
     elseif self.language == "javascript" then
         return javascript_node_types.end_chars
+    elseif self.language == "lua" then
+        return lua_node_types.end_chars
+    elseif self.language == "css" then
+        return css_node_types.end_chars
+    elseif self.language == "scss" then
+        return scss_node_types.end_chars
     end
     return {}
 end
