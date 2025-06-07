@@ -1,18 +1,5 @@
 local M = {}
 
-M.sortable = {
-    "class_declaration",
-    "export_statement",
-    "function_declaration",
-    "lexical_declaration",
-    "method_definition",
-    "pair",
-}
-
-M.linkable = {
-    "comment",
-}
-
 M.end_chars = {
     {
         char = ";",
@@ -32,5 +19,17 @@ M.end_chars = {
     }
 }
 
-return M
+M.linkable = {
+    "comment",
+}
 
+M.sortable = {
+    "class_declaration",
+    "export_statement",
+    "function_declaration",
+    "lexical_declaration",
+    "method_definition",
+    "pair",
+}
+
+return M

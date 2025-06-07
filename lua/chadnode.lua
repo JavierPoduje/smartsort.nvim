@@ -10,27 +10,27 @@ local f = require("funcs")
 
 --- @class Chadnode
 ---
---- @field public end_character EndChar: the end character of the node
---- @field public next Chadnode: The next node is used to "save" the end_char if exists and this EndChar has is_attached=true.
+--- @field public end_character EndChar: the end character of the node.
+--- @field public attached_suffix_node Chadnode | nil: The node used to handle/represent the end_character if it exists and EndChar.is_attached is true.
 --- @field public node TSNode: the node
 --- @field public previous Chadnode: The previous node works as "attached" to the current node. So, it's not sortable by itself. It's more like a companion to the current node.
 --- @field public region Region: the region of the node
 --- @field public sortable_idx string | nil: the index from which the node can be sorted
 ---
+--- @field public calculate_horizontal_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public calculate_vertical_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public debug fun(self: Chadnode, bufnr: number, opts: table | nil): table<any>
 --- @field public from_query_match fun(query: vim.treesitter.Query, match: table<integer, TSNode>, bufnr: number): Chadnode
 --- @field public get fun(self: Chadnode): TSNode
 --- @field public get_sortable_idx fun(self: Chadnode): string
 --- @field public has_next_sibling fun(self: Chadnode): boolean
---- @field public calculate_horizontal_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public is_endchar_node fun(self: Chadnode): boolean
 --- @field public is_sortable fun(self: Chadnode): boolean
 --- @field public new fun(self:Chadnode, node: TSNode, sortable_idx: string | nil): Chadnode
 --- @field public parent_node fun(self: Chadnode): TSNode | nil
 --- @field public print fun(self: Chadnode, bufnr: number, opts: table | nil)
+--- @field public set_attached_suffix_node fun(self: Chadnode, attached_suffix_node: Chadnode)
 --- @field public set_end_character fun(self: Chadnode, character: EndChar)
---- @field public set_next fun(self: Chadnode, next_cnode: Chadnode)
 --- @field public set_previous fun(self: Chadnode, previous_cnode: Chadnode)
 --- @field public stringify fun(self: Chadnode, bufnr: number, target_row: number): string
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
@@ -46,7 +46,7 @@ function Chadnode:new(node, sortable_idx)
     local srow, scol, erow, ecol = node:range()
 
     obj.end_character = nil
-    obj.next = nil
+    obj.attached_suffix_node = nil
     obj.node = node
     obj.previous = nil
     obj.region = Region.new(srow, scol, erow, ecol)
@@ -98,11 +98,11 @@ Chadnode.from_query_match = function(query, match, bufnr)
     return Chadnode:new(matched_node, matched_id)
 end
 
---- Set the next node
+--- Set the attached_suffix_node node
 --- @param self Chadnode: the node
---- @param next_cnode Chadnode: the next node
-Chadnode.set_next = function(self, next_cnode)
-    self.next = next_cnode
+--- @param attached_suffix_node Chadnode: the attached_suffix_node node
+Chadnode.set_attached_suffix_node = function(self, attached_suffix_node)
+    self.attached_suffix_node = attached_suffix_node
 end
 
 --- Set the previous node
@@ -120,7 +120,7 @@ Chadnode.debug = function(self, bufnr, opts)
 
     local include_region = opts.include_region or false
     local include_end_char = opts.include_end_char or false
-    local include_next = opts.include_next or false
+    local include_attached_suffix_node = opts.include_attached_suffix_node or false
 
     local output = {
         node = self:to_string(bufnr),
@@ -136,8 +136,8 @@ Chadnode.debug = function(self, bufnr, opts)
         output = f.merge_tables(output, { end_char = vim.inspect(self.end_character) })
     end
 
-    if include_next and self.next ~= nil then
-        output = f.merge_tables(output, { next = self.next:to_string(bufnr) })
+    if include_attached_suffix_node and self.attached_suffix_node ~= nil then
+        output = f.merge_tables(output, { attached_suffix_node = self.attached_suffix_node:to_string(bufnr) })
     end
 
     return output

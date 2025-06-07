@@ -1,12 +1,14 @@
 local M = {}
 
-M.sortable = {
-    "declaration",
-    "rule_set",
-}
+M.end_chars = {}
 
 M.linkable = {
     "comment",
+}
+
+M.sortable = {
+    "declaration",
+    "rule_set",
 }
 
 return M

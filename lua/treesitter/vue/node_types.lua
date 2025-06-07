@@ -1,11 +1,5 @@
 local M = {}
 
-M.sortable = {
-    "directive_attribute",
-}
-
-M.linkable = {}
-
 M.end_chars = {
     {
         char = "/>",
@@ -15,6 +9,12 @@ M.end_chars = {
         },
         is_attached = false,
     }
+}
+
+M.linkable = {}
+
+M.sortable = {
+    "directive_attribute",
 }
 
 return M

@@ -1,5 +1,5 @@
 local f = require("funcs")
-local config = require("config")
+local Config = require("config")
 
 local css_node_types = require("treesitter.css.node_types")
 local css_queries = require("treesitter.css.queries")
@@ -50,7 +50,7 @@ function LanguageQuery:new(language)
     setmetatable(obj, LanguageQuery)
 
     assert(
-        not f.table_contains(config.supported_languages, language)
+        f.table_contains(Config.supported_languages, language),
         "Unsupported language: " .. language
     )
 

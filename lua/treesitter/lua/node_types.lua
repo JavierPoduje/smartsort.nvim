@@ -1,16 +1,5 @@
 local M = {}
 
-M.sortable = {
-    "assignment_statement",
-    "function_declaration",
-    "field",
-    "variable_declaration",
-}
-
-M.linkable = {
-    "comment",
-}
-
 M.end_chars = {
     {
         char = ",",
@@ -20,6 +9,17 @@ M.end_chars = {
         },
         is_attached = true,
     }
+}
+
+M.linkable = {
+    "comment",
+}
+
+M.sortable = {
+    "assignment_statement",
+    "function_declaration",
+    "field",
+    "variable_declaration",
 }
 
 return M

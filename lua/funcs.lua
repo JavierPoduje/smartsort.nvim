@@ -5,8 +5,13 @@ local M = {}
 --- @param tbl table
 --- @param key any
 --- @return boolean
-M.contains = function(tbl, key)
-    return tbl[key] ~= nil
+M.table_contains = function(tbl, key)
+    for _, value in ipairs(tbl) do
+        if value == key then
+            return true
+        end
+    end
+    return false
 end
 
 
