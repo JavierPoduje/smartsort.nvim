@@ -19,7 +19,7 @@ describe("chadnodes: merge_sortable_nodes_with_adjacent_linkable_nodes", functio
 
         truthy(vim.deep_equal(merged_nodes:debug(bufnr), {
             {
-                previous = "/**\n * This is a comment\n */",
+                attached_prefix_cnode = "/**\n * This is a comment\n */",
                 node = 'const foo = () => {\n  console.log("foo");\n};',
                 sortable_idx = "foo"
             },
@@ -28,7 +28,7 @@ describe("chadnodes: merge_sortable_nodes_with_adjacent_linkable_nodes", functio
                 sortable_idx = ""
             },
             {
-                previous = '// this comment "belongs" to the function',
+                attached_prefix_cnode = '// this comment "belongs" to the function',
                 node = 'function bar() {\n  console.log("bar");\n}',
                 sortable_idx = "bar"
             }

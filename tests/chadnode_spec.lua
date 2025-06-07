@@ -23,7 +23,7 @@ describe("chadnode", function()
         equal(comment_cnode == nil, false)
 
         --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
-        cnode:set_previous(comment_cnode)
+        cnode:set_attached_prefix_cnode(comment_cnode)
         equal(
             true,
             vim.deep_equal(
@@ -84,7 +84,7 @@ describe("chadnode", function()
             equal(cn2 == nil, false)
 
             --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
-            equal(cn1:gap(cn2), 0)
+            equal(cn1:calculate_vertical_gap(cn2), 0)
         end)
 
         it("should detect 1 line", function()
@@ -98,7 +98,7 @@ describe("chadnode", function()
             equal(cn2 == nil, false)
 
             --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
-            equal(cn1:gap(cn2), 1)
+            equal(cn1:calculate_vertical_gap(cn2), 1)
         end)
 
         it("should detect 3 line", function()
@@ -112,7 +112,7 @@ describe("chadnode", function()
             equal(cn2 == nil, false)
 
             --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
-            equal(cn1:gap(cn2), 3)
+            equal(cn1:calculate_vertical_gap(cn2), 3)
         end)
     end)
 
