@@ -19,15 +19,15 @@ describe("chadnodes: from_region", function()
         truthy(vim.deep_equal(cnodes:debug(bufnr), {
             {
                 node = 'const foo = () => {\n  console.log("foo");\n};',
-                sortable_idx = "foo"
+                sort_key = "foo"
             },
             {
                 node = "// this is a comment",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = 'function bar() {\n  console.log("bar");\n}',
-                sortable_idx = "bar"
+                sort_key = "bar"
             }
         }))
     end)
@@ -40,23 +40,23 @@ describe("chadnodes: from_region", function()
         truthy(vim.deep_equal(cnodes:debug(bufnr), {
             {
                 node = "/**\n * This is a comment\n */",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = 'const foo = () => {\n  console.log("foo");\n};',
-                sortable_idx = "foo"
+                sort_key = "foo"
             },
             {
                 node = "// this is a comment",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = '// this comment "belongs" to the function',
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = 'function bar() {\n  console.log("bar");\n}',
-                sortable_idx = "bar"
+                sort_key = "bar"
             }
         }))
     end)
@@ -69,7 +69,7 @@ describe("chadnodes: from_region", function()
         truthy(vim.deep_equal(cnodes:debug(bufnr), {
             {
                 node = 'const foo = () => {\n  console.log("foo");\n};',
-                sortable_idx = "foo"
+                sort_key = "foo"
             },
         }))
     end)
@@ -82,27 +82,27 @@ describe("chadnodes: from_region", function()
         truthy(vim.deep_equal(cnodes:debug(bufnr), {
             {
                 node = "// this is a comment",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = "// comment attached to the function zit",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = 'const zit = () => {\n  console.log("zit");\n};',
-                sortable_idx = "zit"
+                sort_key = "zit"
             },
             {
                 node = "// nested comment",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = "/**\n * This is a comment\n */",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = 'function bar() {\n  console.log("bar");\n}',
-                sortable_idx = "bar"
+                sort_key = "bar"
             }
         }))
     end)

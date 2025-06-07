@@ -19,15 +19,15 @@ describe("chadnodes: sort - scss", function()
             {
                 node =
                 ".a {\n  display: flex;\n  background-color: red;\n\n  &:hover {\n    background-color: blue;\n  }\n}",
-                sortable_idx = ".a"
+                sort_key = ".a"
             },
             {
                 node = ".b {\n  border-radius: 0.8rem;\n}",
-                sortable_idx = ".b"
+                sort_key = ".b"
             },
             {
                 node = ".c {\n  display: flex;\n}",
-                sortable_idx = ".c"
+                sort_key = ".c"
             }
         }))
     end)
@@ -40,23 +40,23 @@ describe("chadnodes: sort - scss", function()
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
                 node = "/**\n * multiline comment\n */",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = ".a {\n  display: flex;\n  background-color: red;\n}",
-                sortable_idx = ".a"
+                sort_key = ".a"
             },
             {
                 node = "// unnested comment",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = "// Nested comment",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = ".c {\n  display: flex;\n}",
-                sortable_idx = ".c"
+                sort_key = ".c"
             }
         }))
     end)

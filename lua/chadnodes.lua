@@ -322,15 +322,15 @@ Chadnodes.sort = function(self)
     local sorted_nodes = Chadnodes:new(self.parser)
 
     --- @type number
-    local sortable_idx = 1
+    local sort_key = 1
     --- @type number
     local linkable_idx = 1
     for _, is_sortable in pairs(self:cnode_is_sortable_by_idx()) do
         if is_sortable then
-            local cnode = sortables:node_by_idx(sortable_idx)
+            local cnode = sortables:node_by_idx(sort_key)
             assert(cnode ~= nil, "Chadnode not found")
             sorted_nodes:add(cnode)
-            sortable_idx = sortable_idx + 1
+            sort_key = sort_key + 1
         else
             local cnode = linkables[linkable_idx]
             assert(cnode ~= nil, "Chadnode not found")
@@ -403,18 +403,18 @@ end
 Chadnodes._get_idxs = function(cnodes)
     local idxs = {}
     for _, node in ipairs(cnodes) do
-        table.insert(idxs, node:get_sortable_idx())
+        table.insert(idxs, node:get_sort_key())
     end
     return idxs
 end
 
---- Map the `Chadnode`s by their sortable_idx
+--- Map the `Chadnode`s by their sort_key
 --- @param cnodes Chadnode[]
 --- @return table<string, Chadnode>
 Chadnodes._cnodes_by_idx = function(cnodes)
     local cnodes_by_idx = {}
     for _, node in ipairs(cnodes) do
-        cnodes_by_idx[node:get_sortable_idx()] = node
+        cnodes_by_idx[node:get_sort_key()] = node
     end
     return cnodes_by_idx
 end

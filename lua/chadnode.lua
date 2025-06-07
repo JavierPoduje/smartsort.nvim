@@ -4,29 +4,29 @@ local f = require("funcs")
 -- @field public [x] end_character EndChar: The end character of the node.
 -- @field public [x] attached_suffix_cnode Chadnode | nil: The node used to handle/represent the end_character if it exists and EndChar.is_attached is true.
 -- @field public [] ts_node TSNode: The primary Tree-sitter syntax node.
--- @field public [wip] attached_prefix_node Chadnode | nil: A node that is attached to and precedes the current node, considered a companion for sorting and processing.
--- @field public [] region Region: The source code region of the node.
--- @field public [] sort_key string | nil: The key used for sorting this node.
+-- @field public [x] attached_prefix_node Chadnode | nil: A node that is attached to and precedes the current node, considered a companion for sorting and processing.
+-- @field public [x] region Region: The source code region of the node.
+-- @field public [x] sort_key string | nil: The key used for sorting this node.
 
 --- @class Chadnode
 ---
---- @field public end_character EndChar: the end character of the node.
+--- @field public end_character EndChar: The end character properties of the node, if the node itself is an end-character.
 --- @field public attached_suffix_cnode Chadnode | nil: The node used to handle/represent the end_character if it exists and EndChar.is_attached is true.
 --- @field public node TSNode: the node
 --- @field public attached_prefix_cnode Chadnode: A node that is attached to and precedes the current node, considered a companion for sorting and processing.
---- @field public region Region: the region of the node
---- @field public sortable_idx string | nil: the index from which the node can be sorted
+--- @field public region Region: The source code region of the node.
+--- @field public sort_key string | nil: The key used for sorting this node.
 ---
 --- @field public calculate_horizontal_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public calculate_vertical_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public debug fun(self: Chadnode, bufnr: number, opts: table | nil): table<any>
 --- @field public from_query_match fun(query: vim.treesitter.Query, match: table<integer, TSNode>, bufnr: number): Chadnode
 --- @field public get fun(self: Chadnode): TSNode
---- @field public get_sortable_idx fun(self: Chadnode): string
+--- @field public get_sort_key fun(self: Chadnode): string
 --- @field public has_next_sibling fun(self: Chadnode): boolean
 --- @field public is_endchar_node fun(self: Chadnode): boolean
 --- @field public is_sortable fun(self: Chadnode): boolean
---- @field public new fun(self:Chadnode, node: TSNode, sortable_idx: string | nil): Chadnode
+--- @field public new fun(self:Chadnode, node: TSNode, sort_key: string | nil): Chadnode
 --- @field public parent_node fun(self: Chadnode): TSNode | nil
 --- @field public print fun(self: Chadnode, bufnr: number, opts: table | nil)
 --- @field public set_attached_prefix_cnode fun(self: Chadnode, attached_prefix_cnode: Chadnode)
@@ -38,7 +38,7 @@ local f = require("funcs")
 
 local Chadnode = {}
 
-function Chadnode:new(node, sortable_idx)
+function Chadnode:new(node, sort_key)
     Chadnode.__index = Chadnode
     local obj = {}
     setmetatable(obj, Chadnode)
@@ -50,7 +50,7 @@ function Chadnode:new(node, sortable_idx)
     obj.node = node
     obj.attached_prefix_cnode = nil
     obj.region = Region.new(srow, scol, erow, ecol)
-    obj.sortable_idx = sortable_idx or nil
+    obj.sort_key = sort_key or nil
 
     return obj
 end
@@ -124,7 +124,7 @@ Chadnode.debug = function(self, bufnr, opts)
 
     local output = {
         node = self:to_string(bufnr),
-        sortable_idx = self:get_sortable_idx(),
+        sort_key = self:get_sort_key(),
         attached_prefix_cnode = self.attached_prefix_cnode and self.attached_prefix_cnode:to_string(bufnr) or nil,
     }
 
@@ -197,8 +197,8 @@ end
 --- Return the node's sortable index
 --- @param self Chadnode: the node
 --- @return string
-Chadnode.get_sortable_idx = function(self)
-    return self.sortable_idx or ''
+Chadnode.get_sort_key = function(self)
+    return self.sort_key or ''
 end
 
 --- Calculate the horizontal gap between two nodes, where the gap is the number of columns between them.
@@ -239,7 +239,7 @@ end
 --- @param self Chadnode: the node
 --- @return boolean: whether the node is sortable
 Chadnode.is_sortable = function(self)
-    return self.sortable_idx ~= nil
+    return self.sort_key ~= nil
 end
 
 --- Return true if the cnode is a end_char node, false otherwise.

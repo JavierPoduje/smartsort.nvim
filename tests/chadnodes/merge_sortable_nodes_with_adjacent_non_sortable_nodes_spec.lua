@@ -21,16 +21,16 @@ describe("chadnodes: merge_sortable_nodes_with_adjacent_linkable_nodes", functio
             {
                 attached_prefix_cnode = "/**\n * This is a comment\n */",
                 node = 'const foo = () => {\n  console.log("foo");\n};',
-                sortable_idx = "foo"
+                sort_key = "foo"
             },
             {
                 node = "// this is a comment",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 attached_prefix_cnode = '// this comment "belongs" to the function',
                 node = 'function bar() {\n  console.log("bar");\n}',
-                sortable_idx = "bar"
+                sort_key = "bar"
             }
         }))
     end)

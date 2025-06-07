@@ -116,7 +116,7 @@ describe("chadnode", function()
         end)
     end)
 
-    it("get_sortable_idx", function()
+    it("get_sort_key", function()
         local mock = typescript_mocks.simplest
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
@@ -124,7 +124,7 @@ describe("chadnode", function()
         --- @type string[]
         local chadnode_idxs = {}
         for _, chadnode in ipairs(chadnodes:get()) do
-            table.insert(chadnode_idxs, chadnode:get_sortable_idx())
+            table.insert(chadnode_idxs, chadnode:get_sort_key())
         end
 
         truthy(vim.deep_equal(chadnode_idxs, { "foo", "bar" }))

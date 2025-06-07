@@ -18,23 +18,23 @@ describe("chadnodes: sort - css", function()
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
                 node = "/*\n * This is\n * a multi-line\n * comment\n */",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = ".aclass {\n  color: red;\n}",
-                sortable_idx = ".aclass"
+                sort_key = ".aclass"
             },
             {
                 node = ".bclass {\n  color: blue;\n}",
-                sortable_idx = ".bclass"
+                sort_key = ".bclass"
             },
             {
                 node = "/* This is a comment */",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = ".cclass .dclass {\n  color: green;\n}",
-                sortable_idx = ".cclass .dclass"
+                sort_key = ".cclass .dclass"
             }
         }))
     end)

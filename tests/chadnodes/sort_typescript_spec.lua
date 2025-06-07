@@ -18,11 +18,11 @@ describe("chadnodes: sort - typescript", function()
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
                 node = 'function bar() {\n  console.log("bar");\n}',
-                sortable_idx = "bar"
+                sort_key = "bar"
             },
             {
                 node = 'const foo = () => {\n  console.log("foo");\n};',
-                sortable_idx = "foo"
+                sort_key = "foo"
             },
         }))
     end)
@@ -35,11 +35,11 @@ describe("chadnodes: sort - typescript", function()
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
                 node = "class AClass {\n  a: number;\n  constructor(x: number, y: number) {\n    this.a = x;\n  }\n}",
-                sortable_idx = "AClass"
+                sort_key = "AClass"
             },
             {
                 node = "class BClass {\n  b: number;\n  constructor(b: number) {\n    this.b = b;\n  }\n}",
-                sortable_idx = "BClass"
+                sort_key = "BClass"
             },
         }))
     end)
@@ -52,15 +52,15 @@ describe("chadnodes: sort - typescript", function()
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
                 node = "interface A {\n  a: string;\n}",
-                sortable_idx = "A"
+                sort_key = "A"
             },
             {
                 node = "export interface B {\n  b: number;\n}",
-                sortable_idx = "B"
+                sort_key = "B"
             },
             {
                 node = "export interface C {\n  c: boolean;\n}",
-                sortable_idx = "C"
+                sort_key = "C"
             },
         }))
     end)
@@ -73,23 +73,23 @@ describe("chadnodes: sort - typescript", function()
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
                 node = "a: number",
-                sortable_idx = "a"
+                sort_key = "a"
             },
             {
                 node = ";",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = "b: {\n    foo: string;\n    bar: boolean;\n  }",
-                sortable_idx = "b"
+                sort_key = "b"
             },
             {
                 node = "c: {\n    baz: string;\n    qux: number;\n    extra: {\n      zig: string;\n    };\n  }",
-                sortable_idx = "c"
+                sort_key = "c"
             },
             {
                 node = ";",
-                sortable_idx = ""
+                sort_key = ""
             },
         }))
     end)
@@ -102,15 +102,15 @@ describe("chadnodes: sort - typescript", function()
         truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
             {
                 node = 'function bar() {\n  console.log("bar");\n}',
-                sortable_idx = "bar"
+                sort_key = "bar"
             },
             {
                 node = "// this is a comment",
-                sortable_idx = ""
+                sort_key = ""
             },
             {
                 node = 'const foo = () => {\n  console.log("foo");\n};',
-                sortable_idx = "foo"
+                sort_key = "foo"
             },
         }))
     end)
