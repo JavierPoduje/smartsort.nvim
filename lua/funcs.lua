@@ -96,8 +96,8 @@ end
 
 --- Given a predicate, return the first value if true, else the second value
 --- @param predicate boolean
---- @param if_true function<any>
---- @param if_false function<any>
+--- @param if_true fun(): any
+--- @param if_false fun(): any
 --- @return any
 M.if_else = function(predicate, if_true, if_false)
     if predicate then

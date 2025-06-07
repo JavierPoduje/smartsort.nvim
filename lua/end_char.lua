@@ -75,9 +75,8 @@ end
 --- @param self EndChar
 --- @return string: the string representation of the endchar
 EndChar.stringify = function(self)
-    self:print()
     local gap_as_str = funcs.repeat_str(" ", self.gap.vertical_gap)
-    if self.gap.vertical_gap == 0 and self.gap.horizontal_gap > 0 then
+    if self.gap.vertical_gap == -1 and self.gap.horizontal_gap > 0 then
         gap_as_str = funcs.repeat_str(" ", self.gap.horizontal_gap)
     end
 

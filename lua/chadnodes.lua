@@ -26,7 +26,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public print fun(self: Chadnodes, bufnr: number, opts: table | nil)
 --- @field public sort fun(self: Chadnodes): Chadnodes
 --- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
---- @field public stringify_into_table fun(self: Chadnodes, gaps: number[]): string[]
+--- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[]): string[]
 --- @field public vertical_gaps fun(self: Chadnodes): number[]
 ---
 --- @field private _cnodes_by_idx fun(cnodes: Chadnode[]): table<string, Chadnode>
@@ -64,30 +64,24 @@ end
 
 --- Return a list of strings where each item is a line of the string representation of the nodes.
 --- @param self Chadnodes
---- @param gaps number[]: the gaps between the nodes
+--- @param vertical_gaps number[]: the vertical gaps between the nodes
 --- @return string[]: the string representation of the nodes
-Chadnodes.stringify_into_table = function(self, gaps)
+Chadnodes.stringify_into_table = function(self, vertical_gaps)
     local nodes_as_str_table = {}
 
     for idx, cnode in ipairs(self.nodes) do
         if not cnode:is_endchar_node() then
-            local endchar_as_str = ""
-            if cnode.next ~= nil then
-                local endchar = cnode.next.end_character
-                endchar_as_str = endchar:stringify()
-            end
+            local endchar_as_str = funcs.if_else(
+                cnode.next ~= nil and cnode.next.end_character ~= nil,
+                function() return cnode.next.end_character:stringify() end,
+                function() return "" end
+            )
 
-            local cnode_str = cnode:to_string_preserve_indent(0, cnode.region.srow)
-            -- add the node to the table line by line
+            local cnode_str = cnode:stringify(0, cnode.region.srow)
+
+            -- add the node and its end_char to the table, line by line
             for _, line in ipairs(vim.fn.split(cnode_str .. endchar_as_str, "\n")) do
                 table.insert(nodes_as_str_table, line)
-            end
-
-            -- add the gap, if any
-            if idx <= #gaps then
-                for _ = 1, gaps[idx] do
-                    table.insert(nodes_as_str_table, "")
-                end
             end
         elseif cnode:is_endchar_node() and not cnode.end_character.is_attached then
             if cnode.end_character ~= nil then
@@ -98,7 +92,13 @@ Chadnodes.stringify_into_table = function(self, gaps)
                 local str_to_add = cnode.end_character:stringify()
                 previous_node_as_str = previous_node_as_str .. str_to_add
                 nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
-                break
+            end
+        end
+
+        -- add vertical gap
+        if idx <= #vertical_gaps then
+            for _ = 1, vertical_gaps[idx] do
+                table.insert(nodes_as_str_table, "")
             end
         end
     end

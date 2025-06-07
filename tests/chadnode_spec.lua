@@ -28,13 +28,13 @@ describe("chadnode", function()
             true,
             vim.deep_equal(
             --- @diagnostic disable-next-line: need-check-nil
-                cnode:to_string_preserve_indent(bufnr, 0),
+                cnode:stringify(bufnr, 0),
                 '/**\n * This is a comment\n */\nconst foo = () => {\n  console.log(\"foo\");\n};'
             )
         )
     end)
 
-    describe("to_string_preserve_indent", function()
+    describe("stringify", function()
         it("respect the identation of the content of block", function()
             local mock = typescript_mocks.without_gap
             local bufnr, parser = utils.setup(mock.content, "typescript")
@@ -47,7 +47,7 @@ describe("chadnode", function()
                 true,
                 vim.deep_equal(
                 --- @diagnostic disable-next-line: need-check-nil
-                    cnode:to_string_preserve_indent(bufnr, 3),
+                    cnode:stringify(bufnr, 3),
                     "const foo = () => {\n  console.log(\"foo\");\n};"
                 )
             )
@@ -65,7 +65,7 @@ describe("chadnode", function()
                 true,
                 vim.deep_equal(
                 --- @diagnostic disable-next-line: need-check-nil
-                    cnode:to_string_preserve_indent(bufnr, 4),
+                    cnode:stringify(bufnr, 4),
                     "  const foo = () => {\n    console.log(\"foo\");\n  };"
                 )
             )

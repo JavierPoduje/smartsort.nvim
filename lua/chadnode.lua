@@ -28,7 +28,7 @@ local f = require("funcs")
 --- @field public set_next fun(self: Chadnode, next_cnode: Chadnode)
 --- @field public set_previous fun(self: Chadnode, previous_cnode: Chadnode)
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
---- @field public to_string_preserve_indent fun(self: Chadnode, bufnr: number, target_row: number): string
+--- @field public stringify fun(self: Chadnode, bufnr: number, target_row: number): string
 --- @field public type fun(self: Chadnode): string
 
 local Chadnode = {}
@@ -165,7 +165,7 @@ end
 --- @param bufnr number: the buffer number
 --- @param target_row number: the row to insert the node. The node will be indented to match this row's indentation.
 --- @return string
-Chadnode.to_string_preserve_indent = function(self, bufnr, target_row)
+Chadnode.stringify = function(self, bufnr, target_row)
     local text = vim.treesitter.get_node_text(self.node, bufnr)
     local lines = vim.split(text, "\n")
 
@@ -176,20 +176,14 @@ Chadnode.to_string_preserve_indent = function(self, bufnr, target_row)
     local stringified_lines = {}
 
     if self.previous ~= nil then
-        local stringified_comment = self.previous:to_string_preserve_indent(bufnr, self.previous.region.srow)
+        local stringified_comment = self.previous:stringify(bufnr, self.previous.region.srow)
         table.insert(stringified_lines, stringified_comment)
     end
 
-    for idx, line in ipairs(lines) do
+    for _, line in ipairs(lines) do
         local relative_indent = line:match("^" .. original_indent .. "(%s*)")
-
-        local is_last_line = idx == #lines
-        if is_last_line and self.end_character ~= nil then
-            table.insert(stringified_lines,
-                target_indent .. (relative_indent or "") .. line:gsub("^%s*", "") .. self.end_character.char)
-        else
-            table.insert(stringified_lines, target_indent .. (relative_indent or "") .. line:gsub("^%s*", ""))
-        end
+        local relative_indent_str = relative_indent or ""
+        table.insert(stringified_lines, target_indent .. relative_indent_str .. line:gsub("^%s*", ""))
     end
 
     return table.concat(stringified_lines, "\n")
