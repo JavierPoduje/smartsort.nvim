@@ -112,18 +112,4 @@ M.repeat_str = function(str, times)
     return result
 end
 
---- Check if a table contains a key
----
---- @param tbl table
---- @param key any
---- @return boolean
-M.table_contains = function(tbl, key)
-    for _, value in ipairs(tbl) do
-        if value == key then
-            return true
-        end
-    end
-    return false
-end
-
 return M

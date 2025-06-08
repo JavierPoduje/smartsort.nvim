@@ -1,4 +1,5 @@
 local f = require("funcs")
+local R = require("ramda")
 local parsers = require("nvim-treesitter.parsers")
 local Region = require("region")
 local Chadnodes = require("chadnodes")
@@ -103,22 +104,22 @@ M._build_sorted_words = function(spaces_between_words, words, separator)
         "Number of spaces between words must be one less than the number of words"
     )
 
-    local output = {}
-
-    for i, word in ipairs(words) do
-        table.insert(output, word)
+    local output = R.reduce(function(acc, word, idx)
+        table.insert(acc, word)
 
         -- add comma at the end of word if it's not the last word
-        if i < #words then
-            table.insert(output, separator)
+        if idx < #words then
+            table.insert(acc, separator)
         end
 
         -- add next gap if needed
-        if i < #words then
-            local gap = string.rep(" ", spaces_between_words[i])
-            table.insert(output, gap)
+        if idx < #words then
+            local gap = string.rep(" ", spaces_between_words[idx])
+            table.insert(acc, gap)
         end
-    end
+
+        return acc
+    end)({})(words)
 
     return table.concat(output, "")
 end

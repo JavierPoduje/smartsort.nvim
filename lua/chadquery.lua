@@ -24,7 +24,7 @@ local Region = require("region")
 
 local Chadquery = {}
 
-local _is_supported_language = function(language)
+local is_supported_language = function(language)
     return R.any(R.eq)(language)(Config.supported_languages)
 end
 
@@ -37,7 +37,7 @@ function Chadquery:new(language, options)
     local obj = {}
     setmetatable(obj, Chadquery)
 
-    assert(_is_supported_language(language), "Unsupported language: " .. language)
+    assert(is_supported_language(language), "Unsupported language: " .. language)
 
     local should_check_if_language_is_embedded = options and options.region and options.root_node
     if should_check_if_language_is_embedded then
@@ -57,7 +57,7 @@ end
 --- @param node TSNode: the node
 --- @return vim.treesitter.Query: the query
 Chadquery.build_query = function(self, node)
-    assert(_is_supported_language(self.language), "Unsupported language: " .. self.language)
+    assert(is_supported_language(self.language), "Unsupported language: " .. self.language)
     local query_str = self.language_query:query_by_node(node)
     assert(query_str ~= nil, "query_str cannot be nil")
     return vim.treesitter.query.parse(self.language, query_str)

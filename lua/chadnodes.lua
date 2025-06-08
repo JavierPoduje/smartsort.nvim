@@ -2,6 +2,7 @@ local Chadnode = require("chadnode")
 local Chadquery = require("chadquery")
 local Region = require("region")
 local funcs = require("funcs")
+local R = require("ramda")
 local ts_utils = require("nvim-treesitter.ts_utils")
 
 --- @class Chadnodes
@@ -177,11 +178,9 @@ end
 --- boolean that indicates if the node is sortable. This is used to sort the nodes considering
 --- than the non-sortable nodes have to keep their position.
 Chadnodes.cnode_is_sortable_by_idx = function(self)
-    local sortable_by_idx = {}
-    for idx, node in ipairs(self.nodes) do
-        sortable_by_idx[idx] = node:is_sortable()
-    end
-    return sortable_by_idx
+    return R.map(function(node)
+        return node:is_sortable()
+    end)(self.nodes)
 end
 
 --- Return a human-readable representation of the current Chadnodes
@@ -189,11 +188,9 @@ end
 --- @param bufnr number
 --- @param opts table | nil
 Chadnodes.debug = function(self, bufnr, opts)
-    local debug_tbl = {}
-    for _, node in ipairs(self.nodes) do
-        table.insert(debug_tbl, node:debug(bufnr, opts))
-    end
-    return debug_tbl
+    return R.map(function(node)
+        return node:debug(bufnr, opts)
+    end)(self.nodes)
 end
 
 --- Create a new Chadnodes from an existing Chadnodes
@@ -290,17 +287,14 @@ Chadnodes.get = function(self)
     return self.nodes
 end
 
+
 --- Get the non-sortable nodes
 --- @param self Chadnodes
 --- @return Chadnode[]
 Chadnodes.get_linkable_nodes = function(self)
-    local sortable_nodes = {}
-    for _, node in ipairs(self.nodes) do
-        if not node:is_sortable() then
-            table.insert(sortable_nodes, node)
-        end
-    end
-    return sortable_nodes
+    return R.filter(function(node)
+        return not node:is_sortable()
+    end)(self.nodes)
 end
 
 --- Get the sortable nodes

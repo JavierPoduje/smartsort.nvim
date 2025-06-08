@@ -1,5 +1,6 @@
-local f = require("funcs")
 local Config = require("config")
+local R = require("ramda")
+local f = require("funcs")
 
 local css_node_types = require("treesitter.css.node_types")
 local css_queries = require("treesitter.css.queries")
@@ -45,6 +46,10 @@ local vue_queries = require("treesitter.vue.queries")
 
 local LanguageQuery = {}
 
+local _is_supported_language = function(language)
+    return R.any(R.eq)(language)(Config.supported_languages)
+end
+
 --- @param language string: the language to work with
 --- @return LanguageQuery
 function LanguageQuery:new(language)
@@ -53,7 +58,7 @@ function LanguageQuery:new(language)
     setmetatable(obj, LanguageQuery)
 
     assert(
-        f.table_contains(Config.supported_languages, language),
+        _is_supported_language(language),
         "Unsupported language: " .. language
     )
 
@@ -118,12 +123,7 @@ end
 --- @return boolean
 LanguageQuery.is_supported_node_type = function(self, node_type)
     assert(node_type ~= nil, "node cannot be nil")
-    for _, supported_node_type in ipairs(self.sortable_nodes) do
-        if node_type == supported_node_type then
-            return true
-        end
-    end
-    return false
+    return R.any(R.eq)(node_type)(self.sortable_nodes)
 end
 
 
