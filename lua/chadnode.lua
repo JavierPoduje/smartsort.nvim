@@ -36,33 +36,79 @@ function Chadnode:new(node, sort_key)
     local obj = {}
     setmetatable(obj, Chadnode)
 
-    local srow, scol, erow, ecol = node:range()
-
-    obj.end_character = nil
-    obj.attached_suffix_cnode = nil
-    obj.ts_node = node
     obj.attached_prefix_cnode = nil
-    obj.region = Region.new(srow, scol, erow, ecol)
+    obj.attached_suffix_cnode = nil
+    obj.end_character = nil
+    obj.region = Region.new(node:range())
     obj.sort_key = sort_key or nil
+    obj.ts_node = node
 
     return obj
 end
 
---- Get the parent node of the current node
+--- Calculate the horizontal gap between two nodes, where the gap is the number of columns between them.
 --- @param self Chadnode
---- @return TSNode | nil: the parent node
-Chadnode.parent_node = function(self)
-    if self.ts_node == nil then
-        return nil
-    end
-    return self.ts_node:parent()
+--- @param other Chadnode: the second node
+--- @return number: the gap between the two nodes
+Chadnode.calculate_horizontal_gap = function(self, other)
+    assert(other ~= nil, "The given node can't be nil")
+    return other.region.scol - self.region.ecol
 end
 
---- Set the end character of the chadnode
---- @param self Chadnode: the node
---- @param character EndChar: the end character
-Chadnode.set_end_character = function(self, character)
-    self.end_character = character
+--- TODO: change this function to `calculate_vertical_gap` to avoid confusion with `horizontal_gap`
+--- Calculate the vertical gap between two nodes, where the gap is the number of rows between them.
+--- @param self Chadnode: the first node
+--- @param other Chadnode: the second node
+--- @return number: the gap between the two nodes
+Chadnode.calculate_vertical_gap = function(self, other)
+    assert(other ~= nil, "The given node can't be nil")
+    assert(self.region.erow <= other.region.srow, "Node 1 is not before Node 2 or they're overlaping")
+
+    -- If the other node has a comment node, we need to compare the other node's comment node to
+    -- get the empty spaces
+    while other.attached_prefix_cnode ~= nil do
+        other = other.attached_prefix_cnode
+    end
+
+    return other.region.srow - self.region.erow - 1
+end
+
+--- @param self Chadnode
+--- @param bufnr number
+--- @param opts table | nil
+Chadnode.debug = function(self, bufnr, opts)
+    opts = opts or {}
+
+    local include_attached_suffix_cnode = opts.include_attached_suffix_cnode or false
+    local include_end_char = opts.include_end_char or false
+    local include_region = opts.include_region or false
+
+    local output = {
+        ts_node = self:to_string(bufnr),
+        sort_key = self:get_sort_key(),
+    }
+
+    if self.attached_prefix_cnode then
+        output = f.merge_tables(output, {
+            attached_prefix_cnode = self.attached_prefix_cnode:to_string(bufnr),
+        })
+    end
+
+    if include_region then
+        output = f.merge_tables(output, { region = self.region:tostr() })
+    end
+
+    if include_end_char then
+        output = f.merge_tables(output, { end_char = vim.inspect(self.end_character) })
+    end
+
+    if include_attached_suffix_cnode and self.attached_suffix_cnode ~= nil then
+        output = f.merge_tables(output, {
+            attached_suffix_cnode = self.attached_suffix_cnode:to_string(bufnr),
+        })
+    end
+
+    return output
 end
 
 --- Create a new Chadnode from a query match
@@ -91,56 +137,48 @@ Chadnode.from_query_match = function(query, match, bufnr)
     return Chadnode:new(matched_node, matched_id)
 end
 
---- Set the attached_suffix_cnode node
---- @param self Chadnode: the node
---- @param attached_suffix_cnode Chadnode: the attached_suffix_cnode node
-Chadnode.set_attached_suffix_cnode = function(self, attached_suffix_cnode)
-    self.attached_suffix_cnode = attached_suffix_cnode
-end
-
---- Set the previous node
---- @param self Chadnode: the node
---- @param attached_prefix_cnode Chadnode: the attached_prefix_cnode node
-Chadnode.set_attached_prefix_cnode = function(self, attached_prefix_cnode)
-    self.attached_prefix_cnode = attached_prefix_cnode
-end
-
---- @param self Chadnode
---- @param bufnr number
---- @param opts table | nil
-Chadnode.debug = function(self, bufnr, opts)
-    opts = opts or {}
-
-    local include_region = opts.include_region or false
-    local include_end_char = opts.include_end_char or false
-    local include_attached_suffix_cnode = opts.include_attached_suffix_cnode or false
-
-    local output = {
-        ts_node = self:to_string(bufnr),
-        sort_key = self:get_sort_key(),
-        attached_prefix_cnode = self.attached_prefix_cnode and self.attached_prefix_cnode:to_string(bufnr) or nil,
-    }
-
-    if include_region then
-        output = f.merge_tables(output, { region = self.region:tostr() })
-    end
-
-    if include_end_char then
-        output = f.merge_tables(output, { end_char = vim.inspect(self.end_character) })
-    end
-
-    if include_attached_suffix_cnode and self.attached_suffix_cnode ~= nil then
-        output = f.merge_tables(output, { attached_suffix_cnode = self.attached_suffix_cnode:to_string(bufnr) })
-    end
-
-    return output
-end
-
 --- Get the ts_node
 --- @param self Chadnode
 --- @return TSNode: the node
 Chadnode.get = function(self)
     return self.ts_node
+end
+
+--- Return the node's sortable index
+--- @param self Chadnode: the node
+--- @return string
+Chadnode.get_sort_key = function(self)
+    return self.sort_key or ''
+end
+
+--- Check if the node has a next sibling
+--- @param self Chadnode
+--- @return boolean: whether the node has a next sibling
+Chadnode.has_next_sibling = function(self)
+    return self.ts_node:next_sibling() ~= nil
+end
+
+--- Return true if the cnode is a end_char node, false otherwise.
+--- @param self Chadnode
+Chadnode.is_endchar_node = function(self)
+    return self.end_character ~= nil
+end
+
+--- Return tru if the node is sortable, false otherwise.
+--- @param self Chadnode: the node
+--- @return boolean: whether the node is sortable
+Chadnode.is_sortable = function(self)
+    return self.sort_key ~= nil
+end
+
+--- Get the parent node of the current node
+--- @param self Chadnode
+--- @return TSNode | nil: the parent node
+Chadnode.parent_node = function(self)
+    if self.ts_node == nil then
+        return nil
+    end
+    return self.ts_node:parent()
 end
 
 --- Print the human-readable representation of the current Chadnode
@@ -151,11 +189,25 @@ Chadnode.print = function(self, bufnr, opts)
     print(vim.inspect(self:debug(bufnr, opts)))
 end
 
---- Return the string representation of a node
---- @param self Chadnode
---- @return string
-Chadnode.to_string = function(self, bufnr)
-    return vim.treesitter.get_node_text(self.ts_node, bufnr)
+--- Set the previous node
+--- @param self Chadnode: the node
+--- @param attached_prefix_cnode Chadnode: the attached_prefix_cnode node
+Chadnode.set_attached_prefix_cnode = function(self, attached_prefix_cnode)
+    self.attached_prefix_cnode = attached_prefix_cnode
+end
+
+--- Set the attached_suffix_cnode node
+--- @param self Chadnode: the node
+--- @param attached_suffix_cnode Chadnode: the attached_suffix_cnode node
+Chadnode.set_attached_suffix_cnode = function(self, attached_suffix_cnode)
+    self.attached_suffix_cnode = attached_suffix_cnode
+end
+
+--- Set the end character of the chadnode
+--- @param self Chadnode: the node
+--- @param character EndChar: the end character
+Chadnode.set_end_character = function(self, character)
+    self.end_character = character
 end
 
 --- Return the string representation of a node, preserving the indent
@@ -187,58 +239,11 @@ Chadnode.stringify = function(self, bufnr, target_row)
     return table.concat(stringified_lines, "\n")
 end
 
---- Return the node's sortable index
---- @param self Chadnode: the node
+--- Return the string representation of a node
+--- @param self Chadnode
 --- @return string
-Chadnode.get_sort_key = function(self)
-    return self.sort_key or ''
-end
-
---- Calculate the horizontal gap between two nodes, where the gap is the number of columns between them.
---- @param self Chadnode
---- @param other Chadnode: the second node
---- @return number: the gap between the two nodes
-Chadnode.calculate_horizontal_gap = function(self, other)
-    assert(other ~= nil, "The given node can't be nil")
-    return other.region.scol - self.region.ecol
-end
-
---- TODO: change this function to `calculate_vertical_gap` to avoid confusion with `horizontal_gap`
---- Calculate the vertical gap between two nodes, where the gap is the number of rows between them.
---- @param self Chadnode: the first node
---- @param other Chadnode: the second node
---- @return number: the gap between the two nodes
-Chadnode.calculate_vertical_gap = function(self, other)
-    assert(other ~= nil, "The given node can't be nil")
-    assert(self.region.erow <= other.region.srow, "Node 1 is not before Node 2 or they're overlaping")
-
-    -- If the other node has a comment node, we need to compare the other node's comment node to
-    -- get the empty spaces
-    while other.attached_prefix_cnode ~= nil do
-        other = other.attached_prefix_cnode
-    end
-
-    return other.region.srow - self.region.erow - 1
-end
-
---- Check if the node has a next sibling
---- @param self Chadnode
---- @return boolean: whether the node has a next sibling
-Chadnode.has_next_sibling = function(self)
-    return self.ts_node:next_sibling() ~= nil
-end
-
---- Return tru if the node is sortable, false otherwise.
---- @param self Chadnode: the node
---- @return boolean: whether the node is sortable
-Chadnode.is_sortable = function(self)
-    return self.sort_key ~= nil
-end
-
---- Return true if the cnode is a end_char node, false otherwise.
---- @param self Chadnode
-Chadnode.is_endchar_node = function(self)
-    return self.end_character ~= nil
+Chadnode.to_string = function(self, bufnr)
+    return vim.treesitter.get_node_text(self.ts_node, bufnr)
 end
 
 --- return the type of the chadnode

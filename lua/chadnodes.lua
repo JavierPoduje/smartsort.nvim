@@ -26,7 +26,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public sort fun(self: Chadnodes): Chadnodes
 --- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
 --- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[]): string[]
---- @field public vertical_gaps fun(self: Chadnodes): number[]
+--- @field public calculate_vertical_gaps fun(self: Chadnodes): number[]
 ---
 --- @field private _cnodes_by_idx fun(cnodes: Chadnode[]): table<string, Chadnode>
 --- @field private _get_idxs fun(cnodes: Chadnode[]): string[]
@@ -70,28 +70,26 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps)
 
     for idx, cnode in ipairs(self.nodes) do
         if not cnode:is_endchar_node() then
+            local cnode_str = cnode:stringify(0, cnode.region.srow)
             local endchar_as_str = funcs.if_else(
                 cnode.attached_suffix_cnode ~= nil and cnode.attached_suffix_cnode.end_character ~= nil,
                 function() return cnode.attached_suffix_cnode.end_character:stringify() end,
                 function() return "" end
             )
 
-            local cnode_str = cnode:stringify(0, cnode.region.srow)
-
             -- add the node and its end_char to the table, line by line
             for _, line in ipairs(vim.fn.split(cnode_str .. endchar_as_str, "\n")) do
                 table.insert(nodes_as_str_table, line)
             end
         elseif cnode:is_endchar_node() and not cnode.end_character.is_attached then
-            if cnode.end_character ~= nil then
-                local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
-                assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a end_character to it")
-                assert(idx == #self.nodes, "Trying to add a end_character to a node that is not the last one")
+            local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
+            assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a end_character to it")
+            assert(idx == #self.nodes, "Trying to add a end_character to a node that is not the last one")
+            assert(cnode.end_character ~= nil, "End character not found")
 
-                local str_to_add = cnode.end_character:stringify()
-                previous_node_as_str = previous_node_as_str .. str_to_add
-                nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
-            end
+            local str_to_add = cnode.end_character:stringify()
+            previous_node_as_str = previous_node_as_str .. str_to_add
+            nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
         end
 
         -- add vertical gap
@@ -128,7 +126,7 @@ end
 --- Get the gaps between the nodes. It'll always have a length of `#nodes - 1`.
 --- @param self Chadnodes
 --- @return number[]
-Chadnodes.vertical_gaps = function(self)
+Chadnodes.calculate_vertical_gaps = function(self)
     local gaps = {}
     --- @type Chadnode | nil
     local previous_cnode = nil
@@ -149,22 +147,19 @@ end
 --- @param region Region
 --- @return Chadnodes
 Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, region)
-    local gaps = self:vertical_gaps()
+    local chadquery = Chadquery:new(self.parser:lang(), { region = region })
     local cnodes = Chadnodes:new(self.parser)
-    local chadquery = Chadquery:new(self.parser:lang(), {
-        region = region,
-    })
+    local gaps = self:calculate_vertical_gaps()
 
     for idx = 1, #gaps + 1 do
+        local current_node = self:node_by_idx(idx)
+        assert(current_node ~= nil, "Chadnode not found")
+
         local is_last_node = idx == #gaps + 1
-
         if is_last_node then
-            local current_node = self:node_by_idx(idx)
-            assert(current_node ~= nil, "Chadnode not found")
-
             if chadquery:is_special_end_char(current_node:type()) then
-                local prev_node = self:node_by_idx(idx - 1)
                 local end_char = current_node.end_character
+                local prev_node = self:node_by_idx(idx - 1)
 
                 if prev_node ~= nil and end_char ~= nil then
                     if end_char.is_attached then
@@ -180,18 +175,14 @@ Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, reg
             break
         end
 
-        local vertical_gaps = gaps[idx]
-        local current_node = self:node_by_idx(idx)
+        local end_char = chadquery:get_endchar_from_str(current_node:type())
         local next_node = self:node_by_idx(idx + 1)
         local prev_node = self:node_by_idx(idx - 1)
+        local vertical_gap = gaps[idx]
 
-        assert(current_node ~= nil, "Chadnode not found")
-
-        local end_char = chadquery:get_endchar_from_str(current_node:type())
-
-        if vertical_gaps == 0 and end_char ~= nil and prev_node ~= nil and end_char.is_attached then
+        if vertical_gap == 0 and end_char ~= nil and prev_node ~= nil and end_char.is_attached then
             prev_node:set_attached_suffix_cnode(current_node)
-        elseif vertical_gaps > 0 then
+        elseif vertical_gap > 0 then
             cnodes:add(current_node)
         elseif chadquery:is_linkable(current_node:type()) and next_node ~= nil then
             next_node:set_attached_prefix_cnode(current_node)

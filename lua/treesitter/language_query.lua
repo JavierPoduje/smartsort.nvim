@@ -4,17 +4,20 @@ local Config = require("config")
 local css_node_types = require("treesitter.css.node_types")
 local css_queries = require("treesitter.css.queries")
 
+local javascript_node_types = require("treesitter.javascript.node_types")
+local javascript_queries = require("treesitter.javascript.queries")
+
 local lua_node_types = require("treesitter.lua.node_types")
 local lua_queries = require("treesitter.lua.queries")
 
 local scss_node_types = require("treesitter.scss.node_types")
 local scss_queries = require("treesitter.scss.queries")
 
+local twig_node_types = require("treesitter.twig.node_types")
+local twig_queries = require("treesitter.twig.queries")
+
 local typescript_node_types = require("treesitter.typescript.node_types")
 local typescript_queries = require("treesitter.typescript.queries")
-
-local javascript_node_types = require("treesitter.javascript.node_types")
-local javascript_queries = require("treesitter.javascript.queries")
 
 local vue_node_types = require("treesitter.vue.node_types")
 local vue_queries = require("treesitter.vue.queries")
@@ -141,6 +144,8 @@ LanguageQuery.query_by_node = function(self, node)
         return scss_queries.query_by_node(node)
     elseif self.language == "vue" then
         return vue_queries.query_by_node(node)
+    elseif self.language == "twig" then
+        return twig_queries.query_by_node(node)
     end
 
     error("Unsupported language: " .. self.language)
@@ -163,6 +168,8 @@ LanguageQuery._get_linkable_nodes_by_language = function(language)
         return typescript_node_types.linkable
     elseif language == "javascript" then
         return javascript_node_types.linkable
+    elseif language == "twig" then
+        return twig_node_types.linkable
     elseif language == "vue" then
         return f.merge_arrays(
             vue_node_types.linkable,
@@ -182,6 +189,8 @@ LanguageQuery._get_sortable_nodes_by_language = function(language)
         return css_node_types.sortable
     elseif language == "lua" then
         return lua_node_types.sortable
+    elseif language == "twig" then
+        return twig_node_types.sortable
     elseif language == "scss" then
         return f.merge_arrays(
             scss_node_types.sortable,
