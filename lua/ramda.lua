@@ -1,49 +1,10 @@
 local M = {}
 
---- Placeholder for currying.
-M.__ = {}
+M.__ = {} -- A unique empty table for distinctness
 
---- @param predicate (fun(a: any, b: any): boolean): a function that takes two arguments and returns a boolean
---- @return (fun(value: any): fun(table: any[]): boolean): a function that takes a value and returns a function that takes a table
-M.any = function(predicate)
-    --- @param value any: the value to compare against
-    return function(value)
-        --- @param table any[]: the table to check
-        return function(table)
-            for _, v in ipairs(table) do
-                if predicate(v)(value) then
-                    return true
-                end
-            end
-            return false
-        end
-    end
-end
-
---- Performs right-to-left function composition.
---- The rightmost function can take multiple arguments; subsequent functions must be unary.
---- @param ... function: A variable number of functions to compose.
---- @return function: A new function that takes arguments for the rightmost function and pipes the result through the preceding functions.
-M.compose = function(...)
-    local fns = { ... }
-    local numFns = #fns
-
-    if numFns == 0 then
-        return function(x) return x end
-    end
-
-    return function(...)
-        local args = { ... }
-        local result = fns[numFns](unpack(args))
-        for i = numFns - 1, 1, -1 do
-            result = fns[i](result)
-        end
-        return result
-    end
-end
-
---- Curries a function.
---- Supports partial application and placeholder (M.__) usage.
+---- Curries a function.
+--- Supports partial application and placeholder (__) usage.
+---
 --- @param arity number: The number of arguments the function expects.
 --- @param func function: The function to curry.
 --- @return function: The curried function.
@@ -95,45 +56,211 @@ M.curry = function(arity, func)
     return curried({})
 end
 
---- Returns true if two given values are equal
---- @param a any: the first value to compare
---- @return (fun(b: any): boolean): a function that takes a value and returns a boolean indicating if the two values are equal
-M.eq = function(a)
-    return function(b)
-        return a == b
+--- Helper to print tables (for demonstration and debugging)
+M._inspect = function(t, indent)
+    indent = indent or ""
+    local str = "{"
+    local first = true
+    for k, v in pairs(t) do
+        if not first then
+            str = str .. ", "
+        end
+        first = false
+        if type(k) == "string" then
+            str = str .. k .. "="
+        end
+        if type(v) == "table" then
+            if v == M.__ then
+                str = str .. "__"
+            else
+                str = str .. M._inspect(v, indent .. "  ")
+            end
+        elseif type(v) == "string" then
+            str = str .. string.format("%q", v)
+        else
+            str = str .. tostring(v)
+        end
+    end
+    str = str .. "}"
+    return str
+end
+
+--- Performs right-to-left function composition.
+--- The rightmost function can take multiple arguments; subsequent functions must be unary.
+---
+--- @param ... function: A variable number of functions to compose.
+--- @return function: A new function that takes arguments for the rightmost function and pipes the result through the preceding functions.
+M.compose = function(...)
+    local fns = { ... }
+    local numFns = #fns
+
+    if numFns == 0 then
+        return function(x) return x end
+    end
+
+    return function(...)
+        local args = { ... }
+        local result = fns[numFns](unpack(args))
+        for i = numFns - 1, 1, -1 do
+            result = fns[i](result)
+        end
+        return result
     end
 end
 
---- @param predicate (fun(value: any, tbl: any[]): boolean): a function that takes a value and returns a boolean
---- @return (fun(table: any[]): any[]): a function that takes a table and returns a new table with only the elements that satisfy the predicate
-M.filter = function(predicate)
-    return function(tbl)
-        local result = {}
-        for _, value in ipairs(tbl) do
-            if predicate(value, tbl) then
-                table.insert(result, value)
+--- Checks if at least one element in a list satisfies a predicate.
+--- @param predicate function: (value, index, list) -> boolean
+--- @param list table: The list to check.
+--- @return boolean: True if any element satisfies the predicate, false otherwise.
+local _any = function(predicate, list)
+    if type(list) ~= "table" then
+        error("M.any expects a table as the list argument.", 2)
+    end
+
+    for idx, value in ipairs(list) do
+        if predicate(value, idx, list) then
+            return true
+        end
+    end
+    return false
+end
+
+--- Checks if at least one element in a list satisfies a predicate.
+--- Curried.
+--- @type fun(predicate: function, list: table): boolean
+M.any = M.curry(2, _any)
+
+--- Performs a deep equality comparison between two values.
+--- Handles tables (lists and dictionaries) recursively.
+---
+--- @param a any: The first value.
+--- @param b any: The second value.
+--- @return boolean: True if the values are deeply equal, false otherwise.
+local _equals
+_equals = function(a, b)
+    -- If types are different, they can't be equal
+    if type(a) ~= type(b) then
+        return false
+    end
+
+    -- If they are the same reference (for tables) or same value (for primitives)
+    if a == b then
+        return true
+    end
+
+    -- If not tables, and not `a == b` (already handled), then they are not equal
+    if type(a) ~= "table" then
+        return false
+    end
+
+    -- Handle tables (lists and dictionaries)
+    -- Check if keys (and values) are the same
+    local visited = {} -- To prevent infinite loops with circular references
+
+    local function compareTables(t1, t2)
+        if visited[t1] == t2 and visited[t2] == t1 then -- Already visited and matched
+            return true
+        end
+        visited[t1] = t2
+        visited[t2] = t1
+
+        -- Check number of elements / keys (for arrays and dictionaries)
+        if #t1 ~= #t2 then -- For array-like tables
+            return false
+        end
+
+        local keys1 = {}
+        for k in pairs(t1) do
+            table.insert(keys1, k)
+        end
+        local keys2 = {}
+        for k in pairs(t2) do
+            table.insert(keys2, k)
+        end
+
+        if #keys1 ~= #keys2 then -- For dictionary-like tables (number of keys)
+            return false
+        end
+
+        -- Check values for array-like part (ipairs for numeric indices)
+        for i = 1, #t1 do
+            if not _equals(t1[i], t2[i]) then
+                return false
             end
         end
-        return result
-    end
-end
--- A unique empty table for distinctness
 
---- @param fn (fun(value: any, idx: number, tbl: any[]): any): a function that takes a value and returns a new value
---- @return (fun(table: any[]): any[]): a function that takes a table and returns a new table with the function applied to each element
-M.map = function(fn)
-    --- @param tbl any[]: the table to map
-    return function(tbl)
-        local result = {}
-        for idx, value in ipairs(tbl) do
-            result[idx] = fn(value, idx, tbl)
+        -- Check key-value pairs for dictionary-like part (pairs for all keys)
+        for k, v1 in pairs(t1) do
+            if type(k) == "number" and k >= 1 and k <= #t1 then
+                -- Already checked by ipairs
+            else
+                local v2 = t2[k]
+                if not _equals(v1, v2) then
+                    return false
+                end
+            end
         end
-        return result
+
+        -- Check if t2 has keys that t1 does not
+        for k, v2 in pairs(t2) do
+            if type(k) == "number" and k >= 1 and k <= #t2 then
+                -- Already checked by ipairs
+            else
+                if t1[k] == nil and v2 ~= nil then -- Key exists in t2 but not t1 (and not nil in t2)
+                    return false
+                end
+            end
+        end
+
+        return true
     end
+
+    return compareTables(a, b)
 end
 
---- Performs left-to-right function composition.
+M.equals = M.curry(2, _equals)
+
+--- Filters elements from a list based on a predicate function.
+--- @param predicate function: (value, index, list) -> boolean
+--- @param list table: The list to filter.
+--- @return table: A new list containing only elements for which the predicate returned true.
+local _filter = function(predicate, list)
+    if type(list) ~= "table" then
+        error("M.filter expects a table as the list argument.", 2)
+    end
+
+    local result = {}
+    for idx, value in ipairs(list) do
+        if predicate(value, idx, list) then
+            table.insert(result, value)
+        end
+    end
+    return result
+end
+
+M.filter = M.curry(2, _filter)
+
+--- Transforms each element of a list using a mapper function.
+--- @param mapper function: (value, index, list) -> newValue
+--- @param list table: The list to map over.
+--- @return table: A new list with transformed elements.
+local _map = function(mapper, list)
+    if type(list) ~= "table" then
+        error("M.map expects a table as the list argument.", 2)
+    end
+
+    local result = {}
+    for idx, value in ipairs(list) do
+        table.insert(result, mapper(value, idx, list))
+    end
+    return result
+end
+
+M.map = M.curry(2, _map)
+
+---- Performs left-to-right function composition.
 --- The first function can take multiple arguments; subsequent functions must be unary.
+---
 --- @param ... function: A variable number of functions to compose.
 --- @return function: A new function that takes arguments for the first function and pipes the result through the subsequent functions.
 M.pipe = function(...)
@@ -152,22 +279,26 @@ M.pipe = function(...)
     end
 end
 
---- @param fn (fun(acc: any, value: any, idx: number): any): a function that takes an accumulator and a value and returns a new accumulator
---- @return (fun(initial: any): fun(table: any[]): any): a function that takes an initial value and returns a function that takes a table and reduces it to a single value
-M.reduce = function(fn)
-    --- @param initial any: the initial value for the accumulator
-    return function(initial)
-        --- @param tbl any[]: the table to reduce
-        return function(tbl)
-            local acc = initial
-            for idx, value in ipairs(tbl) do
-                acc = fn(acc, value, idx)
-            end
-            return acc
-        end
+--- Reduces a list to a single value by applying a reducer function.
+--- This version is designed to be curried with an arity of 3:
+--- (reducer, initialValue, list).
+---
+--- @param reducer function: (accumulator, currentValue, index, list) -> newAccumulator
+--- @param initialValue any: The starting value for the accumulator.
+--- @param list table: The list to iterate over.
+--- @return any: The reduced value.
+local _reduce = function(reducer, initialValue, list)
+    if type(list) ~= "table" then
+        error("reduce expects a table as the list argument.", 2)
     end
+
+    local acc = initialValue
+    for idx, value in ipairs(list) do
+        acc = reducer(acc, value, idx, list)
+    end
+    return acc
 end
 
---- Helper to print tables (for demonstration and debugging)
+M.reduce = M.curry(3, _reduce)
 
 return M

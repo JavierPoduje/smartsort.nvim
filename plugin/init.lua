@@ -1,4 +1,4 @@
-local R = require('ramda')
+local R = require "ramda"
 
 --- @class Options
 --- @field args Args: the arguments to use

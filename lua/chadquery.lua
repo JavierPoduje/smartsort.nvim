@@ -25,7 +25,9 @@ local Region = require("region")
 local Chadquery = {}
 
 local is_supported_language = function(language)
-    return R.any(R.eq)(language)(Config.supported_languages)
+    return R.any(function(language_to_check)
+        return language_to_check == language
+    end, Config.supported_languages)
 end
 
 --- @param language string: the language to query from
@@ -75,7 +77,7 @@ end
 --- @param char string: the character to check
 --- @return boolean: true if the character is a special end character, false otherwise
 Chadquery.is_special_end_char = function(self, char)
-    return R.any(R.eq)(char)(self.language_query:get_end_chars())
+    return R.any(R.equals(char), self.language_query:get_end_chars())
 end
 
 --- Returns the special end char for the given language if it's an special end char
