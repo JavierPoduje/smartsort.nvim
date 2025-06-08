@@ -1,8 +1,8 @@
 local Chadnode = require("chadnode")
 local Chadquery = require("chadquery")
+local R = require("ramda")
 local Region = require("region")
 local funcs = require("funcs")
-local R = require("ramda")
 local ts_utils = require("nvim-treesitter.ts_utils")
 
 --- @class Chadnodes
@@ -12,7 +12,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public parser vim.treesitter.LanguageTree
 ---
 --- @field public _get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree): TSNode
---- @field public add fun(self: Chadnodes, chadnode: Chadnode)
+--- @field public add fun(self: Chadnodes, chadnode: Chadnode): self
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
 --- @field public from_chadnodes fun(parser: vim.treesitter.LanguageTree, cnodes: Chadnodes): Chadnodes
@@ -54,11 +54,10 @@ end
 --- @param cnodes Chadnode[]
 --- @return table<string, Chadnode>
 Chadnodes._cnodes_by_idx = function(cnodes)
-    local cnodes_by_idx = {}
-    for _, node in ipairs(cnodes) do
-        cnodes_by_idx[node:get_sort_key()] = node
-    end
-    return cnodes_by_idx
+    return R.reduce(function(acc, node)
+        acc[node:get_sort_key()] = node
+        return acc
+    end)({})(cnodes)
 end
 
 --- @param parser vim.treesitter.LanguageTree
@@ -68,22 +67,19 @@ Chadnodes._get_container_node = function(parser)
 
     local parent = node:parent()
     if parent == nil then
-        local root = parser:parse()[1]:root()
-        parent = root
+        parent = parser:parse()[1]:root()
     end
-
     return parent
 end
 
 --- Get the indexes of the given list of `Chadnode`s
---- @param cnodes Chadnode[]: the list of nodes to get the indexes from
+--- @param cnodes Chadnode[]
 --- @return string[]
 Chadnodes._get_idxs = function(cnodes)
-    local idxs = {}
-    for _, node in ipairs(cnodes) do
-        table.insert(idxs, node:get_sort_key())
-    end
-    return idxs
+    return R.reduce(function(acc, node)
+        table.insert(acc, node:get_sort_key())
+        return acc
+    end)({})(cnodes)
 end
 
 --- Get the node at the given row
@@ -151,18 +147,21 @@ end
 --- Add a Chadnode to the list of Chadnodes
 --- @param self Chadnodes
 --- @param chadnode Chadnode
+--- @return self
 Chadnodes.add = function(self, chadnode)
     table.insert(self.nodes, chadnode)
+    return self
 end
 
 --- Get the gaps between the nodes. It'll always have a length of `#nodes - 1`.
 --- @param self Chadnodes
 --- @return number[]
 Chadnodes.calculate_vertical_gaps = function(self)
-    local gaps = {}
-    --- @type Chadnode | nil
-    local previous_cnode = nil
-    for idx, cnode in ipairs(self.nodes) do
+    --- @type { previous_cnode: Chadnode | nil, gaps: number[] }
+    local acc = R.reduce(function(acc, cnode, idx)
+        local previous_cnode = acc.previous_cnode
+        local gaps = acc.gaps
+
         if idx == 1 then
             previous_cnode = cnode
         else
@@ -170,8 +169,11 @@ Chadnodes.calculate_vertical_gaps = function(self)
             table.insert(gaps, previous_cnode:calculate_vertical_gap(cnode))
             previous_cnode = cnode
         end
-    end
-    return gaps
+
+        return { previous_cnode = previous_cnode, gaps = gaps }
+    end)({ previous_cnode = nil, gaps = {} })(self.nodes)
+
+    return acc.gaps
 end
 
 --- Return a table where the key is the original Chadnode's place in the buffer and the value is a
@@ -301,6 +303,9 @@ end
 --- @param self Chadnodes
 --- @return Chadnode[]
 Chadnodes.get_sortable_nodes = function(self)
+    -- return R.filter(function(node)
+    --     return node:is_sortable()
+    -- end)(self.nodes)
     local sortable_nodes = {}
     for _, node in ipairs(self.nodes) do
         if node:is_sortable() then
@@ -415,17 +420,14 @@ end
 --- @param cnodes Chadnode[]: the list of nodes to sort
 --- @return Chadnodes
 Chadnodes.sort_sortable_nodes = function(self, cnodes)
-    local sorted_idx = Chadnodes._get_idxs(cnodes)
     local cnodes_by_idx = Chadnodes._cnodes_by_idx(cnodes)
+    local sorted_idx = Chadnodes._get_idxs(cnodes)
 
     table.sort(sorted_idx)
 
-    local sorted_cnodes = Chadnodes:new(self.parser)
-    for _, idx in ipairs(sorted_idx) do
-        sorted_cnodes:add(cnodes_by_idx[idx])
-    end
-
-    return sorted_cnodes
+    return R.reduce(function(sorted_cnodes, idx)
+        return sorted_cnodes:add(cnodes_by_idx[idx])
+    end)(Chadnodes:new(self.parser))(sorted_idx)
 end
 
 --- Return a list of strings where each item is a line of the string representation of the nodes.
