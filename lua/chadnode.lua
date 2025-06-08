@@ -55,7 +55,6 @@ Chadnode.calculate_horizontal_gap = function(self, other)
     return other.region.scol - self.region.ecol
 end
 
---- TODO: change this function to `calculate_vertical_gap` to avoid confusion with `horizontal_gap`
 --- Calculate the vertical gap between two nodes, where the gap is the number of rows between them.
 --- @param self Chadnode: the first node
 --- @param other Chadnode: the second node
