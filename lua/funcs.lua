@@ -1,19 +1,51 @@
 local M = {}
 
---- Check if a table contains a key
----
---- @param tbl table
---- @param key any
---- @return boolean
-M.table_contains = function(tbl, key)
-    for _, value in ipairs(tbl) do
-        if value == key then
-            return true
-        end
-    end
-    return false
+--- Get the indent of a line (zero-based)
+--- @param bufnr number: the buffer number
+--- @param row number: the row to get the indent of
+M.get_line_indent = function(bufnr, row)
+    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+    return line:match("^%s*")
 end
 
+--- Given a predicate, returns the result of either `if_true` or `if_false` callbacks.
+--- @param predicate boolean
+--- @param if_true fun(): any
+--- @param if_false fun(): any
+--- @return any
+M.if_else = function(predicate, if_true, if_false)
+    if predicate then
+        return if_true()
+    else
+        return if_false()
+    end
+end
+
+--- Check if the column is the max column
+--- @param col number: the column to check
+--- @return boolean
+M.is_max_col = function(col)
+    return col == vim.v.maxcol
+end
+
+--- Returns a merged table containing all elements from the input tables.
+--- It does not modify the original tables.
+---
+--- @param ... table One or more arrays
+--- @return table A new table containing all elements from the input tables.
+M.merge_arrays = function(...)
+    local args = { ... }
+    local output = {}
+    for _, current_table in ipairs(args) do
+        assert(current_table ~= nil, "Expected a table, got nil")
+        assert(type(current_table) == "table", "Expected a table, got " .. type(current_table))
+
+        for _, node in ipairs(current_table) do
+            table.insert(output, node)
+        end
+    end
+    return output
+end
 
 --- Returns a merged table containing all elements from the input tables.
 --- It does not modify the original tables.
@@ -61,30 +93,11 @@ M.merge_tables = function(...)
     return merged
 end
 
---- Returns a merged table containing all elements from the input tables.
---- It does not modify the original tables.
----
---- @param ... table One or more arrays
---- @return table A new table containing all elements from the input tables.
-M.merge_arrays = function(...)
-    local args = { ... }
-    local output = {}
-    for _, current_table in ipairs(args) do
-        assert(current_table ~= nil, "Expected a table, got nil")
-        assert(type(current_table) == "table", "Expected a table, got " .. type(current_table))
-
-        for _, node in ipairs(current_table) do
-            table.insert(output, node)
-        end
-    end
-    return output
-end
-
---- Check if the column is the max column
---- @param col number: the column to check
---- @return boolean
-M.is_max_col = function(col)
-    return col == vim.v.maxcol
+--- Return the string representation of a node
+--- @param node TSNode
+--- @return string
+M.node_to_string = function(node)
+    return vim.treesitter.get_node_text(node, 0)
 end
 
 --- Returns a string with the given string repeated the specified number of times.
@@ -99,32 +112,18 @@ M.repeat_str = function(str, times)
     return result
 end
 
---- Given a predicate, return the first value if true, else the second value
---- @param predicate boolean
---- @param if_true fun(): any
---- @param if_false fun(): any
---- @return any
-M.if_else = function(predicate, if_true, if_false)
-    if predicate then
-        return if_true()
-    else
-        return if_false()
+--- Check if a table contains a key
+---
+--- @param tbl table
+--- @param key any
+--- @return boolean
+M.table_contains = function(tbl, key)
+    for _, value in ipairs(tbl) do
+        if value == key then
+            return true
+        end
     end
-end
-
---- Return the string representation of a node
---- @param node TSNode
---- @return string
-M.node_to_string = function(node)
-    return vim.treesitter.get_node_text(node, 0)
-end
-
---- Get the indent of a line (zero-based)
---- @param bufnr number: the buffer number
---- @param row number: the row to get the indent of
-M.get_line_indent = function(bufnr, row)
-    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
-    return line:match("^%s*")
+    return false
 end
 
 return M

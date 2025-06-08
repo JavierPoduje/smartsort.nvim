@@ -1,8 +1,8 @@
-local LanguageQuery = require("treesitter.language_query")
-local Region = require("region")
-local EndChar = require("end_char")
-local f = require("funcs")
 local Config = require("config")
+local EndChar = require("end_char")
+local LanguageQuery = require("treesitter.language_query")
+local R = require("ramda")
+local Region = require("region")
 
 --- @class OptionsForEmbeddedLanguages
 --- @field region? Region: the visually selected region
@@ -24,6 +24,10 @@ local Config = require("config")
 
 local Chadquery = {}
 
+local _is_supported_language = function(language)
+    return R.any(R.eq)(language)(Config.supported_languages)
+end
+
 --- @param language string: the language to query from
 --- @param options OptionsForEmbeddedLanguages
 --- @return Chadquery: a new Chadquery object
@@ -33,10 +37,7 @@ function Chadquery:new(language, options)
     local obj = {}
     setmetatable(obj, Chadquery)
 
-    assert(
-        f.table_contains(Config.supported_languages, language),
-        "Unsupported language: " .. language
-    )
+    assert(_is_supported_language(language), "Unsupported language: " .. language)
 
     local should_check_if_language_is_embedded = options and options.region and options.root_node
     if should_check_if_language_is_embedded then
@@ -56,10 +57,7 @@ end
 --- @param node TSNode: the node
 --- @return vim.treesitter.Query: the query
 Chadquery.build_query = function(self, node)
-    assert(
-        f.table_contains(Config.supported_languages, self.language),
-        "Unsupported language: " .. self.language
-    )
+    assert(_is_supported_language(self.language), "Unsupported language: " .. self.language)
     local query_str = self.language_query:query_by_node(node)
     assert(query_str ~= nil, "query_str cannot be nil")
     return vim.treesitter.query.parse(self.language, query_str)
@@ -77,13 +75,7 @@ end
 --- @param char string: the character to check
 --- @return boolean: true if the character is a special end character, false otherwise
 Chadquery.is_special_end_char = function(self, char)
-    local end_chars = self.language_query:get_end_chars()
-    for _, end_char in ipairs(end_chars) do
-        if end_char.char == char then
-            return true
-        end
-    end
-    return false
+    return R.any(R.eq)(char)(self.language_query:get_end_chars())
 end
 
 --- Returns the special end char for the given language if it's an special end char
