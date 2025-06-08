@@ -127,7 +127,7 @@ LanguageQuery.is_supported_node_type = function(self, node_type)
     assert(node_type ~= nil, "node cannot be nil")
     return R.any(function(node_type_to_check)
         return node_type_to_check == node_type
-    end, self.linkable_nodes)
+    end, self.sortable_nodes)
 end
 
 
