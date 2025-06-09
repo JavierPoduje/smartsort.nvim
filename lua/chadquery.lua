@@ -25,9 +25,7 @@ local Region = require("region")
 local Chadquery = {}
 
 local is_supported_language = function(language)
-    return R.any(function(language_to_check)
-        return language_to_check == language
-    end, Config.supported_languages)
+    return R.any(R.equals(language), Config.supported_languages)
 end
 
 --- @param language string: the language to query from

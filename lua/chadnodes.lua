@@ -57,7 +57,7 @@ Chadnodes._cnodes_by_idx = function(cnodes)
     return R.reduce(function(acc, node)
         acc[node:get_sort_key()] = node
         return acc
-    end)({})(cnodes)
+    end, {}, cnodes)
 end
 
 --- @param parser vim.treesitter.LanguageTree
@@ -79,7 +79,7 @@ Chadnodes._get_idxs = function(cnodes)
     return R.reduce(function(acc, node)
         table.insert(acc, node:get_sort_key())
         return acc
-    end)({})(cnodes)
+    end, {}, cnodes)
 end
 
 --- Get the node at the given row
@@ -171,7 +171,7 @@ Chadnodes.calculate_vertical_gaps = function(self)
         end
 
         return { previous_cnode = previous_cnode, gaps = gaps }
-    end)({ previous_cnode = nil, gaps = {} })(self.nodes)
+    end, { previous_cnode = nil, gaps = {} }, self.nodes)
 
     return acc.gaps
 end
@@ -182,7 +182,7 @@ end
 Chadnodes.cnode_is_sortable_by_idx = function(self)
     return R.map(function(node)
         return node:is_sortable()
-    end)(self.nodes)
+    end, self.nodes)
 end
 
 --- Return a human-readable representation of the current Chadnodes
@@ -192,7 +192,7 @@ end
 Chadnodes.debug = function(self, bufnr, opts)
     return R.map(function(node)
         return node:debug(bufnr, opts)
-    end)(self.nodes)
+    end, self.nodes)
 end
 
 --- Create a new Chadnodes from an existing Chadnodes
@@ -294,25 +294,14 @@ end
 --- @param self Chadnodes
 --- @return Chadnode[]
 Chadnodes.get_linkable_nodes = function(self)
-    return R.filter(function(node)
-        return not node:is_sortable()
-    end)(self.nodes)
+    return R.filter(function(node) return not node:is_sortable() end, self.nodes)
 end
 
 --- Get the sortable nodes
 --- @param self Chadnodes
 --- @return Chadnode[]
 Chadnodes.get_sortable_nodes = function(self)
-    -- return R.filter(function(node)
-    --     return node:is_sortable()
-    -- end)(self.nodes)
-    local sortable_nodes = {}
-    for _, node in ipairs(self.nodes) do
-        if node:is_sortable() then
-            table.insert(sortable_nodes, node)
-        end
-    end
-    return sortable_nodes
+    return R.filter(function(node) return node:is_sortable() end, self.nodes)
 end
 
 --- Merge the sortable nodes with their adjacent non-sortable nodes.
@@ -425,9 +414,9 @@ Chadnodes.sort_sortable_nodes = function(self, cnodes)
 
     table.sort(sorted_idx)
 
-    return R.reduce(function(sorted_cnodes, idx)
-        return sorted_cnodes:add(cnodes_by_idx[idx])
-    end)(Chadnodes:new(self.parser))(sorted_idx)
+    return R.reduce(function(acc, idx)
+        return acc:add(cnodes_by_idx[idx])
+    end, Chadnodes:new(self.parser), sorted_idx)
 end
 
 --- Return a list of strings where each item is a line of the string representation of the nodes.

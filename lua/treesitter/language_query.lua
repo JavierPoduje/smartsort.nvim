@@ -47,9 +47,7 @@ local vue_queries = require("treesitter.vue.queries")
 local LanguageQuery = {}
 
 local _is_supported_language = function(language)
-    return R.any(function(language_to_check)
-        return language_to_check == language
-    end, Config.supported_languages)
+    return R.any(R.equals(language), Config.supported_languages)
 end
 
 --- @param language string: the language to work with
@@ -125,11 +123,8 @@ end
 --- @return boolean
 LanguageQuery.is_supported_node_type = function(self, node_type)
     assert(node_type ~= nil, "node cannot be nil")
-    return R.any(function(node_type_to_check)
-        return node_type_to_check == node_type
-    end, self.sortable_nodes)
+    return R.any(R.equals(node_type), self.sortable_nodes)
 end
-
 
 --- Returns a function that returns the query_by_node func for the given language
 --- @param self LanguageQuery
