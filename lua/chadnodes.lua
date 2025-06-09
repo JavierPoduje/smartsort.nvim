@@ -290,10 +290,11 @@ Chadnodes.get = function(self)
 end
 
 
---- Get the non-sortable nodes
+--- Get the linkable nodes
 --- @param self Chadnodes
 --- @return Chadnode[]
 Chadnodes.get_linkable_nodes = function(self)
+    -- TODO: should this filter be looking for `is_linkable` instead?
     return R.filter(function(node) return not node:is_sortable() end, self.nodes)
 end
 

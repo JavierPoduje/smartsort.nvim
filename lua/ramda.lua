@@ -25,7 +25,8 @@ end
 --- @param a any: The first value.
 --- @param b any: The second value.
 --- @return boolean: True if the values are deeply equal, false otherwise.
-local _equals = function(a, b)
+local _equals
+_equals = function(a, b)
     -- If types are different, they can't be equal
     if type(a) ~= type(b) then
         return false
