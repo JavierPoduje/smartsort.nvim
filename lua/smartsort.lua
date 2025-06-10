@@ -1,8 +1,9 @@
-local f = require("funcs")
-local R = require("ramda")
-local parsers = require("nvim-treesitter.parsers")
-local Region = require("region")
 local Chadnodes = require("chadnodes")
+local FileManager = require("file_manager")
+local R = require("ramda")
+local Region = require("region")
+local f = require("funcs")
+local parsers = require("nvim-treesitter.parsers")
 
 --- @class Args
 --- @field separator string: the separator to use between words
@@ -73,9 +74,11 @@ M.sort_single_line = function(region, args)
 end
 
 --- Sort the selected lines
---- @param region Region: the region to sort
-M.sort_multiple_lines = function(region)
+--- @param selected_region Region: the region to sort
+M.sort_multiple_lines = function(selected_region)
     local parser = parsers.get_parser()
+    local region = FileManager.get_region_to_work_with(0, selected_region, parser)
+
     local cnodes = Chadnodes.from_region(0, region, parser)
     local merged_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)
     local gaps = merged_cnodes:calculate_vertical_gaps()

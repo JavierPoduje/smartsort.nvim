@@ -200,6 +200,8 @@ Chadnodes.from_region = function(bufnr, region, parser)
         parent = root
     end
 
+    local parent_region = Region.from_node(parent)
+
     local processed_nodes = {}
     local chadquery = Chadquery:new(parser:lang(), {
         region = region,

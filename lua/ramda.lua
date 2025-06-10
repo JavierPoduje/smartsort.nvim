@@ -193,29 +193,6 @@ local _reduce = function(reducer, initialValue, list)
     return acc
 end
 
---- Performs right-to-left function composition.
---- The rightmost function can take multiple arguments; subsequent functions must be unary.
----
---- @param ... function: A variable number of functions to compose.
---- @return function: A new function that takes arguments for the rightmost function and pipes the result through the preceding functions.
-M.compose = function(...)
-    local fns = { ... }
-    local numFns = #fns
-
-    if numFns == 0 then
-        return function(x) return x end
-    end
-
-    return function(...)
-        local args = { ... }
-        local result = fns[numFns](unpack(args))
-        for i = numFns - 1, 1, -1 do
-            result = fns[i](result)
-        end
-        return result
-    end
-end
-
 --- Curries a function.
 --- Supports partial application and placeholder (M.__) usage.
 ---
