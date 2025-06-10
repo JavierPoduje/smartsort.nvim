@@ -15,10 +15,9 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode): self
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
---- @field public from_chadnodes fun(parser: vim.treesitter.LanguageTree, cnodes: Chadnodes): Chadnodes
 --- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public get fun(self: Chadnodes): Chadnode[]
---- @field public get_linkable_nodes fun(self: Chadnodes): Chadnode[]
+--- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public merge_sortable_nodes_with_adjacent_linkable_nodes fun(self: Chadnodes, region: Region): Chadnodes
 --- @field public new fun(self: Chadnodes, parser: vim.treesitter.LanguageTree): Chadnodes
@@ -133,18 +132,6 @@ Chadnodes.debug = function(self, bufnr, opts)
     end, self.nodes)
 end
 
---- Create a new Chadnodes from an existing Chadnodes
---- @param parser vim.treesitter.LanguageTree
---- @param cnodes Chadnodes
---- @return Chadnodes
-Chadnodes.from_chadnodes = function(parser, cnodes)
-    local self = setmetatable({}, Chadnodes)
-    self.nodes = cnodes
-    self.parser = parser
-    self.container_node = self._get_container_node(parser)
-    return self
-end
-
 --- Return a new `Chadnodes` object with the matched nodes in the given region and the parent node
 --- of the node from the region selected.
 --- @param bufnr number: the buffer number
@@ -231,8 +218,7 @@ end
 --- Get the linkable nodes
 --- @param self Chadnodes
 --- @return Chadnode[]
-Chadnodes.get_linkable_nodes = function(self)
-    -- TODO: should this filter be looking for `is_linkable` instead?
+Chadnodes.get_non_sortable_nodes = function(self)
     return R.filter(function(node) return not node:is_sortable() end, self.nodes)
 end
 
@@ -318,14 +304,14 @@ end
 --- @param self Chadnodes
 --- @return Chadnodes
 Chadnodes.sort = function(self)
-    local linkables = self:get_linkable_nodes()
+    local non_sortables = self:get_non_sortable_nodes()
     local sortables = Chadnodes:sort_sortable_nodes(self:get_sortable_nodes())
     local sorted_nodes = Chadnodes:new(self.parser)
 
     --- @type number
     local sort_key = 1
     --- @type number
-    local linkable_idx = 1
+    local non_sortable_idx = 1
     for _, is_sortable in pairs(self:cnode_is_sortable_by_idx()) do
         if is_sortable then
             local cnode = sortables:node_by_idx(sort_key)
@@ -333,10 +319,10 @@ Chadnodes.sort = function(self)
             sorted_nodes:add(cnode)
             sort_key = sort_key + 1
         else
-            local cnode = linkables[linkable_idx]
+            local cnode = non_sortables[non_sortable_idx]
             assert(cnode ~= nil, "Chadnode not found")
             sorted_nodes:add(cnode)
-            linkable_idx = linkable_idx + 1
+            non_sortable_idx = non_sortable_idx + 1
         end
     end
 
@@ -375,9 +361,10 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps)
             )
 
             -- add the node and its end_char to the table, line by line
-            for _, line in ipairs(vim.fn.split(cnode_str .. endchar_as_str, "\n")) do
-                table.insert(nodes_as_str_table, line)
-            end
+            nodes_as_str_table = R.reduce(function(acc, line)
+                table.insert(acc, line)
+                return acc
+            end, nodes_as_str_table, vim.fn.split(cnode_str .. endchar_as_str, "\n"))
         elseif cnode:is_endchar_node() and not cnode.end_character.is_attached then
             local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
             assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a end_character to it")

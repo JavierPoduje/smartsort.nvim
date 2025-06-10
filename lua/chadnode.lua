@@ -163,7 +163,7 @@ Chadnode.is_endchar_node = function(self)
     return self.end_character ~= nil
 end
 
---- Return tru if the node is sortable, false otherwise.
+--- Return true if the node is sortable, false otherwise.
 --- @param self Chadnode: the node
 --- @return boolean: whether the node is sortable
 Chadnode.is_sortable = function(self)
