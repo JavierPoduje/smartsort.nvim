@@ -102,7 +102,7 @@ end
 
 --- Returns a list of the sortable and non-sortable nodes_types for the given language
 --- @param self Chadquery: the Chadquery object
---- @return table: a list of strings representing the sortable and non-sortable nodes
+--- @return string[]: a list of strings representing the sortable and non-sortable nodes
 Chadquery.sort_and_linkable_nodes = function(self)
     return self.language_query:get_sortable_and_linkable_nodes()
 end

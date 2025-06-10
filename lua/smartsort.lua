@@ -7,7 +7,14 @@ local Chadnodes = require("chadnodes")
 --- @class Args
 --- @field separator string: the separator to use between words
 
-local M = {}
+local M = {
+    number_of_exes = 0,
+}
+
+-- TODO: use this later, when configuration is implemented
+M.setup = function(opts)
+    local new_opts = f.merge_tables(M, opts or {})
+end
 
 --- Sort the selected text
 --- @param args Args: the arguments to use

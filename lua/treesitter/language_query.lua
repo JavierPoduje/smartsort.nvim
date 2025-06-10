@@ -30,8 +30,8 @@ local vue_queries = require("treesitter.vue.queries")
 --- @class LanguageQuery
 ---
 --- @field public language string: the language to work with
---- @field public sortable_nodes table: the sortable nodes
---- @field public linkable_nodes table: the non-sortable nodes
+--- @field public sortable_nodes string[]: the sortable nodes
+--- @field public linkable_nodes string[]: the non-sortable nodes
 ---
 --- @field public embedded_languages_queries fun(self: LanguageQuery): table
 --- @field public get_end_chars fun(self: LanguageQuery): EndChar[]
@@ -113,7 +113,7 @@ end
 
 
 --- @param self LanguageQuery
---- @return table: list of strings with the sortable and non-sortable nodes merged
+--- @return string[]: list of strings with the sortable and non-sortable nodes merged
 LanguageQuery.get_sortable_and_linkable_nodes = function(self)
     return f.merge_arrays(self.sortable_nodes, self.linkable_nodes)
 end

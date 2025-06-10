@@ -108,34 +108,11 @@ Chadnodes._get_node_at_row = function(bufnr, region, parser)
     -- Move cursor to the position we want to check
     vim.api.nvim_win_set_cursor(0, { row, first_non_empty_char - 1 })
 
-    -- Get the node at cursor (most indented node)
+    -- Get the node at cursor (most indented node) and walk up the tree to find a suitable block node
+    local block_types = chadquery:sort_and_linkable_nodes()
     local node_at_cursor = ts_utils.get_node_at_cursor(0, false)
-
-    -- Walk up the tree to find a suitable block node
-    if node_at_cursor then
-        --- @type TSNode | nil
-        local current = node_at_cursor
-        local block_types = chadquery:sort_and_linkable_nodes()
-        assert(#block_types > 0, "No block types found")
-
-        while current do
-            local type = current:type()
-            for _, block_type in ipairs(block_types) do
-                if type == block_type then
-                    -- Restore cursor position
-                    vim.api.nvim_win_set_cursor(0, saved_cursor)
-                    return current
-                end
-            end
-
-            if current:parent() == nil then
-                break
-            else
-                current = current:parent()
-            end
-        end
-
-        node_at_cursor = current
+    while node_at_cursor ~= nil and not R.any(R.equals(node_at_cursor:type()), block_types) do
+        node_at_cursor = node_at_cursor:parent()
     end
 
     -- Restore cursor position
