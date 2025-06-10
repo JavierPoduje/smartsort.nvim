@@ -1,5 +1,6 @@
 local Chadnode = require("chadnode")
 local Chadquery = require("chadquery")
+local FileManager = require("file_manager")
 local R = require("ramda")
 local Region = require("region")
 local funcs = require("funcs")
@@ -11,7 +12,6 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public container_node TSNode
 --- @field public parser vim.treesitter.LanguageTree
 ---
---- @field public _get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree): TSNode
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode): self
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
@@ -80,45 +80,6 @@ Chadnodes._get_idxs = function(cnodes)
         table.insert(acc, node:get_sort_key())
         return acc
     end, {}, cnodes)
-end
-
---- Get the node at the given row
---- @param bufnr number
---- @param region Region
---- @param parser vim.treesitter.LanguageTree
---- @return TSNode | nil
-Chadnodes._get_node_at_row = function(bufnr, region, parser)
-    local row = region.srow
-    local lines = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)
-    if #lines == 0 then
-        return nil
-    end
-
-    local chadquery = Chadquery:new(parser:lang(), {
-        region = region,
-        root_node = parser:parse()[1]:root(),
-    })
-
-    local first_line = lines[1]
-    local first_non_empty_char = first_line:find("%S") or 1
-
-    -- Save cursor position
-    local saved_cursor = vim.api.nvim_win_get_cursor(0)
-
-    -- Move cursor to the position we want to check
-    vim.api.nvim_win_set_cursor(0, { row, first_non_empty_char - 1 })
-
-    -- Get the node at cursor (most indented node) and walk up the tree to find a suitable block node
-    local block_types = chadquery:sort_and_linkable_nodes()
-    local node_at_cursor = ts_utils.get_node_at_cursor(0, false)
-    while node_at_cursor ~= nil and not R.any(R.equals(node_at_cursor:type()), block_types) do
-        node_at_cursor = node_at_cursor:parent()
-    end
-
-    -- Restore cursor position
-    vim.api.nvim_win_set_cursor(0, saved_cursor)
-
-    return node_at_cursor
 end
 
 --- Add a Chadnode to the list of Chadnodes
@@ -191,7 +152,7 @@ end
 --- @param parser vim.treesitter.LanguageTree
 --- @return Chadnodes, TSNode
 Chadnodes.from_region = function(bufnr, region, parser)
-    local node = Chadnodes._get_node_at_row(bufnr, region, parser)
+    local node = FileManager.get_node_at_row(bufnr, region, parser)
     assert(node ~= nil, "No node found")
 
     local parent = node:parent()
@@ -199,8 +160,6 @@ Chadnodes.from_region = function(bufnr, region, parser)
         local root = parser:parse()[1]:root()
         parent = root
     end
-
-    local parent_region = Region.from_node(parent)
 
     local processed_nodes = {}
     local chadquery = Chadquery:new(parser:lang(), {

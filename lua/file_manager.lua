@@ -8,8 +8,8 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public region Region
 ---
 --- @field public get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree): TSNode
---- @field public new fun(self: FileManager, bufnr: number, selected_region: Region, parser vim.treesitter.LanguageTree): FileManager
 --- @field public get_region_to_work_with fun(bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree): Region
+--- @field public new fun(self: FileManager, bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree): FileManager
 
 local FileManager = {}
 
@@ -45,9 +45,11 @@ FileManager.get_region_to_work_with = function(bufnr, selected_region, parser)
 
     local parent_region = Region.from_node(parent)
 
-    --- return the selected region where the erow will be the smallest value between the
-    --- parent_region's erow and the selected region's erow
-    return Region.new(selected_region.srow, selected_region.scol, math.min(selected_region.erow, parent_region.erow), selected_region.ecol)
+    local srow = selected_region.srow
+    local scol = selected_region.scol
+    local erow = math.min(selected_region.erow, parent_region.erow + 1)
+    local ecol = selected_region.ecol
+    return Region.new(srow, scol, erow, ecol)
 end
 
 --- Get the node at the given row

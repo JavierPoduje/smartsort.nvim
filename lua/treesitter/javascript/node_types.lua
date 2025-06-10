@@ -21,6 +21,7 @@ M.end_chars = {
 
 M.linkable = {
     "comment",
+    "document",
 }
 
 M.sortable = {
