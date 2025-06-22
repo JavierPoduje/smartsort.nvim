@@ -8,11 +8,12 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 
 --- @class Chadnodes
 ---
---- @field public nodes Chadnode[]
 --- @field public container_node TSNode
+--- @field public nodes Chadnode[]
 --- @field public parser vim.treesitter.LanguageTree
 ---
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode): self
+--- @field public calculate_vertical_gaps fun(self: Chadnodes): number[]
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
 --- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
@@ -26,7 +27,6 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public sort fun(self: Chadnodes): Chadnodes
 --- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
 --- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[]): string[]
---- @field public calculate_vertical_gaps fun(self: Chadnodes): number[]
 ---
 --- @field private _cnodes_by_idx fun(cnodes: Chadnode[]): table<string, Chadnode>
 --- @field private _get_idxs fun(cnodes: Chadnode[]): string[]
@@ -96,8 +96,7 @@ end
 Chadnodes.calculate_vertical_gaps = function(self)
     --- @type { previous_cnode: Chadnode | nil, gaps: number[] }
     local acc = R.reduce(function(acc, cnode, idx)
-        local previous_cnode = acc.previous_cnode
-        local gaps = acc.gaps
+        local previous_cnode, gaps = acc.previous_cnode, acc.gaps
 
         if idx == 1 then
             previous_cnode = cnode
@@ -117,9 +116,7 @@ end
 --- boolean that indicates if the node is sortable. This is used to sort the nodes considering
 --- than the non-sortable nodes have to keep their position.
 Chadnodes.cnode_is_sortable_by_idx = function(self)
-    return R.map(function(node)
-        return node:is_sortable()
-    end, self.nodes)
+    return R.map(function(node) return node:is_sortable() end, self.nodes)
 end
 
 --- Return a human-readable representation of the current Chadnodes
@@ -127,9 +124,7 @@ end
 --- @param bufnr number
 --- @param opts table | nil
 Chadnodes.debug = function(self, bufnr, opts)
-    return R.map(function(node)
-        return node:debug(bufnr, opts)
-    end, self.nodes)
+    return R.map(function(node) return node:debug(bufnr, opts) end, self.nodes)
 end
 
 --- Return a new `Chadnodes` object with the matched nodes in the given region and the parent node
@@ -142,17 +137,15 @@ Chadnodes.from_region = function(bufnr, region, parser)
     local node = FileManager.get_node_at_row(bufnr, region, parser)
     assert(node ~= nil, "No node found")
 
+    local root_node = parser:parse()[1]:root()
     local parent = node:parent()
     if parent == nil then
-        local root = parser:parse()[1]:root()
-        parent = root
+        -- if the node has no parent, use the root node of the parser
+        parent = root_node
     end
 
     local processed_nodes = {}
-    local chadquery = Chadquery:new(parser:lang(), {
-        region = region,
-        root_node = parser:parse()[1]:root(),
-    })
+    local chadquery = Chadquery:new(parser:lang(), { region = region, root_node = root_node })
 
     local cnodes = Chadnodes:new(parser)
     for child, _ in parent:iter_children() do
@@ -263,15 +256,12 @@ Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, reg
         end
 
         local end_char = chadquery:get_endchar_from_str(current_node:type())
-        local next_node = self:node_by_idx(idx + 1)
-        local prev_node = self:node_by_idx(idx - 1)
+        local prev_node, next_node = self:node_by_idx(idx - 1), self:node_by_idx(idx + 1)
         local vertical_gap = gaps[idx]
 
         if vertical_gap == 0 and end_char ~= nil and prev_node ~= nil and end_char.is_attached then
             prev_node:set_attached_suffix_cnode(current_node)
-        elseif vertical_gap > 0 then
-            cnodes:add(current_node)
-        elseif chadquery:is_linkable(current_node:type()) and next_node ~= nil then
+        elseif vertical_gap <= 0 and chadquery:is_linkable(current_node:type()) and next_node ~= nil then
             next_node:set_attached_prefix_cnode(current_node)
         else
             cnodes:add(current_node)
@@ -309,15 +299,15 @@ Chadnodes.sort = function(self)
     local sorted_nodes = Chadnodes:new(self.parser)
 
     --- @type number
-    local sort_key = 1
+    local sortable_idx = 1
     --- @type number
     local non_sortable_idx = 1
     for _, is_sortable in pairs(self:cnode_is_sortable_by_idx()) do
         if is_sortable then
-            local cnode = sortables:node_by_idx(sort_key)
+            local cnode = sortables:node_by_idx(sortable_idx)
             assert(cnode ~= nil, "Chadnode not found")
             sorted_nodes:add(cnode)
-            sort_key = sort_key + 1
+            sortable_idx = sortable_idx + 1
         else
             local cnode = non_sortables[non_sortable_idx]
             assert(cnode ~= nil, "Chadnode not found")
@@ -360,11 +350,31 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps)
                 function() return "" end
             )
 
-            -- add the node and its end_char to the table, line by line
-            nodes_as_str_table = R.reduce(function(acc, line)
-                table.insert(acc, line)
-                return acc
-            end, nodes_as_str_table, vim.fn.split(cnode_str .. endchar_as_str, "\n"))
+            local stringified_node_lines = vim.fn.split(cnode_str .. endchar_as_str, "\n")
+
+            -- if the current node is in the same line of the previous node:
+            -- 1. copy the first line of the current node and put it in the last line of the previous one
+            -- 2. remove the first line of the current node
+            if idx <= #vertical_gaps and vertical_gaps[idx] == -1 and #nodes_as_str_table > 0 then
+                local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
+                assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a new node to it")
+
+                -- append the first line of the current node to the last line of the previous one
+                local gap = " " -- for now it'll be just a single space, but this needs to be calculated somehow
+                previous_node_as_str = previous_node_as_str .. gap .. stringified_node_lines[1]
+                nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
+
+                -- remove the first line of the current node
+                table.remove(stringified_node_lines, 1)
+            end
+
+            -- add the node and its end_char to the table, line by line, if there are any lines left
+            if #stringified_node_lines > 0 then
+                nodes_as_str_table = R.reduce(function(acc, line)
+                    table.insert(acc, line)
+                    return acc
+                end, nodes_as_str_table, stringified_node_lines)
+            end
         elseif cnode:is_endchar_node() and not cnode.end_character.is_attached then
             local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
             assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a end_character to it")
@@ -377,10 +387,8 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps)
         end
 
         -- add vertical gap
-        if idx <= #vertical_gaps then
-            for _ = 1, vertical_gaps[idx] do
-                table.insert(nodes_as_str_table, "")
-            end
+        if idx <= #vertical_gaps and vertical_gaps[idx] > 0 then
+            for _ = 1, vertical_gaps[idx] do table.insert(nodes_as_str_table, "") end
         end
     end
 

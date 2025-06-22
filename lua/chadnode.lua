@@ -3,12 +3,12 @@ local f = require("funcs")
 
 --- @class Chadnode
 ---
---- @field public end_character EndChar: The end character properties of the node, if the node itself is an end-character.
---- @field public attached_suffix_cnode Chadnode | nil: The node used to handle/represent the end_character if it exists and EndChar.is_attached is true.
---- @field public ts_node TSNode: The primary Tree-sitter syntax node.
 --- @field public attached_prefix_cnode Chadnode: A node that is attached to and precedes the current node, considered a companion for sorting and processing.
+--- @field public attached_suffix_cnode Chadnode | nil: The node used to handle/represent the end_character if it exists and EndChar.is_attached is true.
+--- @field public end_character EndChar: The end character properties of the node, if the node itself is an end-character.
 --- @field public region Region: The source code region of the node.
 --- @field public sort_key string | nil: The key used for sorting this node.
+--- @field public ts_node TSNode: The primary Tree-sitter syntax node.
 ---
 --- @field public calculate_horizontal_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public calculate_vertical_gap fun(self: Chadnode, other: Chadnode): number
@@ -61,7 +61,7 @@ end
 --- @return number: the gap between the two nodes
 Chadnode.calculate_vertical_gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
-    assert(self.region.erow <= other.region.srow, "Node 1 is not before Node 2 or they're overlaping")
+    assert(self.region.erow <= other.region.srow, "Node 1 is not before Node 2")
 
     -- If the other node has a comment node, we need to compare the other node's comment node to
     -- get the empty spaces
@@ -98,7 +98,7 @@ Chadnode.debug = function(self, bufnr, opts)
     end
 
     if include_end_char then
-        output = f.merge_tables(output, { end_char = vim.inspect(self.end_character) })
+        output = f.merge_tables(output, { end_char = vim.inspect(self.end_character:debug()) })
     end
 
     if include_attached_suffix_cnode and self.attached_suffix_cnode ~= nil then
