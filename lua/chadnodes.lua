@@ -185,7 +185,9 @@ Chadnodes.from_region = function(bufnr, region, parser)
                     end_char:set_gaps(current_cnode, last_cnode)
                     current_cnode:set_end_character(end_char)
                     if end_char.is_attached then
+                        -- TODO: remove the following line later
                         last_cnode:set_attached_suffix_cnode(current_cnode)
+                        last_cnode:add_attached_suffix_cnode(current_cnode)
                     end
                 end
 
@@ -243,7 +245,9 @@ Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, reg
 
                 if prev_node ~= nil and end_char ~= nil then
                     if end_char.is_attached then
+                        -- TODO: remove the following line later
                         prev_node:set_attached_suffix_cnode(current_node)
+                        prev_node:add_attached_suffix_cnode(current_node)
                     else
                         cnodes:add(current_node)
                     end
@@ -262,7 +266,9 @@ Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, reg
         if vertical_gap == 0 and end_char ~= nil and prev_node ~= nil and end_char.is_attached then
             prev_node:set_attached_suffix_cnode(current_node)
         elseif vertical_gap <= 0 and chadquery:is_linkable(current_node:type()) and next_node ~= nil then
+            -- TODO: remove the following line later
             next_node:set_attached_prefix_cnode(current_node)
+            next_node:add_attached_prefix_cnode(current_node)
         else
             cnodes:add(current_node)
         end
@@ -345,8 +351,8 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps)
         if not cnode:is_endchar_node() then
             local cnode_str = cnode:stringify(0, cnode.region.srow)
             local endchar_as_str = funcs.if_else(
-                cnode.attached_suffix_cnode ~= nil and cnode.attached_suffix_cnode.end_character ~= nil,
-                function() return cnode.attached_suffix_cnode.end_character:stringify() end,
+                #cnode.attached_suffix_cnodes > 0 and cnode.attached_suffix_cnodes[1].end_character ~= nil,
+                function() return cnode.attached_suffix_cnodes[1].end_character:stringify() end,
                 function() return "" end
             )
 

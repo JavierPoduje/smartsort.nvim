@@ -1,15 +1,21 @@
+local R = require('ramda')
 local Region = require('region')
 local f = require("funcs")
 
 --- @class Chadnode
 ---
---- @field public attached_prefix_cnode Chadnode: A node that is attached to and precedes the current node, considered a companion for sorting and processing.
---- @field public attached_suffix_cnode Chadnode | nil: The node used to handle/represent the end_character if it exists and EndChar.is_attached is true.
+--- @deprecated attached_prefix_cnode Chadnode: Use `attached_prefix_cnodes` instead.
+--- @deprecated attached_suffix_cnode Chadnode | nil: Use `attached_suffix_cnodes` instead.
+---
+--- @field public attached_prefix_cnodes Chadnode[]: Nodes that are attached to and precedes the current node, considered a companion for sorting and processing.
+--- @field public attached_suffix_cnodes Chadnode[]: Nodes used to handle/represent the end_character if it exists and EndChar.is_attached is true.
 --- @field public end_character EndChar: The end character properties of the node, if the node itself is an end-character.
 --- @field public region Region: The source code region of the node.
 --- @field public sort_key string | nil: The key used for sorting this node.
 --- @field public ts_node TSNode: The primary Tree-sitter syntax node.
 ---
+--- @field public add_attached_prefix_cnode fun(self: Chadnode, attached_prefix_cnode: Chadnode)
+--- @field public add_attached_suffix_cnode fun(self: Chadnode, attached_suffix_cnode: Chadnode)
 --- @field public calculate_horizontal_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public calculate_vertical_gap fun(self: Chadnode, other: Chadnode): number
 --- @field public debug fun(self: Chadnode, bufnr: number, opts: table | nil): table<any>
@@ -37,7 +43,10 @@ function Chadnode:new(node, sort_key)
     setmetatable(obj, Chadnode)
 
     obj.attached_prefix_cnode = nil
+    obj.attached_prefix_cnodes = {}
     obj.attached_suffix_cnode = nil
+    obj.attached_suffix_cnodes = {}
+
     obj.end_character = nil
     obj.region = Region.new(node:range())
     obj.sort_key = sort_key or nil
@@ -65,8 +74,10 @@ Chadnode.calculate_vertical_gap = function(self, other)
 
     -- If the other node has a comment node, we need to compare the other node's comment node to
     -- get the empty spaces
-    while other.attached_prefix_cnode ~= nil do
-        other = other.attached_prefix_cnode
+    local idx = 1
+    while #other.attached_prefix_cnodes > 0 and other.attached_prefix_cnodes[idx] ~= nil do
+        other = other.attached_prefix_cnodes[idx]
+        idx = idx + 1
     end
 
     return other.region.srow - self.region.erow - 1
@@ -81,15 +92,16 @@ Chadnode.debug = function(self, bufnr, opts)
     local include_attached_suffix_cnode = opts.include_attached_suffix_cnode or false
     local include_end_char = opts.include_end_char or false
     local include_region = opts.include_region or false
+    local include_attached_suffix_cnodes = opts.include_attached_suffix_cnodes or false
 
     local output = {
         ts_node = self:to_string(bufnr),
         sort_key = self:get_sort_key(),
     }
 
-    if self.attached_prefix_cnode then
+    if #self.attached_prefix_cnodes > 0 then
         output = f.merge_tables(output, {
-            attached_prefix_cnode = self.attached_prefix_cnode:to_string(bufnr),
+            attached_prefix_cnode = self.attached_prefix_cnodes[0]:to_string(bufnr),
         })
     end
 
@@ -101,9 +113,18 @@ Chadnode.debug = function(self, bufnr, opts)
         output = f.merge_tables(output, { end_char = vim.inspect(self.end_character:debug()) })
     end
 
-    if include_attached_suffix_cnode and self.attached_suffix_cnode ~= nil then
+    if include_attached_suffix_cnode and #self.attached_suffix_cnode ~= 0 then
         output = f.merge_tables(output, {
             attached_suffix_cnode = self.attached_suffix_cnode:to_string(bufnr),
+        })
+    end
+
+    if include_attached_suffix_cnodes and #self.attached_suffix_cnodes > 0 then
+        output = f.merge_tables(output, {
+            attached_suffix_cnodes = R.reduce(function(acc, cnode)
+                table.insert(acc, cnode:debug(bufnr, opts))
+                return acc
+            end, {}, self.attached_suffix_cnodes),
         })
     end
 
@@ -195,6 +216,20 @@ Chadnode.set_attached_prefix_cnode = function(self, attached_prefix_cnode)
     self.attached_prefix_cnode = attached_prefix_cnode
 end
 
+--- Add an attached_prefix_cnode node
+--- @param self Chadnode: the node
+--- @param attached_prefix_cnode Chadnode: the attached_prefix_cnode node
+Chadnode.add_attached_prefix_cnode = function(self, attached_prefix_cnode)
+    table.insert(self.attached_prefix_cnodes, attached_prefix_cnode)
+end
+
+--- Add an attached_suffix_cnode node
+--- @param self Chadnode: the node
+--- @param attached_suffix_cnode Chadnode: the attached_suffix_cnodes node
+Chadnode.add_attached_suffix_cnode = function(self, attached_suffix_cnode)
+    table.insert(self.attached_suffix_cnodes, attached_suffix_cnode)
+end
+
 --- Set the attached_suffix_cnode node
 --- @param self Chadnode: the node
 --- @param attached_suffix_cnode Chadnode: the attached_suffix_cnode node
@@ -224,9 +259,12 @@ Chadnode.stringify = function(self, bufnr, target_row)
     -- Adjust indentation for all lines
     local stringified_lines = {}
 
-    if self.attached_prefix_cnode ~= nil then
-        local stringified_comment = self.attached_prefix_cnode:stringify(bufnr, self.attached_prefix_cnode.region.srow)
+    local idx = 1
+    while #self.attached_prefix_cnodes > 0 and self.attached_prefix_cnodes[idx] do
+        local prefix_cnode = self.attached_prefix_cnodes[idx]
+        local stringified_comment = prefix_cnode:stringify(bufnr, prefix_cnode.region.srow)
         table.insert(stringified_lines, stringified_comment)
+        idx = idx + 1
     end
 
     for _, line in ipairs(lines) do

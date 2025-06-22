@@ -15,7 +15,7 @@ describe("chadnodes: merge_sortable_nodes_with_adjacent_linkable_nodes", functio
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        local merged_nodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes()
+        local merged_nodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(mock.region)
 
         truthy(vim.deep_equal(merged_nodes:debug(bufnr), {
             {
