@@ -1,6 +1,6 @@
 #!/bin/bash
 
-languages=(typescript lua css scss vue javascript)
+languages=(typescript lua css scss vue javascript go)
 
 for lang in "${languages[@]}"
 do

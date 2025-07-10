@@ -89,7 +89,6 @@ end
 Chadnode.debug = function(self, bufnr, opts)
     opts = opts or {}
 
-    local include_attached_suffix_cnode = opts.include_attached_suffix_cnode or false
     local include_end_char = opts.include_end_char or false
     local include_region = opts.include_region or false
     local include_attached_suffix_cnodes = opts.include_attached_suffix_cnodes or false
@@ -101,21 +100,19 @@ Chadnode.debug = function(self, bufnr, opts)
 
     if #self.attached_prefix_cnodes > 0 then
         output = f.merge_tables(output, {
-            attached_prefix_cnode = self.attached_prefix_cnodes[0]:to_string(bufnr),
+            attached_prefix_cnode = self.attached_prefix_cnodes[1]:to_string(bufnr),
         })
     end
 
     if include_region then
-        output = f.merge_tables(output, { region = self.region:tostr() })
+        output = f.merge_tables(output, {
+            region = self.region:tostr(),
+        })
     end
 
     if include_end_char then
-        output = f.merge_tables(output, { end_char = vim.inspect(self.end_character:debug()) })
-    end
-
-    if include_attached_suffix_cnode and #self.attached_suffix_cnode ~= 0 then
         output = f.merge_tables(output, {
-            attached_suffix_cnode = self.attached_suffix_cnode:to_string(bufnr),
+            end_char = vim.inspect(self.end_character:debug()),
         })
     end
 
@@ -260,7 +257,7 @@ Chadnode.stringify = function(self, bufnr, target_row)
     local stringified_lines = {}
 
     local idx = 1
-    while #self.attached_prefix_cnodes > 0 and self.attached_prefix_cnodes[idx] do
+    while #self.attached_prefix_cnodes > 0 and self.attached_prefix_cnodes[idx] ~= nil do
         local prefix_cnode = self.attached_prefix_cnodes[idx]
         local stringified_comment = prefix_cnode:stringify(bufnr, prefix_cnode.region.srow)
         table.insert(stringified_lines, stringified_comment)

@@ -8,6 +8,12 @@ export interface SomeInterface {
   };
   c: {
     foo: string;
+    ccc: {
+      ddd: {
+        eee: string;
+        fff: number;
+      },
+    },
     bar: boolean;
   }
   a: number;

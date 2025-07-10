@@ -5,6 +5,9 @@ local f = require("funcs")
 local css_node_types = require("treesitter.css.node_types")
 local css_queries = require("treesitter.css.queries")
 
+local go_node_types = require("treesitter.go.node_types")
+local go_queries = require("treesitter.go.queries")
+
 local javascript_node_types = require("treesitter.javascript.node_types")
 local javascript_queries = require("treesitter.javascript.queries")
 
@@ -88,6 +91,8 @@ LanguageQuery.get_end_chars = function(self)
         return vue_node_types.end_chars
     elseif self.language == "typescript" then
         return typescript_node_types.end_chars
+    elseif self.language == "go" then
+        return go_node_types.end_chars
     elseif self.language == "javascript" then
         return javascript_node_types.end_chars
     elseif self.language == "lua" then
@@ -135,6 +140,8 @@ LanguageQuery.query_by_node = function(self, node)
         return typescript_queries.query_by_node(node)
     elseif self.language == "javascript" then
         return javascript_queries.query_by_node(node)
+    elseif self.language == "go" then
+        return go_queries.query_by_node(node)
     elseif self.language == "lua" then
         return lua_queries.query_by_node(node)
     elseif self.language == "css" then
@@ -159,6 +166,8 @@ LanguageQuery._get_linkable_nodes_by_language = function(language)
         return css_node_types.linkable
     elseif language == "lua" then
         return lua_node_types.linkable
+    elseif language == "go" then
+        return go_node_types.linkable
     elseif language == "scss" then
         return f.merge_arrays(
             scss_node_types.linkable,
@@ -188,6 +197,8 @@ LanguageQuery._get_sortable_nodes_by_language = function(language)
         return css_node_types.sortable
     elseif language == "lua" then
         return lua_node_types.sortable
+    elseif language == "go" then
+        return go_node_types.sortable
     elseif language == "twig" then
         return twig_node_types.sortable
     elseif language == "scss" then

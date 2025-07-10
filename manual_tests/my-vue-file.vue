@@ -2,8 +2,8 @@
   <h1 :class="$style.title">{{ title }}</h1>
 
   <my-component
-    :title="title"
     :bbb="bbb"
+    :title="title"
     :aaa="aaa" />
 </template>
 

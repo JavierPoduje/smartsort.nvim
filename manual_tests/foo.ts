@@ -1,18 +1,7 @@
-const title = 'Hello World';
-const another = 'another';
-
-/**
- * This is a comment
- */
-const foo = () => {
-  console.log("foo");
-};
-
-// this is a comment
-
 const aaa = () => {
-  console.log("aaa");
+  console.log("aaa"); // some right-side comment
 };
+const another = 'another';
 
 // nested comment
 /**
@@ -21,3 +10,12 @@ const aaa = () => {
 function bar() {
   console.log("bar");
 }
+
+/**
+ * This is a comment
+ */
+const foo = () => { // this is another comment
+  console.log("foo");
+};
+
+const title = 'Hello World';

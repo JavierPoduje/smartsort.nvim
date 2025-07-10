@@ -3,7 +3,7 @@
 
 --- @type Config
 local Config = {
-    supported_languages = { "css", "javascript", "lua", "scss", "twig", "typescript", "vue" },
+    supported_languages = { "css", "go", "javascript", "lua", "scss", "twig", "typescript", "vue" },
 }
 
 
