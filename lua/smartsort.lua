@@ -85,6 +85,8 @@ M.sort_multiple_lines = function(selected_region)
     local linked_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)
     local should_have_left_padding_by_idx = linked_cnodes:calculate_left_padding_by_idx()
 
+    print("vertical_gaps: ", vim.inspect(vertical_gaps))
+
     local sorted_nodes_with_gaps = linked_cnodes
         :sort()
         :stringify_into_table(

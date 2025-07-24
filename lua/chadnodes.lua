@@ -393,14 +393,9 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
 
     for idx, cnode in ipairs(self.nodes) do
         if not cnode:is_endchar_node() then
-            local cnode_str = cnode:stringify(0, cnode.region.srow)
+            local cnode_str = cnode:stringify(0, cnode.region.srow, not should_have_left_padding_by_idx[idx])
             local endchar_as_str = cnode:stringify_first_suffix()
-            local maybe_trimmed_cnode_str = cnode_str .. endchar_as_str
-            if not should_have_left_padding_by_idx[idx] then
-                maybe_trimmed_cnode_str = funcs.trim(maybe_trimmed_cnode_str)
-            end
-
-            local stringified_node_lines = vim.fn.split(maybe_trimmed_cnode_str, "\n")
+            local stringified_node_lines = vim.fn.split(cnode_str .. endchar_as_str, "\n")
 
             -- if the current node is in the same line of the previous node:
             -- 1. copy the first line of the current node and put it in the last line of the previous one
