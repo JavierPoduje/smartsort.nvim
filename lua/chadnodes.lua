@@ -395,7 +395,7 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps)
 
         -- add vertical gap
         if idx <= #vertical_gaps and vertical_gaps[idx] > 0 then
-            for _ = 1, vertical_gaps[idx] do table.insert(nodes_as_str_table, "") end
+            for _ = 1, vertical_gaps[idx] + 1 do table.insert(nodes_as_str_table, "") end
         end
     end
 
