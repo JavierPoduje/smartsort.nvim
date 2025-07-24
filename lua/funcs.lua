@@ -79,4 +79,13 @@ M.repeat_str = function(str, times)
     return result
 end
 
+--- Get the trimmed string
+---
+--- @param str string: the string to trim
+--- @return string: the trimmed string
+M.trim = function(str)
+    local trimmed_str = string.match(str, "^%s*(.-)%s*$")
+    return trimmed_str
+end
+
 return M

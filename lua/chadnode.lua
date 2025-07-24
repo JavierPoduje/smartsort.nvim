@@ -14,6 +14,7 @@ local f = require("funcs")
 --- @field public sort_key string | nil: The key used for sorting this node.
 --- @field public ts_node TSNode: The primary Tree-sitter syntax node.
 ---
+--- @field public __tostring fun(self: Chadnode): string
 --- @field public add_attached_prefix_cnode fun(self: Chadnode, attached_prefix_cnode: Chadnode)
 --- @field public add_attached_suffix_cnode fun(self: Chadnode, attached_suffix_cnode: Chadnode)
 --- @field public calculate_horizontal_gap fun(self: Chadnode, other: Chadnode): number
@@ -24,6 +25,7 @@ local f = require("funcs")
 --- @field public get_sort_key fun(self: Chadnode): string
 --- @field public has_next_sibling fun(self: Chadnode): boolean
 --- @field public is_endchar_node fun(self: Chadnode): boolean
+--- @field public is_first_node_in_row fun(self: Chadnode): boolean
 --- @field public is_sortable fun(self: Chadnode): boolean
 --- @field public new fun(self:Chadnode, node: TSNode, sort_key: string | nil): Chadnode
 --- @field public parent_node fun(self: Chadnode): TSNode | nil
@@ -34,7 +36,6 @@ local f = require("funcs")
 --- @field public stringify fun(self: Chadnode, bufnr: number, target_row: number): string
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public type fun(self: Chadnode): string
---- @field public __tostring fun(self: Chadnode): string
 
 local Chadnode = {}
 
@@ -255,6 +256,30 @@ end
 --- @param character EndChar: the end character
 Chadnode.set_end_character = function(self, character)
     self.end_character = character
+end
+
+--- Check if the current node is the first node in its row
+---
+--- @param self Chadnode: the node
+--- @return boolean: true if the node is the first node in its row, false otherwise
+Chadnode.is_first_node_in_row = function(self)
+    local tsnode = self.ts_node
+    local srow, scol = tsnode:start()
+
+    if scol == 0 then
+        return true
+    end
+
+    local bufnr = vim.api.nvim_get_current_buf()
+    local line = vim.api.nvim_buf_get_lines(bufnr, srow, srow + 1, false)[1]
+
+    if line == nil then
+        return false
+    end
+
+    local prefix = string.sub(line, 1, scol)
+
+    return prefix:match("^%s*$") ~= nil
 end
 
 --- Return the string representation of a node, preserving the indent

@@ -13,6 +13,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public parser vim.treesitter.LanguageTree
 ---
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode): self
+--- @field public calculate_horizontal_gaps fun(self: Chadnodes): (number | nil)[]
 --- @field public calculate_vertical_gaps fun(self: Chadnodes): number[]
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
@@ -26,7 +27,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public print fun(self: Chadnodes, bufnr: number, opts: table | nil)
 --- @field public sort fun(self: Chadnodes): Chadnodes
 --- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
---- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[]): string[]
+--- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[], horizontal_gaps: number[]): string[]
 ---
 --- @field private _cnodes_by_idx fun(cnodes: Chadnode[]): table<string, Chadnode>
 --- @field private _get_idxs fun(cnodes: Chadnode[]): string[]
@@ -90,7 +91,7 @@ Chadnodes.add = function(self, chadnode)
     return self
 end
 
---- Get the gaps between the nodes. It'll always have a length of `#nodes - 1`.
+--- Get the vertical gaps between the nodes. It'll always have a length of `#nodes - 1`.
 --- @param self Chadnodes
 --- @return number[]
 Chadnodes.calculate_vertical_gaps = function(self)
@@ -109,6 +110,38 @@ Chadnodes.calculate_vertical_gaps = function(self)
         return { previous_cnode = previous_cnode, gaps = gaps }
     end, { previous_cnode = nil, gaps = {} }, self.nodes)
 
+    return acc.gaps
+end
+
+--- Get the horizontal gaps between the nodes. It'll always have a length of `#nodes - 1`.
+--- @param self Chadnodes
+--- @return (number | nil)[]
+Chadnodes.calculate_horizontal_gaps = function(self)
+    --- @type { previous_cnode: Chadnode | nil, gaps: (number | nil)[] }
+    local acc = R.reduce(function(acc, cnode, idx)
+        local previous_cnode, gaps = acc.previous_cnode, acc.gaps
+
+        if idx == 1 then
+            previous_cnode = cnode
+        else
+            assert(previous_cnode ~= nil, "Previous Chadnode not found")
+            local vertical_gap = previous_cnode:calculate_vertical_gap(cnode)
+
+            table.insert(
+                gaps,
+                funcs.if_else(
+                    vertical_gap == -1,
+                    function()
+                        return previous_cnode:calculate_horizontal_gap(cnode)
+                    end,
+                    function() return -1 end
+                )
+            )
+            previous_cnode = cnode
+        end
+
+        return { previous_cnode = previous_cnode, gaps = gaps }
+    end, { previous_cnode = nil, gaps = {} }, self.nodes)
     return acc.gaps
 end
 
@@ -344,8 +377,9 @@ end
 --- Return a list of strings where each item is a line of the string representation of the nodes.
 --- @param self Chadnodes
 --- @param vertical_gaps number[]: the vertical gaps between the nodes
+--- @param horizontal_gaps number[]: the horizontal gaps between the nodes
 --- @return string[]: the string representation of the nodes
-Chadnodes.stringify_into_table = function(self, vertical_gaps)
+Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps)
     local nodes_as_str_table = {}
 
     for idx, cnode in ipairs(self.nodes) do
@@ -356,8 +390,13 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps)
                 function() return cnode.attached_suffix_cnodes[1].end_character:stringify() end,
                 function() return "" end
             )
+            local maybe_trimmed_cnode_str = cnode_str .. endchar_as_str
+            local should_trim = idx <= #vertical_gaps and vertical_gaps[idx - 1] == -1 and not cnode:is_first_node_in_row()
+            if should_trim then
+                maybe_trimmed_cnode_str = funcs.trim(maybe_trimmed_cnode_str)
+            end
 
-            local stringified_node_lines = vim.fn.split(cnode_str .. endchar_as_str, "\n")
+            local stringified_node_lines = vim.fn.split(maybe_trimmed_cnode_str, "\n")
 
             -- if the current node is in the same line of the previous node:
             -- 1. copy the first line of the current node and put it in the last line of the previous one
@@ -367,7 +406,8 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps)
                 assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a new node to it")
 
                 -- append the first line of the current node to the last line of the previous one
-                local gap = " " -- for now it'll be just a single space, but this needs to be calculated somehow
+                local gap = ""
+                if horizontal_gaps[idx] > 0 then gap = string.rep(" ", horizontal_gaps[idx]) end
                 previous_node_as_str = previous_node_as_str .. gap .. stringified_node_lines[1]
                 nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
 
