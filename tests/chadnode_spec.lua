@@ -31,7 +31,7 @@ describe("chadnode", function()
             true,
             vim.deep_equal(
             --- @diagnostic disable-next-line: need-check-nil
-                cnode:stringify(bufnr, 0),
+                cnode:__tostring(),
                 '/**\n * This is a comment\n */\nconst foo = () => {\n  console.log(\"foo\");\n};'
             )
         )

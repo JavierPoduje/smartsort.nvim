@@ -34,6 +34,7 @@ local f = require("funcs")
 --- @field public stringify fun(self: Chadnode, bufnr: number, target_row: number): string
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public type fun(self: Chadnode): string
+--- @field public __tostring fun(self: Chadnode): string
 
 local Chadnode = {}
 
@@ -62,6 +63,21 @@ end
 Chadnode.calculate_horizontal_gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
     return other.region.scol - self.region.ecol
+end
+
+Chadnode.__tostring = function(self)
+    local cnode_str = self:stringify(0, self.region.srow)
+
+    if self:is_endchar_node() then
+        return cnode_str
+    end
+
+    local endchar_as_str = f.if_else(
+        #self.attached_suffix_cnodes > 0 and self.attached_suffix_cnodes[1].end_character ~= nil,
+        function() return self.attached_suffix_cnodes[1].end_character:stringify() end,
+        function() return "" end
+    )
+    return cnode_str .. endchar_as_str
 end
 
 --- Calculate the vertical gap between two nodes, where the gap is the number of rows between them.
