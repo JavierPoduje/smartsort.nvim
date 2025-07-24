@@ -21,4 +21,3 @@ const title = 'Hello World';
 const foo = () => { // this is another comment
   console.log("foo");
 };
-

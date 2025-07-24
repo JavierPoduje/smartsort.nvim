@@ -22,9 +22,6 @@ describe("chadnode", function()
         equal(cnode == nil, false)
         equal(comment_cnode == nil, false)
 
-        -- TODO: remove the following lines later
-        --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
-        cnode:set_attached_prefix_cnode(comment_cnode)
         --- @diagnostic disable-next-line: need-check-nil, param-type-mismatch
         cnode:add_attached_prefix_cnode(comment_cnode)
         equal(

@@ -4,9 +4,6 @@ local f = require("funcs")
 
 --- @class Chadnode
 ---
---- @deprecated attached_prefix_cnode Chadnode: Use `attached_prefix_cnodes` instead.
---- @deprecated attached_suffix_cnode Chadnode | nil: Use `attached_suffix_cnodes` instead.
----
 --- @field public attached_prefix_cnodes Chadnode[]: Nodes that are attached to and precedes the current node, considered a companion for sorting and processing.
 --- @field public attached_suffix_cnodes Chadnode[]: Nodes used to handle/represent the end_character if it exists and EndChar.is_attached is true.
 --- @field public end_character EndChar: The end character properties of the node, if the node itself is an end-character.
@@ -30,8 +27,6 @@ local f = require("funcs")
 --- @field public new fun(self:Chadnode, node: TSNode, sort_key: string | nil): Chadnode
 --- @field public parent_node fun(self: Chadnode): TSNode | nil
 --- @field public print fun(self: Chadnode, bufnr: number, opts: table | nil)
---- @field public set_attached_prefix_cnode fun(self: Chadnode, attached_prefix_cnode: Chadnode)
---- @field public set_attached_suffix_cnode fun(self: Chadnode, attached_suffix_cnode: Chadnode)
 --- @field public set_end_character fun(self: Chadnode, character: EndChar)
 --- @field public stringify fun(self: Chadnode, bufnr: number, target_row: number, trim: boolean): string
 --- @field public stringify_first_suffix fun(self: Chadnode): string
@@ -45,9 +40,7 @@ function Chadnode:new(node, sort_key)
     local obj = {}
     setmetatable(obj, Chadnode)
 
-    obj.attached_prefix_cnode = nil
     obj.attached_prefix_cnodes = {}
-    obj.attached_suffix_cnode = nil
     obj.attached_suffix_cnodes = {}
 
     obj.end_character = nil
@@ -224,32 +217,18 @@ Chadnode.print = function(self, bufnr, opts)
     print(vim.inspect(self:debug(bufnr, opts)))
 end
 
---- Set the previous node
---- @param self Chadnode: the node
---- @param attached_prefix_cnode Chadnode: the attached_prefix_cnode node
-Chadnode.set_attached_prefix_cnode = function(self, attached_prefix_cnode)
-    self.attached_prefix_cnode = attached_prefix_cnode
-end
-
 --- Add an attached_prefix_cnode node
 --- @param self Chadnode: the node
---- @param attached_prefix_cnode Chadnode: the attached_prefix_cnode node
-Chadnode.add_attached_prefix_cnode = function(self, attached_prefix_cnode)
-    table.insert(self.attached_prefix_cnodes, attached_prefix_cnode)
+--- @param prefix_cnode_to_attach Chadnode: the attached_prefix_cnode node
+Chadnode.add_attached_prefix_cnode = function(self, prefix_cnode_to_attach)
+    table.insert(self.attached_prefix_cnodes, prefix_cnode_to_attach)
 end
 
 --- Add an attached_suffix_cnode node
 --- @param self Chadnode: the node
---- @param attached_suffix_cnode Chadnode: the attached_suffix_cnodes node
-Chadnode.add_attached_suffix_cnode = function(self, attached_suffix_cnode)
-    table.insert(self.attached_suffix_cnodes, attached_suffix_cnode)
-end
-
---- Set the attached_suffix_cnode node
---- @param self Chadnode: the node
---- @param attached_suffix_cnode Chadnode: the attached_suffix_cnode node
-Chadnode.set_attached_suffix_cnode = function(self, attached_suffix_cnode)
-    self.attached_suffix_cnode = attached_suffix_cnode
+--- @param suffix_cnode_to_attach Chadnode
+Chadnode.add_attached_suffix_cnode = function(self, suffix_cnode_to_attach)
+    table.insert(self.attached_suffix_cnodes, suffix_cnode_to_attach)
 end
 
 --- Set the end character of the chadnode
