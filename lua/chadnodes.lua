@@ -92,7 +92,8 @@ Chadnodes.add = function(self, chadnode)
     return self
 end
 
---- Get the vertical gaps between the nodes. It'll always have a length of `#nodes - 1`.
+--- Get the vertical gaps between the nodes. Each gap contains the distance between current
+--- node at `n` and the previous node at `n-1`. It'll always have a length of `#nodes - 1`.
 --- @param self Chadnodes
 --- @return number[]
 Chadnodes.calculate_vertical_gaps = function(self)
@@ -432,9 +433,11 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
             nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
         end
 
-        -- add vertical gap
-        if idx <= #vertical_gaps and vertical_gaps[idx] > 0 then
-            for _ = 1, vertical_gaps[idx] do table.insert(nodes_as_str_table, "") end
+        -- add vertical gap between the current node and the next one
+        if vertical_gaps[idx] ~= nil and vertical_gaps[idx] > 0 then
+            for _ = 1, vertical_gaps[idx] do
+                table.insert(nodes_as_str_table, "")
+            end
         end
     end
 
