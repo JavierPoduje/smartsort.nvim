@@ -34,6 +34,7 @@ local f = require("funcs")
 --- @field public set_attached_suffix_cnode fun(self: Chadnode, attached_suffix_cnode: Chadnode)
 --- @field public set_end_character fun(self: Chadnode, character: EndChar)
 --- @field public stringify fun(self: Chadnode, bufnr: number, target_row: number): string
+--- @field public stringify_first_suffix fun(self: Chadnode): string
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public type fun(self: Chadnode): string
 
@@ -312,6 +313,14 @@ Chadnode.stringify = function(self, bufnr, target_row)
     end
 
     return table.concat(stringified_lines, "\n")
+end
+
+Chadnode.stringify_first_suffix = function(self)
+    return f.if_else(
+        #self.attached_suffix_cnodes > 0 and self.attached_suffix_cnodes[1].end_character ~= nil,
+        function() return self.attached_suffix_cnodes[1].end_character:stringify() end,
+        function() return "" end
+    )
 end
 
 --- Return the string representation of a node

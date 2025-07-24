@@ -12,6 +12,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public nodes Chadnode[]
 --- @field public parser vim.treesitter.LanguageTree
 ---
+--- @field public calculate_left_padding_by_idx fun(self: Chadnodes): boolean[]
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode): self
 --- @field public calculate_horizontal_gaps fun(self: Chadnodes): (number | nil)[]
 --- @field public calculate_vertical_gaps fun(self: Chadnodes): number[]
@@ -27,7 +28,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public print fun(self: Chadnodes, bufnr: number, opts: table | nil)
 --- @field public sort fun(self: Chadnodes): Chadnodes
 --- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
---- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[], horizontal_gaps: number[]): string[]
+--- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[], horizontal_gaps: number[], should_have_left_padding_by_idx: boolean[]): string[]
 ---
 --- @field private _cnodes_by_idx fun(cnodes: Chadnode[]): table<string, Chadnode>
 --- @field private _get_idxs fun(cnodes: Chadnode[]): string[]
@@ -374,25 +375,28 @@ Chadnodes.sort_sortable_nodes = function(self, cnodes)
     end, Chadnodes:new(self.parser), sorted_idx)
 end
 
+Chadnodes.calculate_left_padding_by_idx = function(self)
+    return R.reduce(function(acc, cnode, idx)
+        acc[idx] = cnode:is_first_node_in_row()
+        return acc
+    end, {}, self.nodes)
+end
+
 --- Return a list of strings where each item is a line of the string representation of the nodes.
 --- @param self Chadnodes
 --- @param vertical_gaps number[]: the vertical gaps between the nodes
 --- @param horizontal_gaps number[]: the horizontal gaps between the nodes
+--- @param should_have_left_padding_by_idx boolean[]: table indicating if the node should have left padding
 --- @return string[]: the string representation of the nodes
-Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps)
+Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, should_have_left_padding_by_idx)
     local nodes_as_str_table = {}
 
     for idx, cnode in ipairs(self.nodes) do
         if not cnode:is_endchar_node() then
             local cnode_str = cnode:stringify(0, cnode.region.srow)
-            local endchar_as_str = funcs.if_else(
-                #cnode.attached_suffix_cnodes > 0 and cnode.attached_suffix_cnodes[1].end_character ~= nil,
-                function() return cnode.attached_suffix_cnodes[1].end_character:stringify() end,
-                function() return "" end
-            )
+            local endchar_as_str = cnode:stringify_first_suffix()
             local maybe_trimmed_cnode_str = cnode_str .. endchar_as_str
-            local should_trim = idx <= #vertical_gaps and vertical_gaps[idx - 1] == -1 and not cnode:is_first_node_in_row()
-            if should_trim then
+            if not should_have_left_padding_by_idx[idx] then
                 maybe_trimmed_cnode_str = funcs.trim(maybe_trimmed_cnode_str)
             end
 
@@ -435,7 +439,7 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps)
 
         -- add vertical gap
         if idx <= #vertical_gaps and vertical_gaps[idx] > 0 then
-            for _ = 1, vertical_gaps[idx] + 1 do table.insert(nodes_as_str_table, "") end
+            for _ = 1, vertical_gaps[idx] do table.insert(nodes_as_str_table, "") end
         end
     end
 

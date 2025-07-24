@@ -78,12 +78,19 @@ end
 M.sort_multiple_lines = function(selected_region)
     local parser = parsers.get_parser()
     local region = FileManager.get_region_to_work_with(0, selected_region, parser)
-
     local cnodes = Chadnodes.from_region(0, region, parser)
-    local gaps = cnodes:calculate_vertical_gaps()
+
+    local vertical_gaps = cnodes:calculate_vertical_gaps()
     local horizontal_gaps = cnodes:calculate_horizontal_gaps()
     local linked_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)
-    local sorted_nodes_with_gaps = linked_cnodes:sort():stringify_into_table(gaps, horizontal_gaps)
+    local should_have_left_padding_by_idx = linked_cnodes:calculate_left_padding_by_idx()
+
+    local sorted_nodes_with_gaps = linked_cnodes
+        :sort()
+        :stringify_into_table(
+            vertical_gaps,
+            horizontal_gaps,
+            should_have_left_padding_by_idx)
     vim.api.nvim_buf_set_lines(0, region.srow - 1, region.erow, true, sorted_nodes_with_gaps)
 end
 
