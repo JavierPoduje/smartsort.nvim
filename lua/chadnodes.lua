@@ -394,7 +394,7 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
 
             -- if the current node is in the same line of the previous node:
             -- 1. copy the first line of the current node and put it in the last line of the previous one
-            -- 2. remove the first line of the current node
+            -- 2. remove the first line of the current node, because it was added to the previous one
             local is_in_previous_node_line = idx <= #vertical_gaps and vertical_gaps[idx] == -1
             local previous_node_exists = #nodes_as_str_table > 0
             local start_from_previous_node = is_in_previous_node_line and previous_node_exists and not has_left_padding

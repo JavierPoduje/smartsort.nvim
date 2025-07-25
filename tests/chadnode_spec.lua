@@ -28,7 +28,7 @@ describe("chadnode", function()
             true,
             vim.deep_equal(
             --- @diagnostic disable-next-line: need-check-nil
-                cnode:__tostring(),
+                cnode:stringify(bufnr, 3, false),
                 '/**\n * This is a comment\n */\nconst foo = () => {\n  console.log(\"foo\");\n};'
             )
         )
@@ -47,7 +47,7 @@ describe("chadnode", function()
                 true,
                 vim.deep_equal(
                 --- @diagnostic disable-next-line: need-check-nil
-                    cnode:stringify(bufnr, 3),
+                    cnode:stringify(bufnr, 3, false),
                     "const foo = () => {\n  console.log(\"foo\");\n};"
                 )
             )
@@ -65,7 +65,7 @@ describe("chadnode", function()
                 true,
                 vim.deep_equal(
                 --- @diagnostic disable-next-line: need-check-nil
-                    cnode:stringify(bufnr, 4),
+                    cnode:stringify(bufnr, 4, false),
                     "  const foo = () => {\n    console.log(\"foo\");\n  };"
                 )
             )
