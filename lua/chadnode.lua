@@ -61,7 +61,7 @@ Chadnode.calculate_horizontal_gap = function(self, other)
 end
 
 Chadnode.__tostring = function(self)
-    local cnode_str = self:stringify(0, self.region.srow)
+    local cnode_str = self:stringify(0, self.region.srow, true)
 
     if self:is_endchar_node() then
         return cnode_str

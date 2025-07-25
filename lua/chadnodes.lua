@@ -387,14 +387,18 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
 
     for idx, cnode in ipairs(self.nodes) do
         if not cnode:is_endchar_node() then
-            local cnode_str = cnode:stringify(0, cnode.region.srow, not should_have_left_padding_by_idx[idx])
+            local has_left_padding = should_have_left_padding_by_idx[idx]
+            local cnode_str = cnode:stringify(0, cnode.region.srow, not has_left_padding)
             local endchar_as_str = cnode:stringify_first_suffix()
             local stringified_node_lines = vim.fn.split(cnode_str .. endchar_as_str, "\n")
 
             -- if the current node is in the same line of the previous node:
             -- 1. copy the first line of the current node and put it in the last line of the previous one
             -- 2. remove the first line of the current node
-            if idx <= #vertical_gaps and vertical_gaps[idx] == -1 and #nodes_as_str_table > 0 then
+            local is_in_previous_node_line = idx <= #vertical_gaps and vertical_gaps[idx] == -1
+            local previous_node_exists = #nodes_as_str_table > 0
+            local start_from_previous_node = is_in_previous_node_line and previous_node_exists and not has_left_padding
+            if start_from_previous_node then
                 local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
                 assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a new node to it")
 
@@ -431,6 +435,10 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
             for _ = 1, vertical_gaps[idx] do
                 table.insert(nodes_as_str_table, "")
             end
+        elseif nodes_as_str_table[#nodes_as_str_table] ~= nil and horizontal_gaps[idx] ~= nil and horizontal_gaps[idx] > 0 then
+            -- add horizontal gap to the last line of the current node
+            local gap_as_str = string.rep(" ", horizontal_gaps[idx])
+            nodes_as_str_table[#nodes_as_str_table] = nodes_as_str_table[#nodes_as_str_table] .. gap_as_str
         end
     end
 
