@@ -3,7 +3,7 @@ local Chadquery = require("chadquery")
 local FileManager = require("file_manager")
 local R = require("ramda")
 local Region = require("region")
-local funcs = require("funcs")
+local f = require("funcs")
 local ts_utils = require("nvim-treesitter.ts_utils")
 
 --- @class Chadnodes
@@ -12,9 +12,10 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public nodes Chadnode[]
 --- @field public parser vim.treesitter.LanguageTree
 ---
---- @field public calculate_left_padding_by_idx fun(self: Chadnodes): boolean[]
+--- @field public __tostring fun(self: Chadnodes): string
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode): self
 --- @field public calculate_horizontal_gaps fun(self: Chadnodes): (number | nil)[]
+--- @field public calculate_left_padding_by_idx fun(self: Chadnodes): boolean[]
 --- @field public calculate_vertical_gaps fun(self: Chadnodes): number[]
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
@@ -49,6 +50,14 @@ function Chadnodes:new(parser)
     obj.parser = parser
 
     return obj
+end
+
+Chadnodes.__tostring = function(self)
+    local output = ""
+    for _, node in ipairs(self.nodes) do
+        output = output .. tostring(node) .. "\n"
+    end
+    return output
 end
 
 --- Map the `Chadnode`s by their sort_key
@@ -131,7 +140,7 @@ Chadnodes.calculate_horizontal_gaps = function(self)
 
             table.insert(
                 gaps,
-                funcs.if_else(
+                f.if_else(
                     vertical_gap == -1,
                     function()
                         return previous_cnode:calculate_horizontal_gap(cnode)

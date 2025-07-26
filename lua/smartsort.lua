@@ -17,6 +17,16 @@ M.setup = function(opts)
     local new_opts = f.merge_tables(M, opts or {})
 end
 
+M.print_chadnodes = function()
+    local parser = parsers.get_parser()
+    local region = FileManager.get_region_to_work_with(0, Region.from_selection(), parser)
+    local cnodes = Chadnodes.from_region(0, region, parser)
+
+    for _, cnode in ipairs(cnodes.nodes) do
+        print(cnode:__tostring())
+    end
+end
+
 --- Sort the selected text
 --- @param args Args: the arguments to use
 M.sort = function(args)
@@ -31,8 +41,7 @@ end
 
 --- Print the selected region
 M.region = function()
-    local region = Region.from_selection()
-    region:print()
+    print(Region.from_selection())
 end
 
 --- Sort the selected line

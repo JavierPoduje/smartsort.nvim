@@ -1,6 +1,6 @@
-local funcs = require("funcs")
-local merge_arrays = funcs.merge_arrays
-local merge_tables = funcs.merge_tables
+local f = require("funcs")
+local merge_arrays = f.merge_arrays
+local merge_tables = f.merge_tables
 local javascript_node_types = require("treesitter.javascript.node_types")
 
 local M = {}

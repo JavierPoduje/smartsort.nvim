@@ -29,7 +29,20 @@ local variables = {
     region = Region.new(1, 1, 6, 24),
 }
 
+local third = {
+    content = {
+        'return {',
+        '    someValue = "value",',
+        '',
+        '    anotherValue = { "value1", "value2", }, aaa = "value of aaa",',
+        '    aBoolean = true, -- some comment',
+        '}',
+    },
+    region = Region.new(2, 1, 5, 36),
+}
+
 return {
     simple = simple,
+    third = third,
     variables = variables,
 }

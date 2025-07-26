@@ -11,6 +11,13 @@ end, {
     nargs = '?',
 })
 
+vim.api.nvim_create_user_command('SPrintChadnode', function()
+    require('smartsort').print_chadnodes()
+end, {
+    range = true,
+    nargs = '?',
+})
+
 --- Sort the visually selected lines
 --- @param opts Options: the options to use
 vim.api.nvim_create_user_command('Smartsort', function(opts)
@@ -20,18 +27,6 @@ vim.api.nvim_create_user_command('Smartsort', function(opts)
     require('smartsort').sort({
         separator = args[1] or nil,
     })
-end, {
-    range = true,
-    nargs = '?',
-})
-
---- Sort the visually selected lines
---- @param opts Options: the options to use
-vim.api.nvim_create_user_command('STest', function(opts)
-    local check_reduce = R.reduce(function(acc, value)
-        return acc + value
-    end)(0)
-    print(check_reduce({ 1, 2, 3, 4, 5 }))
 end, {
     range = true,
     nargs = '?',

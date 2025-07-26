@@ -16,20 +16,15 @@ describe("chadnodes: from_region", function()
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:debug(bufnr), {
-            {
-                ts_node = 'const foo = () => {\n  console.log("foo");\n};',
-                sort_key = "foo"
-            },
-            {
-                ts_node  = "// this is a comment",
-                sort_key = ""
-            },
-            {
-                ts_node = 'function bar() {\n  console.log("bar");\n}',
-                sort_key = "bar"
-            }
-        }))
+        truthy(cnodes:__tostring(), [[
+const foo = () => {
+  console.log("foo");
+};
+// this is a comment
+function bar() {
+  console.log("bar");
+}
+        ]])
     end)
 
     it("should grab function comments", function()

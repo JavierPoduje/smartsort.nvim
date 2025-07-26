@@ -60,8 +60,12 @@ Chadnode.calculate_horizontal_gap = function(self, other)
     return other.region.scol - self.region.ecol
 end
 
+--- Return the string representation of the Chadnode, including its end character if it exists.
+---
+--- @param self Chadnode
+--- @return string
 Chadnode.__tostring = function(self)
-    local cnode_str = self:stringify(0, self.region.srow, true)
+    local cnode_str = self:stringify(0, self.region.srow, false)
 
     if self:is_endchar_node() then
         return cnode_str
@@ -117,7 +121,7 @@ Chadnode.debug = function(self, bufnr, opts)
 
     if include_region then
         output = f.merge_tables(output, {
-            region = self.region:tostr(),
+            region = self.region,
         })
     end
 

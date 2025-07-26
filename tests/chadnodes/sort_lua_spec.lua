@@ -10,6 +10,13 @@ local it = it
 local truthy = assert.is.truthy
 
 describe("chadnodes: sort - lua", function()
+    it("should consider vertical and horizontal gaps properly", function()
+        local mock = lua_mocks.third
+        local bufnr, parser = utils.setup(mock.content, "lua")
+        local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+        cnodes:sort():print(bufnr)
+    end)
+
     it("should sort alphabetically", function()
         local mock = lua_mocks.simple
         local bufnr, parser = utils.setup(mock.content, "lua")
