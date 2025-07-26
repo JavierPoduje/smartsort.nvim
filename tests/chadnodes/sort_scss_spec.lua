@@ -15,20 +15,10 @@ describe("chadnodes: sort - scss", function()
         local bufnr, parser = utils.setup(mock.content, "scss")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
-            {
-                ts_node =
-                ".a {\n  display: flex;\n  background-color: red;\n\n  &:hover {\n    background-color: blue;\n  }\n}",
-                sort_key = ".a"
-            },
-            {
-                ts_node = ".b {\n  border-radius: 0.8rem;\n}",
-                sort_key = ".b"
-            },
-            {
-                ts_node = ".c {\n  display: flex;\n}",
-                sort_key = ".c"
-            }
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            ".a {\n  display: flex;\n  background-color: red;\n\n  &:hover {\n    background-color: blue;\n  }\n}",
+            ".b {\n  border-radius: 0.8rem;\n}",
+            ".c {\n  display: flex;\n}",
         }))
     end)
 
@@ -37,27 +27,10 @@ describe("chadnodes: sort - scss", function()
         local bufnr, parser = utils.setup(mock.content, "scss")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
-            {
-                ts_node = "/**\n * multiline comment\n */",
-                sort_key = ""
-            },
-            {
-                ts_node = ".a {\n  display: flex;\n  background-color: red;\n}",
-                sort_key = ".a"
-            },
-            {
-                ts_node = "// unnested comment",
-                sort_key = ""
-            },
-            {
-                ts_node = "// Nested comment",
-                sort_key = ""
-            },
-            {
-                ts_node = ".c {\n  display: flex;\n}",
-                sort_key = ".c"
-            }
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            "/**\n * multiline comment\n */",
+            ".a {\n  display: flex;\n  background-color: red;\n}",
+            "// unnested comment", "// Nested comment", ".c {\n  display: flex;\n}",
         }))
     end)
 end)

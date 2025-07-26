@@ -26,7 +26,8 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public merge_sortable_nodes_with_adjacent_linkable_nodes fun(self: Chadnodes, region: Region): Chadnodes
 --- @field public new fun(self: Chadnodes, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
---- @field public print fun(self: Chadnodes, bufnr: number, opts: table | nil)
+--- @field public print fun(self: Chadnodes)
+--- @field public stringified_cnodes fun(self: Chadnodes): string[]
 --- @field public sort fun(self: Chadnodes): Chadnodes
 --- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
 --- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[], horizontal_gaps: number[], should_have_left_padding_by_idx: boolean[]): string[]
@@ -327,11 +328,22 @@ Chadnodes.node_by_idx = function(self, idx)
 end
 
 --- Print the string representation of the current Chadnodes
+---
 --- @param self Chadnodes
---- @param bufnr number
---- @param opts table | nil
-Chadnodes.print = function(self, bufnr, opts)
-    print(vim.inspect(self:debug(bufnr, opts)))
+Chadnodes.print = function(self)
+    print(vim.inspect(self:stringified_cnodes()))
+end
+
+--- Returns a list of strings where each item is the string representation of a `Chadnode`.
+---
+--- @param self Chadnodes
+--- @return string[]
+Chadnodes.stringified_cnodes = function(self)
+    local output = {}
+    for _, cnode in ipairs(self.nodes) do
+        table.insert(output, cnode:__tostring())
+    end
+    return output
 end
 
 --- Returns a new `Chadnodes` object with the nodes sorted

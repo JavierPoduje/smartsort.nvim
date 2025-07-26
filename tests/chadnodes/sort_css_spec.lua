@@ -15,27 +15,12 @@ describe("chadnodes: sort - css", function()
         local bufnr, parser = utils.setup(mock.content, "css")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
-            {
-                ts_node = "/*\n * This is\n * a multi-line\n * comment\n */",
-                sort_key = ""
-            },
-            {
-                ts_node = ".aclass {\n  color: red;\n}",
-                sort_key = ".aclass"
-            },
-            {
-                ts_node = ".bclass {\n  color: blue;\n}",
-                sort_key = ".bclass"
-            },
-            {
-                ts_node = "/* This is a comment */",
-                sort_key = ""
-            },
-            {
-                ts_node = ".cclass .dclass {\n  color: green;\n}",
-                sort_key = ".cclass .dclass"
-            }
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            "/*\n * This is\n * a multi-line\n * comment\n */",
+            ".aclass {\n  color: red;\n}",
+            ".bclass {\n  color: blue;\n}",
+            "/* This is a comment */",
+            ".cclass .dclass {\n  color: green;\n}",
         }))
     end)
 end)

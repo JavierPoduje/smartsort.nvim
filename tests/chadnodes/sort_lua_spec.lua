@@ -14,7 +14,18 @@ describe("chadnodes: sort - lua", function()
         local mock = lua_mocks.third
         local bufnr, parser = utils.setup(mock.content, "lua")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
-        cnodes:sort():print(bufnr)
+
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            "    aBoolean = true,",
+            "    ,",
+            '    aaa = "value of aaa",',
+            "    ,",
+            '    anotherValue = { "value1", "value2", },',
+            "    ,",
+            '    someValue = "value",',
+            "    ,",
+            "    -- some comment",
+        }))
     end)
 
     it("should sort alphabetically", function()
@@ -22,15 +33,9 @@ describe("chadnodes: sort - lua", function()
         local bufnr, parser = utils.setup(mock.content, "lua")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
-            {
-                ts_node = 'M.a = function()\n    print("another guy called a")\nend',
-                sort_key = "a"
-            },
-            {
-                ts_node = 'M.b = function()\n    print("this is b")\nend',
-                sort_key = "b"
-            }
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            'M.a = function()\n    print("another guy called a")\nend',
+            'M.b = function()\n    print("this is b")\nend',
         }))
     end)
 
@@ -39,27 +44,12 @@ describe("chadnodes: sort - lua", function()
         local bufnr, parser = utils.setup(mock.content, "lua")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
-            {
-                ts_node = 'local varA = "something"',
-                sort_key = "varA"
-            },
-            {
-                ts_node = "--- @type boolean",
-                sort_key = ""
-            },
-            {
-                ts_node = "local varB = false",
-                sort_key = "varB"
-            },
-            {
-                ts_node = "--- @type string",
-                sort_key = ""
-            },
-            {
-                ts_node = 'local varC = "something"',
-                sort_key = "varC"
-            }
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            'local varA = "something"',
+            "--- @type boolean",
+            "local varB = false",
+            "--- @type string",
+            'local varC = "something"',
         }))
     end)
 end)
