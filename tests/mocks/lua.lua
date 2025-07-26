@@ -17,18 +17,6 @@ local simple = {
     region = Region.new(3, 1, 9, 3),
 }
 
-local variables = {
-    content = {
-        'local varC = "something"',
-        '',
-        '--- @type boolean',
-        'local varB = false',
-        '--- @type string',
-        'local varA = "something"',
-    },
-    region = Region.new(1, 1, 6, 24),
-}
-
 local third = {
     content = {
         'return {',
@@ -39,6 +27,18 @@ local third = {
         '}',
     },
     region = Region.new(2, 1, 5, 36),
+}
+
+local variables = {
+    content = {
+        'local varC = "something"',
+        '',
+        '--- @type boolean',
+        'local varB = false',
+        '--- @type string',
+        'local varA = "something"',
+    },
+    region = Region.new(1, 1, 6, 24),
 }
 
 return {

@@ -15,15 +15,9 @@ describe("chadnodes: sort - typescript", function()
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
-            {
-                ts_node = 'function bar() {\n  console.log("bar");\n}',
-                sort_key = "bar"
-            },
-            {
-                ts_node = 'const foo = () => {\n  console.log("foo");\n};',
-                sort_key = "foo"
-            },
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            'function bar() {\n  console.log("bar");\n}',
+            'const foo = () => {\n  console.log("foo");\n};',
         }))
     end)
 
@@ -32,15 +26,10 @@ describe("chadnodes: sort - typescript", function()
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
-            {
-                ts_node = "class AClass {\n  a: number;\n  constructor(x: number, y: number) {\n    this.a = x;\n  }\n}",
-                sort_key = "AClass"
-            },
-            {
-                ts_node = "class BClass {\n  b: number;\n  constructor(b: number) {\n    this.b = b;\n  }\n}",
-                sort_key = "BClass"
-            },
+
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            "class AClass {\n  a: number;\n  constructor(x: number, y: number) {\n    this.a = x;\n  }\n}",
+            "class BClass {\n  b: number;\n  constructor(b: number) {\n    this.b = b;\n  }\n}",
         }))
     end)
 
@@ -49,19 +38,10 @@ describe("chadnodes: sort - typescript", function()
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
-            {
-                ts_node = "interface A {\n  a: string;\n}",
-                sort_key = "A"
-            },
-            {
-                ts_node = "export interface B {\n  b: number;\n}",
-                sort_key = "B"
-            },
-            {
-                ts_node = "export interface C {\n  c: boolean;\n}",
-                sort_key = "C"
-            },
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            "interface A {\n  a: string;\n}",
+            "export interface B {\n  b: number;\n}",
+            "export interface C {\n  c: boolean;\n}",
         }))
     end)
 
@@ -70,27 +50,12 @@ describe("chadnodes: sort - typescript", function()
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
-            {
-                ts_node = "a: number",
-                sort_key = "a"
-            },
-            {
-                ts_node = ";",
-                sort_key = ""
-            },
-            {
-                ts_node = "b: {\n    foo: string;\n    bar: boolean;\n  }",
-                sort_key = "b"
-            },
-            {
-                ts_node = "c: {\n    baz: string;\n    qux: number;\n    extra: {\n      zig: string;\n    };\n  }",
-                sort_key = "c"
-            },
-            {
-                ts_node = ";",
-                sort_key = ""
-            },
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            "  a: number;",
+            "  ;",
+            "  b: {\n    foo: string;\n    bar: boolean;\n  }",
+            "  c: {\n    baz: string;\n    qux: number;\n    extra: {\n      zig: string;\n    };\n  };",
+            "  ;",
         }))
     end)
 
@@ -99,19 +64,10 @@ describe("chadnodes: sort - typescript", function()
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():debug(bufnr), {
-            {
-                ts_node = 'function bar() {\n  console.log("bar");\n}',
-                sort_key = "bar"
-            },
-            {
-                ts_node = "// this is a comment",
-                sort_key = ""
-            },
-            {
-                ts_node = 'const foo = () => {\n  console.log("foo");\n};',
-                sort_key = "foo"
-            },
+        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+            'function bar() {\n  console.log("bar");\n}',
+            "// this is a comment",
+            'const foo = () => {\n  console.log("foo");\n};'
         }))
     end)
 end)

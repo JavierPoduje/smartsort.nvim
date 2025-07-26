@@ -30,7 +30,9 @@ describe("chadnodes: sort - scss", function()
         truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
             "/**\n * multiline comment\n */",
             ".a {\n  display: flex;\n  background-color: red;\n}",
-            "// unnested comment", "// Nested comment", ".c {\n  display: flex;\n}",
+            "// unnested comment",
+            "// Nested comment",
+            ".c {\n  display: flex;\n}",
         }))
     end)
 end)
