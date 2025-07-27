@@ -131,8 +131,10 @@ M.sort_multiple_lines = function(selected_region, config)
         :stringify_into_table(
             vertical_gaps,
             horizontal_gaps,
-            should_have_left_padding_by_idx)
-    vim.api.nvim_buf_set_lines(0, region.srow - 1, region.erow, true, sorted_nodes_with_gaps)
+            should_have_left_padding_by_idx
+        )
+
+    FileManager.buf_set_lines(0, region.srow - 1, region.erow, sorted_nodes_with_gaps)
 end
 
 --- Build the string of sorted words
