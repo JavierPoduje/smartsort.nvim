@@ -5,16 +5,26 @@ local Region = require("region")
 local f = require("funcs")
 local parsers = require("nvim-treesitter.parsers")
 
+--- @class SmartsortSetup
+--- @field non_sortable_behavior "above" | "below" | "preserve"
+
+--- @type SmartsortSetup
+local smartsort_setup = {
+    non_sortable_behavior = "preserve",
+}
+
 --- @class Args
 --- @field separator string: the separator to use between words
+--- @field setup? SmartsortSetup: the setup to use for smartsort
 
 local M = {
-    number_of_exes = 0,
+    separator = ",",
 }
 
 -- TODO: use this later, when configuration is implemented
 M.setup = function(opts)
-    local new_opts = f.merge_tables(M, opts or {})
+    local new_opts = f.merge_tables(smartsort_setup, opts or {})
+    smartsort_setup = f.merge_tables(smartsort_setup, new_opts)
 end
 
 M.print_chadnodes = function()
@@ -27,15 +37,36 @@ M.print_chadnodes = function()
     end
 end
 
---- Sort the selected text
---- @param args Args: the arguments to use
-M.sort = function(args)
+--- @param inputargs Args: the arguments to use
+M.smartsort = function(inputargs)
+    local args = inputargs or {}
+    local setup = f.merge_tables(
+        smartsort_setup,
+        args.setup or {}
+    )
+
     local region = Region.from_selection()
 
     if region.srow == region.erow then
         M.sort_single_line(region, args)
     else
-        M.sort_multiple_lines(region)
+        M.sort_multiple_lines(region, setup)
+    end
+end
+
+--- Sort the selected text
+--- @param args Args: the arguments to use
+M.sort = function(args)
+    local region = Region.from_selection()
+    local setup = f.merge_tables(
+        smartsort_setup,
+        args.setup or {}
+    )
+
+    if region.srow == region.erow then
+        M.sort_single_line(region, args)
+    else
+        M.sort_multiple_lines(region, setup)
     end
 end
 
@@ -79,12 +110,13 @@ M.sort_single_line = function(region, args)
         rightpad,
     }, "")
 
-    M._insert_in_buffer(region.srow, region.scol, region.ecol, str_to_insert)
+    FileManager.insert_line_in_buffer(region.srow, region.scol, region.ecol, str_to_insert)
 end
 
 --- Sort the selected lines
 --- @param selected_region Region: the region to sort
-M.sort_multiple_lines = function(selected_region)
+--- @param config SmartsortSetup: the configuration to use
+M.sort_multiple_lines = function(selected_region, config)
     local parser = parsers.get_parser()
     local region = FileManager.get_region_to_work_with(0, selected_region, parser)
     local cnodes = Chadnodes.from_region(0, region, parser)
@@ -95,27 +127,12 @@ M.sort_multiple_lines = function(selected_region)
     local should_have_left_padding_by_idx = linked_cnodes:calculate_left_padding_by_idx()
 
     local sorted_nodes_with_gaps = linked_cnodes
-        :sort()
+        :sort(config)
         :stringify_into_table(
             vertical_gaps,
             horizontal_gaps,
             should_have_left_padding_by_idx)
     vim.api.nvim_buf_set_lines(0, region.srow - 1, region.erow, true, sorted_nodes_with_gaps)
-end
-
---- Insert the string into the buffer in a single line in a specific range
----
---- @param row number: the row to insert the string into
---- @param start_col number: the start column to insert the string into
---- @param end_col number: the end column to insert the string into
---- @param str string: the string to insert
---- @return nil
-M._insert_in_buffer = function(row, start_col, end_col, str)
-    if f.is_max_col(end_col) then
-        local line = vim.api.nvim_buf_get_lines(0, row - 1, row, true)[1]
-        end_col = #line
-    end
-    vim.api.nvim_buf_set_text(0, row - 1, start_col - 1, row - 1, end_col, { str })
 end
 
 --- Build the string of sorted words
@@ -145,7 +162,7 @@ M._build_sorted_words = function(spaces_between_words, words, separator)
         end
 
         return acc
-    end)({})(words)
+    end, {}, words)
 
     return table.concat(output, "")
 end

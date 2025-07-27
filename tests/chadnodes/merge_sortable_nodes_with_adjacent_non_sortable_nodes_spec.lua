@@ -14,10 +14,9 @@ describe("chadnodes: merge_sortable_nodes_with_adjacent_linkable_nodes", functio
         local mock = typescript_mocks.commented_functions
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+        local merged_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(mock.region)
 
-        local merged_nodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(mock.region)
-
-        truthy(vim.deep_equal(merged_nodes:debug(bufnr), {
+        truthy(vim.deep_equal(merged_cnodes:debug(bufnr), {
             {
                 attached_prefix_cnode = "/**\n * This is a comment\n */",
                 ts_node = 'const foo = () => {\n  console.log("foo");\n};',

@@ -69,18 +69,21 @@ Chadnode.__tostring = function(self)
     )
     return cnode_str .. endchar_as_str
 end
+
 --- Add an attached_prefix_cnode node
 --- @param self Chadnode: the node
 --- @param prefix_cnode_to_attach Chadnode: the attached_prefix_cnode node
 Chadnode.add_attached_prefix_cnode = function(self, prefix_cnode_to_attach)
     table.insert(self.attached_prefix_cnodes, prefix_cnode_to_attach)
 end
+
 --- Add an attached_suffix_cnode node
 --- @param self Chadnode: the node
 --- @param suffix_cnode_to_attach Chadnode
 Chadnode.add_attached_suffix_cnode = function(self, suffix_cnode_to_attach)
     table.insert(self.attached_suffix_cnodes, suffix_cnode_to_attach)
 end
+
 --- Calculate the horizontal gap between two nodes, where the gap is the number of columns between them.
 --- @param self Chadnode
 --- @param other Chadnode: the second node
@@ -89,6 +92,7 @@ Chadnode.calculate_horizontal_gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
     return other.region.scol - self.region.ecol
 end
+
 --- Calculate the vertical gap between two nodes, where the gap is the number of rows between them.
 --- @param self Chadnode: the first node
 --- @param other Chadnode: the second node
@@ -152,6 +156,7 @@ Chadnode.debug = function(self, bufnr, opts)
 
     return output
 end
+
 --- Create a new Chadnode from a query match
 --- @param query vim.treesitter.Query: the query
 --- @param match table<integer, TSNode>: the match
@@ -177,18 +182,21 @@ Chadnode.from_query_match = function(query, match, bufnr)
 
     return Chadnode:new(matched_node, matched_id)
 end
+
 --- Get the ts_node
 --- @param self Chadnode
 --- @return TSNode: the node
 Chadnode.get = function(self)
     return self.ts_node
 end
+
 --- Return the node's sortable index
 --- @param self Chadnode: the node
 --- @return string
 Chadnode.get_sort_key = function(self)
     return self.sort_key or ''
 end
+
 --- Check if the node has a next sibling
 --- @param self Chadnode
 --- @return boolean: whether the node has a next sibling
@@ -224,12 +232,14 @@ Chadnode.is_first_node_in_row = function(self)
 
     return prefix:match("^%s*$") ~= nil
 end
+
 --- Return true if the node is sortable, false otherwise.
 --- @param self Chadnode: the node
 --- @return boolean: whether the node is sortable
 Chadnode.is_sortable = function(self)
     return self.sort_key ~= nil
 end
+
 --- Get the parent node of the current node
 --- @param self Chadnode
 --- @return TSNode | nil: the parent node
@@ -239,6 +249,7 @@ Chadnode.parent_node = function(self)
     end
     return self.ts_node:parent()
 end
+
 --- Print the human-readable representation of the current Chadnode
 --- @param self Chadnode
 --- @param bufnr number: the buffer number
@@ -253,6 +264,7 @@ end
 Chadnode.set_end_character = function(self, character)
     self.end_character = character
 end
+
 --- Return the string representation of a node, preserving the indent
 --- @param self Chadnode
 --- @param bufnr number: the buffer number
@@ -292,6 +304,7 @@ Chadnode.stringify = function(self, bufnr, target_row, trim)
 
     return table.concat(stringified_lines, "\n")
 end
+
 Chadnode.stringify_first_suffix = function(self)
     return f.if_else(
         #self.attached_suffix_cnodes > 0 and self.attached_suffix_cnodes[1].end_character ~= nil,
@@ -299,6 +312,7 @@ Chadnode.stringify_first_suffix = function(self)
         function() return "" end
     )
 end
+
 --- Return the string representation of a node
 --- @param self Chadnode
 --- @return string

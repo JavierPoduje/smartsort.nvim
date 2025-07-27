@@ -1,6 +1,7 @@
 local Chadquery = require("chadquery")
 local R = require("ramda")
 local Region = require("region")
+local f = require("funcs")
 local ts_utils = require("nvim-treesitter.ts_utils")
 
 --- @class FileManager
@@ -9,6 +10,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 ---
 --- @field public get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree): TSNode
 --- @field public get_region_to_work_with fun(bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree): Region
+--- @field public insert_in_buffer fun(row: number, start_col: number, end_col: number, str: string): FileManager
 --- @field public new fun(self: FileManager, bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree): FileManager
 
 local FileManager = {}
@@ -89,6 +91,20 @@ FileManager.get_node_at_row = function(bufnr, region, parser)
     vim.api.nvim_win_set_cursor(0, saved_cursor)
 
     return node_at_cursor
+end
+
+--- Insert the string into the buffer in a single line in a specific range
+---
+--- @param row number: the row to insert the string into
+--- @param start_col number: the start column to insert the string into
+--- @param end_col number: the end column to insert the string into
+--- @param str string: the string to insert
+FileManager.insert_line_in_buffer = function(row, start_col, end_col, str)
+    if f.is_max_col(end_col) then
+        local line = vim.api.nvim_buf_get_lines(0, row - 1, row, true)[1]
+        end_col = #line
+    end
+    vim.api.nvim_buf_set_text(0, row - 1, start_col - 1, row - 1, end_col, { str })
 end
 
 return FileManager

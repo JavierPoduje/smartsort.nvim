@@ -9,13 +9,17 @@ local it = it
 --- @diagnostic disable-next-line: undefined-field
 local truthy = assert.is.truthy
 
+local default_setup = {
+    non_sortable_behavior = 'preserve',
+}
+
 describe("chadnodes: sort - lua", function()
     it("should consider vertical and horizontal gaps properly", function()
         local mock = lua_mocks.third
         local bufnr, parser = utils.setup(mock.content, "lua")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+        truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
             "    aBoolean = true,",
             "    ,",
             '    aaa = "value of aaa",',
@@ -33,7 +37,7 @@ describe("chadnodes: sort - lua", function()
         local bufnr, parser = utils.setup(mock.content, "lua")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+        truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
             'M.a = function()\n    print("another guy called a")\nend',
             'M.b = function()\n    print("this is b")\nend',
         }))
@@ -44,7 +48,7 @@ describe("chadnodes: sort - lua", function()
         local bufnr, parser = utils.setup(mock.content, "lua")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        truthy(vim.deep_equal(cnodes:sort():stringified_cnodes(), {
+        truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
             'local varA = "something"',
             "--- @type boolean",
             "local varB = false",

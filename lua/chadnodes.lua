@@ -27,9 +27,9 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public new fun(self: Chadnodes, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
 --- @field public print fun(self: Chadnodes)
---- @field public stringified_cnodes fun(self: Chadnodes): string[]
---- @field public sort fun(self: Chadnodes): Chadnodes
+--- @field public sort fun(self: Chadnodes, config: SmartsortSetup): Chadnodes
 --- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
+--- @field public stringified_cnodes fun(self: Chadnodes): string[]
 --- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[], horizontal_gaps: number[], should_have_left_padding_by_idx: boolean[]): string[]
 ---
 --- @field private _cnodes_by_idx fun(cnodes: Chadnode[]): table<string, Chadnode>
@@ -53,6 +53,9 @@ function Chadnodes:new(parser)
     return obj
 end
 
+--- Return a string representation of the Chadnodes
+--- @param self Chadnodes
+--- @return string
 Chadnodes.__tostring = function(self)
     local output = ""
     for _, node in ipairs(self.nodes) do
@@ -328,7 +331,6 @@ Chadnodes.node_by_idx = function(self, idx)
 end
 
 --- Print the string representation of the current Chadnodes
----
 --- @param self Chadnodes
 Chadnodes.print = function(self)
     print(vim.inspect(self:stringified_cnodes()))
@@ -348,31 +350,40 @@ end
 
 --- Returns a new `Chadnodes` object with the nodes sorted
 --- @param self Chadnodes
+--- @param config SmartsortSetup
 --- @return Chadnodes
-Chadnodes.sort = function(self)
+Chadnodes.sort = function(self, config)
     local non_sortables = self:get_non_sortable_nodes()
     local sortables = Chadnodes:sort_sortable_nodes(self:get_sortable_nodes())
-    local sorted_nodes = Chadnodes:new(self.parser)
+    local output = Chadnodes:new(self.parser)
 
-    --- @type number
-    local sortable_idx = 1
-    --- @type number
-    local non_sortable_idx = 1
-    for _, is_sortable in pairs(self:cnode_is_sortable_by_idx()) do
-        if is_sortable then
-            local cnode = sortables:node_by_idx(sortable_idx)
-            assert(cnode ~= nil, "Chadnode not found")
-            sorted_nodes:add(cnode)
-            sortable_idx = sortable_idx + 1
-        else
-            local cnode = non_sortables[non_sortable_idx]
-            assert(cnode ~= nil, "Chadnode not found")
-            sorted_nodes:add(cnode)
-            non_sortable_idx = non_sortable_idx + 1
+    if config.non_sortable_behavior == "preserve" then
+        --- @type number
+        local sortable_idx = 1
+        --- @type number
+        local non_sortable_idx = 1
+        for _, is_sortable in pairs(self:cnode_is_sortable_by_idx()) do
+            if is_sortable then
+                local cnode = sortables:node_by_idx(sortable_idx)
+                assert(cnode ~= nil, "Chadnode not found")
+                output:add(cnode)
+                sortable_idx = sortable_idx + 1
+            else
+                local cnode = non_sortables[non_sortable_idx]
+                assert(cnode ~= nil, "Chadnode not found")
+                output:add(cnode)
+                non_sortable_idx = non_sortable_idx + 1
+            end
         end
+    elseif config.non_sortable_behavior == "above" then
+        for _, cnode in ipairs(non_sortables) do output:add(cnode) end
+        for _, cnode in ipairs(sortables.nodes) do output:add(cnode) end
+    elseif config.non_sortable_behavior == "below" then
+        for _, cnode in ipairs(sortables.nodes) do output:add(cnode) end
+        for _, cnode in ipairs(non_sortables) do output:add(cnode) end
     end
 
-    return sorted_nodes
+    return output
 end
 
 --- Returns a new `Chadnodes` object with the given list of `Chadnode`s sorted
