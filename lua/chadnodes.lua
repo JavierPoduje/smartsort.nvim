@@ -23,7 +23,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public get fun(self: Chadnodes): Chadnode[]
 --- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
---- @field public merge_sortable_nodes_with_adjacent_linkable_nodes fun(self: Chadnodes, region: Region): Chadnodes
+--- @field public merge_sortable_nodes_with_adjacent_linkable_nodes fun(self: Chadnodes, region: Region, vertical_gaps?: number[]): Chadnodes
 --- @field public new fun(self: Chadnodes, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
 --- @field public print fun(self: Chadnodes)
@@ -140,18 +140,14 @@ Chadnodes.calculate_horizontal_gaps = function(self)
             previous_cnode = cnode
         else
             assert(previous_cnode ~= nil, "Previous Chadnode not found")
-            local vertical_gap = previous_cnode:calculate_vertical_gap(cnode)
 
-            table.insert(
-                gaps,
-                f.if_else(
-                    vertical_gap == -1,
-                    function()
-                        return previous_cnode:calculate_horizontal_gap(cnode)
-                    end,
-                    function() return -1 end
-                )
-            )
+            local vertical_gap = previous_cnode:calculate_vertical_gap(cnode)
+            if vertical_gap == -1 then
+                table.insert(gaps, previous_cnode:calculate_horizontal_gap(cnode))
+            else
+                table.insert(gaps, -1)
+            end
+
             previous_cnode = cnode
         end
 
@@ -273,17 +269,20 @@ end
 --- Merge the sortable nodes with their adjacent non-sortable nodes.
 --- @param self Chadnodes
 --- @param region Region
+--- @param vertical_gaps? number[]: the vertical gaps between the nodes
 --- @return Chadnodes
-Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, region)
+Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, region, vertical_gaps)
     local chadquery = Chadquery:new(self.parser:lang(), { region = region })
     local cnodes = Chadnodes:new(self.parser)
-    local gaps = self:calculate_vertical_gaps()
+    if not vertical_gaps then
+        vertical_gaps = self:calculate_vertical_gaps()
+    end
 
-    for idx = 1, #gaps + 1 do
+    for idx = 1, #vertical_gaps + 1 do
         local current_node = self:node_by_idx(idx)
         assert(current_node ~= nil, "Chadnode not found")
 
-        local is_last_node = idx == #gaps + 1
+        local is_last_node = idx == #vertical_gaps + 1
         if is_last_node then
             if chadquery:is_special_end_char(current_node:type()) then
                 local end_char = current_node.end_character
@@ -305,7 +304,7 @@ Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, reg
 
         local end_char = chadquery:get_endchar_from_str(current_node:type())
         local prev_node, next_node = self:node_by_idx(idx - 1), self:node_by_idx(idx + 1)
-        local vertical_gap = gaps[idx]
+        local vertical_gap = vertical_gaps[idx]
 
         if vertical_gap == 0 and end_char ~= nil and prev_node ~= nil and end_char.is_attached then
             prev_node:add_attached_suffix_cnode(current_node)
