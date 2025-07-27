@@ -1,17 +1,15 @@
-const another = 'another';
-
-const aaa = () => {
-  console.log("aaa"); // some right-side comment
-};
-
-// nested comment
-
 /**
  * This is a comment
  */
 function bar() {
   console.log("bar");
 }
+
+const aaa = () => {
+  console.log("aaa"); // some right-side comment
+};
+
+// nested comment
 
 const title = 'Hello World';
 
