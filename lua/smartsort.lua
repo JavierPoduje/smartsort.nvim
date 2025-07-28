@@ -129,7 +129,13 @@ M.sort_multiple_lines = function(selected_region, config)
         return
     end
 
-    local cnodes = Chadnodes.from_region(0, region, parser)
+    --- @type Chadnodes
+    local cnodes = nil
+    status, err = pcall(function() cnodes = Chadnodes.from_region(0, region, parser) end)
+    if not status then
+        print(err)
+        return
+    end
 
     local horizontal_gaps = cnodes:calculate_horizontal_gaps()
     local linked_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)

@@ -178,8 +178,11 @@ end
 --- @param parser vim.treesitter.LanguageTree
 --- @return Chadnodes, TSNode
 Chadnodes.from_region = function(bufnr, region, parser)
+    --- @type TSNode | nil
     local node = FileManager.get_node_at_row(bufnr, region, parser)
-    assert(node ~= nil, "No node found")
+    if not node then
+        error("No node found at the given region")
+    end
 
     local root_node = parser:parse()[1]:root()
     local parent = node:parent()
