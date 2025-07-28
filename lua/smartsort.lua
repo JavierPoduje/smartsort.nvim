@@ -118,7 +118,17 @@ end
 --- @param config SmartsortSetup: the configuration to use
 M.sort_multiple_lines = function(selected_region, config)
     local parser = parsers.get_parser()
-    local region = FileManager.get_region_to_work_with(0, selected_region, parser)
+
+    --- @type Region
+    local region = nil
+    local status, err = pcall(function()
+        region = FileManager.get_region_to_work_with(0, selected_region, parser)
+    end)
+    if not status then
+        print(err)
+        return
+    end
+
     local cnodes = Chadnodes.from_region(0, region, parser)
 
     local horizontal_gaps = cnodes:calculate_horizontal_gaps()

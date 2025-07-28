@@ -42,13 +42,15 @@ end
 --- Returns a new region where everything is exactly the same as the selected region,
 --- exept the erow is the smallest value between the parent node's erow and the selected region's
 --- erow.
----
 --- @param bufnr number
 --- @param selected_region Region
 --- @param parser vim.treesitter.LanguageTree
+--- @return Region
 FileManager.get_region_to_work_with = function(bufnr, selected_region, parser)
     local node = FileManager.get_node_at_row(bufnr, selected_region, parser)
-    assert(node ~= nil, "No node found")
+    if node == nil then
+        error("No node found at the given selected region")
+    end
 
     local parent = node:parent()
     if parent == nil then
