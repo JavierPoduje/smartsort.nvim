@@ -173,6 +173,19 @@ local _map = function(mapper, list)
     return result
 end
 
+--- Retrieves the value of a property from a table.
+--- If the property does not exist, returns nil.
+---
+--- @param p string | number: The name of the property to retrieve.
+--- @param obj table: The table from which to retrieve the property.
+--- @return any: The value of the property, or nil if not found.
+local _prop = function(p, obj)
+    if type(obj) ~= "table" then
+        return nil
+    end
+    return obj[p]
+end
+
 --- Reduces a list to a single value by applying a reducer function.
 --- This version is designed to be curried with an arity of 3:
 --- (reducer, initialValue, list).
@@ -283,6 +296,10 @@ M.filter = M.curry(2, _filter)
 --- Transforms each element of a list using a mapper function.
 --- Curried.
 M.map = M.curry(2, _map)
+
+--- Retrieves the value of a property from a table.
+--- Curried.
+M.prop = M.curry(2, _prop)
 
 --- Performs left-to-right function composition.
 --- Curried.
