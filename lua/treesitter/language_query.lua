@@ -78,7 +78,7 @@ end
 LanguageQuery.embedded_languages_queries = function(self)
     --- TODO: all languages `queries` should have their method `embedded_languages_queries` defined
     if self.language == "vue" then
-        return vue_queries.embedded_languages_queries()
+        return vue_queries.embedded_languages_queries
     end
     return {}
 end
@@ -154,6 +154,7 @@ LanguageQuery.query_by_node = function(self, node)
         return twig_queries.query_by_node(node)
     end
 
+    --- TODO: this shouldn't be an error, but a `print` to the user saying that the language is not supported
     error("Unsupported language: " .. self.language)
 end
 
