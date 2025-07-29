@@ -67,18 +67,6 @@ M.node_to_string = function(node)
     return vim.treesitter.get_node_text(node, 0)
 end
 
---- Returns a string with the given string repeated the specified number of times.
---- @param str string: the string to repeat
---- @param times number: the number of times to repeat the string
---- @return string: the repeated string
-M.repeat_str = function(str, times)
-    local result = ""
-    for _ = 1, times do
-        result = result .. str
-    end
-    return result
-end
-
 --- Get the trimmed string
 ---
 --- @param str string: the string to trim

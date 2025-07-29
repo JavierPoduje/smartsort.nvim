@@ -426,8 +426,6 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
     local nodes_as_str_table = {}
 
     for idx, cnode in ipairs(self.nodes) do
-        print('cnode:', cnode);
-        print("is_endchar_node:", cnode:is_endchar_node());
         if not cnode:is_endchar_node() then
             local has_left_padding = should_have_left_padding_by_idx[idx]
 
@@ -438,7 +436,7 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
             -- if the current node is in the same line of the previous node:
             -- 1. copy the first line of the current node and put it in the last line of the previous one
             -- 2. remove the first line of the current node, because it was added to the previous one
-            local is_in_previous_node_line = idx <= #vertical_gaps and vertical_gaps[idx] == -1
+            local is_in_previous_node_line = idx > 1 and (idx - 1) <= #vertical_gaps and vertical_gaps[idx - 1] == -1
             local previous_node_exists = #nodes_as_str_table > 0
             local start_from_previous_node = is_in_previous_node_line and previous_node_exists and not has_left_padding
             if start_from_previous_node then
@@ -447,7 +445,10 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
 
                 -- append the first line of the current node to the last line of the previous one
                 local gap = ""
-                if horizontal_gaps[idx] > 0 then gap = string.rep(" ", horizontal_gaps[idx]) end
+                if horizontal_gaps[idx - 1] > 0 then
+                    gap = string.rep(" ", horizontal_gaps[idx - 1])
+                end
+
                 previous_node_as_str = previous_node_as_str .. gap .. stringified_node_lines[1]
                 nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
 
@@ -475,13 +476,17 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
         end
 
         -- add vertical gap between the current node and the next one
+        local last_node_exists = nodes_as_str_table[#nodes_as_str_table] ~= nil
+        local theres_a_horizontal_gap_to_add = idx > 1 and horizontal_gaps[idx - 1] ~= nil and
+        horizontal_gaps[idx - 1] > 0
+
         if vertical_gaps[idx] ~= nil and vertical_gaps[idx] > 0 then
             for _ = 1, vertical_gaps[idx] do
                 table.insert(nodes_as_str_table, "")
             end
-        elseif nodes_as_str_table[#nodes_as_str_table] ~= nil and horizontal_gaps[idx] ~= nil and horizontal_gaps[idx] > 0 then
+        elseif last_node_exists and theres_a_horizontal_gap_to_add then
             -- add horizontal gap to the last line of the current node
-            local gap_as_str = string.rep(" ", horizontal_gaps[idx])
+            local gap_as_str = string.rep(" ", horizontal_gaps[idx - 1])
             nodes_as_str_table[#nodes_as_str_table] = nodes_as_str_table[#nodes_as_str_table] .. gap_as_str
         end
     end

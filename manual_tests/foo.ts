@@ -5,8 +5,6 @@ function bar() {
   console.log("bar");
 }
 
-
-
 const aaa = () => {
   console.log("aaa"); // some right-side comment
 };

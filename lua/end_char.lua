@@ -75,9 +75,9 @@ end
 --- @param self EndChar
 --- @return string: the string representation of the endchar
 EndChar.stringify = function(self)
-    local gap_as_str = f.repeat_str(" ", self.gap.vertical_gap)
+    local gap_as_str = string.rep(" ", self.gap.vertical_gap)
     if self.gap.vertical_gap == -1 and self.gap.horizontal_gap > 0 then
-        gap_as_str = f.repeat_str(" ", self.gap.horizontal_gap)
+        gap_as_str = string.rep(" ", self.gap.horizontal_gap)
     end
 
     return gap_as_str .. self.char

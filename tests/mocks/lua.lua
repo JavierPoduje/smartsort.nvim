@@ -41,8 +41,28 @@ local variables = {
     region = Region.new(1, 1, 6, 24),
 }
 
+local simple_gap = {
+    content = {
+        'return {',
+        '    aaa = "value of aaa", anotherValue = { "value1", "value2", },',
+        '}',
+    },
+    region = Region.new(2, 1, 2, 65),
+}
+
+local no_gap = {
+    content = {
+        'return {',
+        '    aaa = "value of aaa",anotherValue = { "value1", "value2", },',
+        '}',
+    },
+    region = Region.new(2, 1, 2, 65),
+}
+
 return {
+    no_gap = no_gap,
     simple = simple,
+    simple_gap = simple_gap,
     third = third,
     variables = variables,
 }
