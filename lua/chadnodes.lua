@@ -313,6 +313,12 @@ Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, reg
             prev_node:add_attached_suffix_cnode(current_node)
         elseif vertical_gap <= 0 and chadquery:is_linkable(current_node:type()) and next_node ~= nil then
             next_node:add_attached_prefix_cnode(current_node)
+        elseif chadquery:is_special_end_char(current_node:type()) and prev_node ~= nil then
+            if current_node.end_character.is_attached then
+                prev_node:add_attached_suffix_cnode(current_node)
+            else
+                cnodes:add(current_node)
+            end
         else
             cnodes:add(current_node)
         end
@@ -420,8 +426,11 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
     local nodes_as_str_table = {}
 
     for idx, cnode in ipairs(self.nodes) do
+        print('cnode:', cnode);
+        print("is_endchar_node:", cnode:is_endchar_node());
         if not cnode:is_endchar_node() then
             local has_left_padding = should_have_left_padding_by_idx[idx]
+
             local cnode_str = cnode:stringify(0, cnode.region.srow, not has_left_padding)
             local endchar_as_str = cnode:stringify_first_suffix()
             local stringified_node_lines = vim.fn.split(cnode_str .. endchar_as_str, "\n")
@@ -454,6 +463,7 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
                 end, nodes_as_str_table, stringified_node_lines)
             end
         elseif cnode:is_endchar_node() and not cnode.end_character.is_attached then
+            -- TODO: I think this is no longer needed. check later...
             local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
             assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a end_character to it")
             assert(idx == #self.nodes, "Trying to add a end_character to a node that is not the last one")

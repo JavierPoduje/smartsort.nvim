@@ -75,7 +75,8 @@ end
 --- @param char string: the character to check
 --- @return boolean: true if the character is a special end character, false otherwise
 Chadquery.is_special_end_char = function(self, char)
-    return R.any(R.equals(char), self.language_query:get_end_chars())
+    local endchars = R.map(R.prop("char"), self.language_query:get_end_chars())
+    return R.any(R.equals(char), endchars)
 end
 
 --- Returns the special end char for the given language if it's an special end char

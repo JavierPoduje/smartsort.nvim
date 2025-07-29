@@ -90,7 +90,16 @@ end
 --- @return number: the gap between the two nodes
 Chadnode.calculate_horizontal_gap = function(self, other)
     assert(other ~= nil, "The given node can't be nil")
-    return other.region.scol - self.region.ecol
+    local leftnode = self
+
+    --- if the self node has suffix nodes, we need to compare against them instead
+    local idx = 1
+    while #leftnode.attached_suffix_cnodes > 0 and leftnode.attached_suffix_cnodes[idx] ~= nil do
+        leftnode = leftnode.attached_suffix_cnodes[idx]
+        idx = idx + 1
+    end
+
+    return other.region.scol - leftnode.region.ecol
 end
 
 --- Calculate the vertical gap between two nodes, where the gap is the number of rows between them.
@@ -139,7 +148,7 @@ Chadnode.debug = function(self, bufnr, opts)
         })
     end
 
-    if include_end_char then
+    if include_end_char and self.end_character then
         output = f.merge_tables(output, {
             end_char = vim.inspect(self.end_character:debug()),
         })

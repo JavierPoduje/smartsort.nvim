@@ -137,8 +137,8 @@ M.sort_multiple_lines = function(selected_region, config)
         return
     end
 
-    local horizontal_gaps = cnodes:calculate_horizontal_gaps()
     local linked_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)
+    local horizontal_gaps = linked_cnodes:calculate_horizontal_gaps()
     local vertical_gaps = linked_cnodes:calculate_vertical_gaps()
     local should_have_left_padding_by_idx = linked_cnodes:calculate_left_padding_by_idx()
 
