@@ -15,7 +15,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public __tostring fun(self: Chadnodes): string
 --- @field public add fun(self: Chadnodes, chadnode: Chadnode): self
 --- @field public calculate_horizontal_gaps fun(self: Chadnodes): (number | nil)[]
---- @field public calculate_left_padding_by_idx fun(self: Chadnodes): boolean[]
+--- @field public calculate_left_indentation_by_idx fun(self: Chadnodes): boolean[]
 --- @field public calculate_vertical_gaps fun(self: Chadnodes): number[]
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
@@ -30,7 +30,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public sort fun(self: Chadnodes, config: SmartsortSetup): Chadnodes
 --- @field public sort_sortable_nodes fun(self: Chadnodes, cnodes: Chadnode[]): Chadnodes
 --- @field public stringified_cnodes fun(self: Chadnodes): string[]
---- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[], horizontal_gaps: number[], should_have_left_padding_by_idx: boolean[]): string[]
+--- @field public stringify_into_table fun(self: Chadnodes, vertical_gaps: number[], horizontal_gaps: number[], should_have_left_indentation_by_idx: boolean[]): string[]
 ---
 --- @field private _cnodes_by_idx fun(cnodes: Chadnode[]): table<string, Chadnode>
 --- @field private _get_idxs fun(cnodes: Chadnode[]): string[]
@@ -409,7 +409,7 @@ Chadnodes.sort_sortable_nodes = function(self, cnodes)
     end, Chadnodes:new(self.parser), sorted_idx)
 end
 
-Chadnodes.calculate_left_padding_by_idx = function(self)
+Chadnodes.calculate_left_indentation_by_idx = function(self)
     return R.reduce(function(acc, cnode, idx)
         acc[idx] = cnode:is_first_node_in_row()
         return acc
@@ -420,16 +420,16 @@ end
 --- @param self Chadnodes
 --- @param vertical_gaps number[]: the vertical gaps between the nodes
 --- @param horizontal_gaps number[]: the horizontal gaps between the nodes
---- @param should_have_left_padding_by_idx boolean[]: table indicating if the node should have left padding
+--- @param should_have_left_indentation_by_idx boolean[]: table indicating if the node should have left indentation
 --- @return string[]: the string representation of the nodes
-Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, should_have_left_padding_by_idx)
+Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, should_have_left_indentation_by_idx)
     local nodes_as_str_table = {}
 
     for idx, cnode in ipairs(self.nodes) do
         if not cnode:is_endchar_node() then
-            local has_left_padding = should_have_left_padding_by_idx[idx]
+            local has_left_indentation = should_have_left_indentation_by_idx[idx]
 
-            local cnode_str = cnode:stringify(0, cnode.region.srow, not has_left_padding)
+            local cnode_str = cnode:stringify(0, cnode.region.srow, not has_left_indentation)
             local endchar_as_str = cnode:stringify_first_suffix()
             local stringified_node_lines = vim.fn.split(cnode_str .. endchar_as_str, "\n")
 
@@ -438,7 +438,7 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
             -- 2. remove the first line of the current node, because it was added to the previous one
             local is_in_previous_node_line = idx > 1 and (idx - 1) <= #vertical_gaps and vertical_gaps[idx - 1] == -1
             local previous_node_exists = #nodes_as_str_table > 0
-            local start_from_previous_node = is_in_previous_node_line and previous_node_exists and not has_left_padding
+            local start_from_previous_node = is_in_previous_node_line and previous_node_exists and not has_left_indentation
             if start_from_previous_node then
                 local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
                 assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a new node to it")
@@ -478,7 +478,7 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
         -- add vertical gap between the current node and the next one
         local last_node_exists = nodes_as_str_table[#nodes_as_str_table] ~= nil
         local theres_a_horizontal_gap_to_add = idx > 1 and horizontal_gaps[idx - 1] ~= nil and
-        horizontal_gaps[idx - 1] > 0
+            horizontal_gaps[idx - 1] > 0
 
         if vertical_gaps[idx] ~= nil and vertical_gaps[idx] > 0 then
             for _ = 1, vertical_gaps[idx] do

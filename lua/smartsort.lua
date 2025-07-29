@@ -138,16 +138,22 @@ M.sort_multiple_lines = function(selected_region, config)
     end
 
     local linked_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)
-    local horizontal_gaps = linked_cnodes:calculate_horizontal_gaps()
+
     local vertical_gaps = linked_cnodes:calculate_vertical_gaps()
-    local should_have_left_padding_by_idx = linked_cnodes:calculate_left_padding_by_idx()
+    local horizontal_gaps = linked_cnodes:calculate_horizontal_gaps()
+    local should_have_left_indentation_by_idx = linked_cnodes:calculate_left_indentation_by_idx()
+
+    print('linked_cnodes:', linked_cnodes)
+    print('horizontal_gaps:', vim.inspect(horizontal_gaps))
+    print('vertical_gaps:', vim.inspect(vertical_gaps))
+    print('should_have_left_indentation_by_idx:', vim.inspect(should_have_left_indentation_by_idx))
 
     local sorted_nodes_with_gaps = linked_cnodes
         :sort(config)
         :stringify_into_table(
             vertical_gaps,
             horizontal_gaps,
-            should_have_left_padding_by_idx
+            should_have_left_indentation_by_idx
         )
 
     FileManager.buf_set_lines(0, region.srow - 1, region.erow, sorted_nodes_with_gaps)
