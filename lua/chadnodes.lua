@@ -438,10 +438,10 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
             -- 2. remove the first line of the current node, because it was added to the previous one
             local is_in_previous_node_line = idx > 1 and (idx - 1) <= #vertical_gaps and vertical_gaps[idx - 1] == -1
             local previous_node_exists = #nodes_as_str_table > 0
-            local start_from_previous_node = is_in_previous_node_line and previous_node_exists and not has_left_indentation
+            local start_from_previous_node = is_in_previous_node_line and previous_node_exists and
+                not has_left_indentation
             if start_from_previous_node then
-                local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
-                assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a new node to it")
+                assert(R.last(nodes_as_str_table) ~= nil, "Previous node not found and trying to add a new node to it")
 
                 -- append the first line of the current node to the last line of the previous one
                 local gap = ""
@@ -449,8 +449,10 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
                     gap = string.rep(" ", horizontal_gaps[idx - 1])
                 end
 
-                previous_node_as_str = previous_node_as_str .. gap .. stringified_node_lines[1]
-                nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
+                nodes_as_str_table = f.replace_last_item(
+                    nodes_as_str_table,
+                    R.last(nodes_as_str_table) .. gap .. stringified_node_lines[1]
+                )
 
                 -- remove the first line of the current node
                 table.remove(stringified_node_lines, 1)
@@ -464,19 +466,18 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
                 end, nodes_as_str_table, stringified_node_lines)
             end
         elseif cnode:is_endchar_node() and not cnode.end_character.is_attached then
-            -- TODO: I think this is no longer needed. check later...
-            local previous_node_as_str = nodes_as_str_table[#nodes_as_str_table]
-            assert(previous_node_as_str ~= nil, "Previous node not found and trying to add a end_character to it")
+            assert(R.last(nodes_as_str_table) ~= nil, "Previous node not found and trying to add a end_character to it")
             assert(idx == #self.nodes, "Trying to add a end_character to a node that is not the last one")
             assert(cnode.end_character ~= nil, "End character not found")
 
-            local str_to_add = cnode.end_character:stringify()
-            previous_node_as_str = previous_node_as_str .. str_to_add
-            nodes_as_str_table[#nodes_as_str_table] = previous_node_as_str
+            nodes_as_str_table = f.replace_last_item(
+                nodes_as_str_table,
+                R.last(nodes_as_str_table) .. cnode.end_character:stringify()
+            )
         end
 
         -- add vertical gap between the current node and the next one
-        local last_node_exists = nodes_as_str_table[#nodes_as_str_table] ~= nil
+        local last_node_exists = R.last(nodes_as_str_table) ~= nil
         local theres_a_horizontal_gap_to_add = idx > 1 and horizontal_gaps[idx - 1] ~= nil and
             horizontal_gaps[idx - 1] > 0
 
@@ -485,9 +486,10 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
                 table.insert(nodes_as_str_table, "")
             end
         elseif last_node_exists and theres_a_horizontal_gap_to_add then
-            -- add horizontal gap to the last line of the current node
-            local gap_as_str = string.rep(" ", horizontal_gaps[idx - 1])
-            nodes_as_str_table[#nodes_as_str_table] = nodes_as_str_table[#nodes_as_str_table] .. gap_as_str
+            nodes_as_str_table = f.replace_last_item(
+                nodes_as_str_table,
+                R.last(nodes_as_str_table) .. string.rep(" ", horizontal_gaps[idx - 1])
+            )
         end
     end
 

@@ -1,4 +1,5 @@
 local R = require "ramda"
+
 local M = {}
 
 --- Get the indent of a line (zero-based)
@@ -74,6 +75,20 @@ end
 M.trim = function(str)
     local trimmed_str = string.match(str, "^%s*(.-)%s*$")
     return trimmed_str
+end
+
+--- Replace the last item in a table with a new value.
+--- If the table is empty, it does nothing.
+--- @param tbl table: the table to modify
+--- @param value any: the value to replace the last item with
+--- @return table
+M.replace_last_item = function(tbl, value)
+    local new_tbl = vim.deepcopy(tbl)
+    if #new_tbl == 0 then
+        return new_tbl
+    end
+    new_tbl[#new_tbl] = value
+    return new_tbl
 end
 
 return M

@@ -128,6 +128,21 @@ local _filter = function(predicate, list)
     return result
 end
 
+--- Gets the last item from a given table or the last character from a string.
+--- @param list table|string: The list to get the last item from.
+--- @return any: The last item, or nil if the list is empty.
+local _last = function(list)
+    if type(list) == "table" then
+        return list[#list]
+    end
+
+    if type(list) == "string" then
+        return string.sub(list, -1)
+    end
+
+    return nil
+end
+
 --- Helper to print tables (for demonstration and debugging)
 M._inspect = function(t, indent)
     indent = indent or ""
@@ -292,6 +307,10 @@ M.equals = M.curry(2, _equals)
 --- Filters elements from a list based on a predicate.
 --- Curried.
 M.filter = M.curry(2, _filter)
+
+--- Gets the last item from a given table or string. Returns nil if the table is empty.
+--- Curried.
+M.last = M.curry(1, _last)
 
 --- Transforms each element of a list using a mapper function.
 --- Curried.
