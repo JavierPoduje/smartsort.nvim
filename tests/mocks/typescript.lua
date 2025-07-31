@@ -1,6 +1,6 @@
 local Region = require("region")
 
-local node_with_comment = {
+local commented_functions = {
     content = [[
 /**
  * This is a comment
@@ -8,8 +8,14 @@ local node_with_comment = {
 const foo = () => {
   console.log("foo");
 };
-    ]],
-    region = Region.new(1, 1, 7, 1),
+
+// this is a comment
+
+// this comment "belongs" to the function
+function bar() {
+  console.log("bar");
+}]],
+    region = Region.new(1, 1, 13, 1),
 }
 
 local interface_properties = {
@@ -29,6 +35,55 @@ export interface SomeInterface {
   a: number;
 }]],
     region = Region.new(2, 1, 13, 12),
+}
+
+local middle_size = {
+    content = [[
+/**
+ * This is a comment
+ */
+const foo = () => {
+  console.log("foo");
+};
+
+// this is a comment
+
+// comment attached to the function zit
+const zit = () => {
+  console.log("zit");
+};
+
+// nested comment
+/**
+ * This is a comment
+ */
+function bar() {
+  console.log("bar");
+}]],
+    region = Region.new(8, 1, 21, 1),
+}
+
+local node_with_comment = {
+    content = [[
+/**
+ * This is a comment
+ */
+const foo = () => {
+  console.log("foo");
+};]],
+    region = Region.new(1, 1, 7, 1),
+}
+
+local simplest = {
+    content = [[
+const foo = () => {
+  console.log("foo");
+};
+
+function bar() {
+  console.log("bar");
+}]],
+    region = Region.new(1, 1, 7, 1),
 }
 
 local three_interfaces = {
@@ -65,42 +120,18 @@ class AClass {
     region = Region.new(1, 1, 13, 1),
 }
 
-local middle_size = {
-    content = [[
-/**
- * This is a comment
- */
-const foo = () => {
-  console.log("foo");
-};
-
-// this is a comment
-
-// comment attached to the function zit
-const zit = () => {
-  console.log("zit");
-};
-
-// nested comment
-/**
- * This is a comment
- */
-function bar() {
-  console.log("bar");
-}]],
-    region = Region.new(8, 1, 21, 1),
-}
-
-local simplest = {
+local with_bigger_gap = {
     content = [[
 const foo = () => {
   console.log("foo");
 };
 
+
+
 function bar() {
   console.log("bar");
 }]],
-    region = Region.new(1, 1, 7, 1),
+    region = Region.new(1, 1, 9, 1),
 }
 
 local with_comment = {
@@ -117,20 +148,6 @@ function bar() {
     region = Region.new(1, 1, 9, 1),
 }
 
-local with_bigger_gap = {
-    content = [[
-const foo = () => {
-  console.log("foo");
-};
-
-
-
-function bar() {
-  console.log("bar");
-}]],
-    region = Region.new(1, 1, 9, 1),
-}
-
 local without_gap = {
     content = [[
 const foo = () => {
@@ -140,24 +157,6 @@ function bar() {
   console.log("bar");
 }]],
     region = Region.new(1, 1, 6, 1),
-}
-
-local commented_functions = {
-    content = [[
-/**
- * This is a comment
- */
-const foo = () => {
-  console.log("foo");
-};
-
-// this is a comment
-
-// this comment "belongs" to the function
-function bar() {
-  console.log("bar");
-}]],
-    region = Region.new(1, 1, 13, 1),
 }
 
 return {

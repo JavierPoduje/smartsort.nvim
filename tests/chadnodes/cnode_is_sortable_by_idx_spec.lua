@@ -12,7 +12,7 @@ local truthy = assert.is.truthy
 describe("chadnodes: cnode_is_sortable_by_idx", function()
     it("cnode_is_sortable_by_idx recognizes sortable and non-sortable chadnodes", function()
         local mock = typescript_mocks.with_comment
-        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
+        local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
         truthy(vim.deep_equal(cnodes:cnode_is_sortable_by_idx(), { true, false, true }))
     end)

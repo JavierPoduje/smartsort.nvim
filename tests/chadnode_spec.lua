@@ -14,7 +14,7 @@ local truthy = assert.is.truthy
 describe("chadnode", function()
     it("chadnodes can have comments", function()
         local mock = typescript_mocks.node_with_comment
-        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
+        local bufnr, parser = utils.setup(mock.content, "typescript")
         local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
         local comment_cnode = chadnodes:node_by_idx(1)
         local cnode = chadnodes:node_by_idx(2)
@@ -37,7 +37,7 @@ describe("chadnode", function()
     describe("stringify", function()
         it("respect the identation of the content of block", function()
             local mock = typescript_mocks.without_gap
-            local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
+            local bufnr, parser = utils.setup(mock.content, "typescript")
             local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
             local cnode = chadnodes:node_by_idx(1)
 
@@ -55,7 +55,7 @@ describe("chadnode", function()
 
         it("respect the identation of the line in which the block has to be inserted", function()
             local mock = typescript_mocks.without_gap
-            local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
+            local bufnr, parser = utils.setup(mock.content, "typescript")
             local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
             local cnode = chadnodes:node_by_idx(1)
 
@@ -75,7 +75,7 @@ describe("chadnode", function()
     describe("gap", function()
         it("should detect 0 line", function()
             local mock = typescript_mocks.without_gap
-            local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
+            local bufnr, parser = utils.setup(mock.content, "typescript")
             local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
             local cn1 = chadnodes:node_by_idx(1)
             local cn2 = chadnodes:node_by_idx(2)
@@ -89,7 +89,7 @@ describe("chadnode", function()
 
         it("should detect 1 line", function()
             local mock = typescript_mocks.simplest
-            local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
+            local bufnr, parser = utils.setup(mock.content, "typescript")
             local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
             local cn1 = chadnodes:node_by_idx(1)
             local cn2 = chadnodes:node_by_idx(2)
@@ -103,7 +103,7 @@ describe("chadnode", function()
 
         it("should detect 3 line", function()
             local mock = typescript_mocks.with_bigger_gap
-            local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
+            local bufnr, parser = utils.setup(mock.content, "typescript")
             local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
             local cn1 = chadnodes:node_by_idx(1)
             local cn2 = chadnodes:node_by_idx(2)
@@ -118,7 +118,7 @@ describe("chadnode", function()
 
     it("get_sort_key", function()
         local mock = typescript_mocks.simplest
-        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
+        local bufnr, parser = utils.setup(mock.content, "typescript")
         local chadnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         --- @type string[]
