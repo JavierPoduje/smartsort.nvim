@@ -17,12 +17,14 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public calculate_horizontal_gaps fun(self: Chadnodes): (number | nil)[]
 --- @field public calculate_left_indentation_by_idx fun(self: Chadnodes): boolean[]
 --- @field public calculate_vertical_gaps fun(self: Chadnodes): number[]
+--- @field public closest_sortable_node_by_idx fun(self: Chadnodes, idx:number): Chadnode | nil
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
 --- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public get fun(self: Chadnodes): Chadnode[]
 --- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
+--- @field public is_there_an_empty_line_until_next_sortable_node fun(self: Chadnodes, idx: number): boolean
 --- @field public merge_sortable_nodes_with_adjacent_linkable_nodes fun(self: Chadnodes, region: Region, vertical_gaps?: number[]): Chadnodes
 --- @field public new fun(self: Chadnodes, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
@@ -126,6 +128,31 @@ Chadnodes.calculate_vertical_gaps = function(self)
     end, { previous_cnode = nil, gaps = {} }, self.nodes)
 
     return acc.gaps
+end
+
+--- Get the closest sortable node by index
+--- @param self Chadnodes
+--- @param idx number: the index to start searching from
+--- @return Chadnode | nil
+Chadnodes.closest_sortable_node_by_idx = function(self, idx)
+    assert(idx > 0, "Index must be greater than 0")
+    assert(idx <= #self.nodes, "Index must be less than or equal to the number of nodes")
+
+    local current_node = self:node_by_idx(idx)
+    if not current_node then
+        return nil
+    end
+
+    while current_node and not current_node:is_sortable() do
+        idx = idx + 1
+        current_node = self:node_by_idx(idx)
+    end
+
+    if current_node ~= nil and not current_node:is_sortable() then
+        return nil
+    end
+
+    return current_node
 end
 
 --- Get the horizontal gaps between the nodes. It'll always have a length of `#nodes - 1`.
@@ -287,31 +314,37 @@ Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, reg
 
         local is_last_node = idx == #vertical_gaps + 1
         if is_last_node then
-            if chadquery:is_special_end_char(current_node:type()) then
-                local end_char = current_node.end_character
-                local prev_node = self:node_by_idx(idx - 1)
-
-                if prev_node ~= nil and end_char ~= nil then
-                    if end_char.is_attached then
-                        prev_node:add_attached_suffix_cnode(current_node)
-                    else
-                        cnodes:add(current_node)
-                    end
-                end
-            else
+            if not chadquery:is_special_end_char(current_node:type()) then
                 cnodes:add(current_node)
+                break
+            end
+
+            local end_char = current_node.end_character
+            local prev_node = self:node_by_idx(idx - 1)
+
+            if prev_node ~= nil and end_char ~= nil then
+                if end_char.is_attached then
+                    prev_node:add_attached_suffix_cnode(current_node)
+                else
+                    cnodes:add(current_node)
+                end
             end
 
             break
         end
 
         local end_char = chadquery:get_endchar_from_str(current_node:type())
-        local prev_node, next_node = self:node_by_idx(idx - 1), self:node_by_idx(idx + 1)
+        local prev_node = self:node_by_idx(idx - 1)
+        local next_node = f.if_else(
+            current_node:is_sortable(),
+            function() return nil end,
+            function() return self:closest_sortable_node_by_idx(idx + 1) end
+        )
         local vertical_gap = vertical_gaps[idx]
 
         if vertical_gap == 0 and end_char ~= nil and prev_node ~= nil and end_char.is_attached then
             prev_node:add_attached_suffix_cnode(current_node)
-        elseif vertical_gap <= 0 and chadquery:is_linkable(current_node:type()) and next_node ~= nil then
+        elseif chadquery:is_linkable(current_node:type()) and next_node ~= nil and not self:is_there_an_empty_line_until_next_sortable_node(idx) then
             next_node:add_attached_prefix_cnode(current_node)
         elseif chadquery:is_special_end_char(current_node:type()) and prev_node ~= nil then
             if current_node.end_character.is_attached then
@@ -325,6 +358,36 @@ Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, reg
     end
 
     return cnodes
+end
+
+--- Check if there's an empty line in between the current node and the next sortable node.
+--- @param self Chadnodes
+--- @param idx number: the index of the node to start checking from
+--- @return boolean
+Chadnodes.is_there_an_empty_line_until_next_sortable_node = function(self, idx)
+    assert(idx > 0, "Index must be greater than 0")
+    assert(idx + 1 <= #self.nodes,
+        "Index must be less than the number of nodes - 1 (because we're checking the next node)")
+
+    local curr = self:node_by_idx(idx)
+    local next = self:node_by_idx(idx + 1)
+
+
+    while curr ~= nil and not curr:is_sortable() and next ~= nil do
+        if curr:calculate_vertical_gap(next) > 0 then
+            return true
+        end
+
+        if idx + 1 < #self.nodes then
+            idx = idx + 1
+            curr = self:node_by_idx(idx)
+            next = self:node_by_idx(idx + 1)
+        else
+            break
+        end
+    end
+
+    return false
 end
 
 --- Get the node by index

@@ -1,5 +1,6 @@
 local Chadnodes = require("chadnodes")
 local typescript_mocks = require("tests.mocks.typescript")
+local lua_mocks = require("tests.mocks.lua")
 local utils = require("tests.utils")
 
 --- @diagnostic disable-next-line: undefined-global
@@ -30,5 +31,13 @@ describe("chadnodes: gaps", function()
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
         same(cnodes:calculate_vertical_gaps(), { 1, 1 })
+    end)
+
+    it("lua gaps", function()
+        local mock = lua_mocks.module
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "lua")
+        local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+
+        same(cnodes:calculate_vertical_gaps(), { 1 })
     end)
 end)

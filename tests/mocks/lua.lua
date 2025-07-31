@@ -59,7 +59,38 @@ local no_gap = {
     region = Region.new(2, 1, 2, 65),
 }
 
+local module = {
+    content = [[
+local M = {}
+
+--- Module for various functions
+--- @return table
+function M:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+--- Prints "something" to the console
+--- @return nil
+M.printsomething = function(self)
+    print("something")
+end
+
+--- Returns a string representation of the module
+--- @return string
+M.__tostring = function(self)
+    return "Functions module"
+end
+
+return M
+    ]],
+    region = Region.new(12, 1, 22, 3),
+}
+
 return {
+    module = module,
     no_gap = no_gap,
     simple = simple,
     simple_gap = simple_gap,

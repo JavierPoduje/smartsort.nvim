@@ -137,7 +137,9 @@ M.sort_multiple_lines = function(selected_region, config)
         return
     end
 
+
     local linked_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)
+    print(vim.inspect(linked_cnodes:debug(0, { include_attached_prefix_cnodes = true })))
 
     local vertical_gaps = linked_cnodes:calculate_vertical_gaps()
     local horizontal_gaps = linked_cnodes:calculate_horizontal_gaps()

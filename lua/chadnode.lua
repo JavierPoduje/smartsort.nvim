@@ -130,15 +130,24 @@ Chadnode.debug = function(self, bufnr, opts)
     local include_end_char = opts.include_end_char or false
     local include_region = opts.include_region or false
     local include_attached_suffix_cnodes = opts.include_attached_suffix_cnodes or false
+    local include_attached_prefix_cnodes = opts.include_attached_prefix_cnodes or false
+    local include_sort_key = opts.include_sort_key or false
 
     local output = {
         ts_node = self:to_string(bufnr),
-        sort_key = self:get_sort_key(),
     }
 
-    if #self.attached_prefix_cnodes > 0 then
+    if include_sort_key and self.sort_key then
+        output.sort_key = self.sort_key
+    end
+
+    if include_attached_prefix_cnodes then
+        local attached_prefixes = R.reduce(function(acc, cnode)
+            table.insert(acc, cnode:__tostring())
+            return acc
+        end, {}, self.attached_prefix_cnodes)
         output = f.merge_tables(output, {
-            attached_prefix_cnode = self.attached_prefix_cnodes[1]:to_string(bufnr),
+            attached_prefix_cnodes = attached_prefixes
         })
     end
 
