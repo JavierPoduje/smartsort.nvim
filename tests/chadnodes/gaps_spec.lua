@@ -37,7 +37,8 @@ describe("chadnodes: gaps", function()
         local mock = lua_mocks.module
         local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "lua")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+        local linked_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(mock.region)
 
-        same(cnodes:calculate_vertical_gaps(), { 1 })
+        same(linked_cnodes:calculate_vertical_gaps(), { 1 })
     end)
 end)
