@@ -16,21 +16,20 @@ describe("chadnodes: merge_sortable_nodes_with_adjacent_linkable_nodes", functio
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
         local merged_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(mock.region)
 
-        truthy(vim.deep_equal(merged_cnodes:debug(bufnr), {
-            {
-                attached_prefix_cnode = "/**\n * This is a comment\n */",
-                ts_node = 'const foo = () => {\n  console.log("foo");\n};',
-                sort_key = "foo"
-            },
-            {
-                ts_node = "// this is a comment",
-                sort_key = ""
-            },
-            {
-                attached_prefix_cnode = '// this comment "belongs" to the function',
-                ts_node = 'function bar() {\n  console.log("bar");\n}',
-                sort_key = "bar"
-            }
-        }))
+        truthy(vim.deep_equal(
+            merged_cnodes:debug(bufnr, { include_sort_key = true, include_attached_prefix_cnodes = true }), {
+                {
+                    attached_prefix_cnodes = { "/**\n * This is a comment\n */" },
+                    sort_key = "foo",
+                    ts_node = 'const foo = () => {\n  console.log("foo");\n};'
+                }, {
+                    attached_prefix_cnodes = {},
+                    ts_node = "// this is a comment"
+                }, {
+                    attached_prefix_cnodes = { '// this comment "belongs" to the function' },
+                    sort_key = "bar",
+                    ts_node = 'function bar() {\n  console.log("bar");\n}'
+                }
+            }))
     end)
 end)
