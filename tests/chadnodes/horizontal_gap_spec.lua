@@ -12,7 +12,7 @@ local truthy = assert.is.truthy
 describe("horizontal gaps", function()
     it("correctly returns gap of 1", function()
         local mock = lua_mocks.simple_gap
-        local bufnr, parser = utils.setup(mock.content, "lua")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "lua")
         local gaps = Chadnodes.from_region(bufnr, mock.region, parser)
             :merge_sortable_nodes_with_adjacent_linkable_nodes(mock.region)
             :calculate_horizontal_gaps()
@@ -22,7 +22,7 @@ describe("horizontal gaps", function()
 
     it("correctly returns gap of 0", function()
         local mock = lua_mocks.no_gap
-        local bufnr, parser = utils.setup(mock.content, "lua")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "lua")
         local gaps = Chadnodes.from_region(bufnr, mock.region, parser)
             :merge_sortable_nodes_with_adjacent_linkable_nodes(mock.region)
             :calculate_horizontal_gaps()
@@ -32,7 +32,7 @@ describe("horizontal gaps", function()
 
     it("no horizontal gap equals to -1", function()
         local mock = lua_mocks.third
-        local bufnr, parser = utils.setup(mock.content, "lua")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "lua")
         local gaps = Chadnodes.from_region(bufnr, mock.region, parser)
             :merge_sortable_nodes_with_adjacent_linkable_nodes(mock.region)
             :calculate_horizontal_gaps()
