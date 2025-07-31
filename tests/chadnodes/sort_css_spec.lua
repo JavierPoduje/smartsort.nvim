@@ -12,7 +12,7 @@ local truthy = assert.is.truthy
 describe("chadnodes: sort - css", function()
     it("should sort alphabetically", function()
         local mock = css_mocks.classes
-        local bufnr, parser = utils.setup(mock.content, "css")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "css")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(vim.deep_equal(cnodes:sort({ non_sortable_behavior = "preserve" }):stringified_cnodes(), {

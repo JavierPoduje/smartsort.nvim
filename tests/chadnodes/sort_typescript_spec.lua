@@ -16,7 +16,7 @@ local default_setup = {
 describe("chadnodes: sort - typescript", function()
     it("should sort with `above` behavior", function()
         local mock = typescript_mocks.commented_functions
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(vim.deep_equal(cnodes:sort({ non_sortable_behavior = "above" }):stringified_cnodes(), {
@@ -30,7 +30,7 @@ describe("chadnodes: sort - typescript", function()
 
     it("should sort with `below` behavior", function()
         local mock = typescript_mocks.commented_functions
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(vim.deep_equal(cnodes:sort({ non_sortable_behavior = "below" }):stringified_cnodes(), {
@@ -44,7 +44,7 @@ describe("chadnodes: sort - typescript", function()
 
     it("should sort with `preserve` behavior", function()
         local mock = typescript_mocks.simplest
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
@@ -55,7 +55,7 @@ describe("chadnodes: sort - typescript", function()
 
     it("can sort classes", function()
         local mock = typescript_mocks.two_classes
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
@@ -66,7 +66,7 @@ describe("chadnodes: sort - typescript", function()
 
     it("can sort interfaces", function()
         local mock = typescript_mocks.three_interfaces
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
@@ -78,7 +78,7 @@ describe("chadnodes: sort - typescript", function()
 
     it("can sort peroperties of interfaces", function()
         local mock = typescript_mocks.interface_properties
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
@@ -92,7 +92,7 @@ describe("chadnodes: sort - typescript", function()
 
     it("should keep non-sortable nodes in their place", function()
         local mock = typescript_mocks.with_comment
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {

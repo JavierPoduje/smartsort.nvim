@@ -13,7 +13,7 @@ local truthy = assert.is.truthy
 describe("chadnodes: from_region", function()
     it("should recognize non-sortable nodes", function()
         local mock = typescript_mocks.with_comment
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(cnodes:__tostring(), [[
@@ -29,7 +29,7 @@ describe("chadnodes: from_region", function()
 
     it("should grab function comments", function()
         local mock = typescript_mocks.commented_functions
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(cnodes:__tostring(), [[
@@ -49,7 +49,7 @@ describe("chadnodes: from_region", function()
 
     it("shouldn't consider nodes outside region - start", function()
         local mock = typescript_mocks.simplest
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, Region.new(1, 1, 3, 1), parser)
 
         truthy(cnodes:__tostring(), [[
@@ -61,7 +61,7 @@ describe("chadnodes: from_region", function()
 
     it("shouldn't consider nodes outside region - end", function()
         local mock = typescript_mocks.middle_size
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(cnodes:__tostring(), [[

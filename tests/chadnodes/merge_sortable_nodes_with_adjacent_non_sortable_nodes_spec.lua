@@ -12,7 +12,7 @@ local truthy = assert.is.truthy
 describe("chadnodes: merge_sortable_nodes_with_adjacent_linkable_nodes", function()
     it("merge_sortable_nodes_with_adjacent_linkable_nodes", function()
         local mock = typescript_mocks.commented_functions
-        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local bufnr, parser = utils.setup(vim.fn.split(mock.content, "\n"), "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
         local merged_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(mock.region)
 
