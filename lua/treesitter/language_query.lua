@@ -43,6 +43,7 @@ local vue_queries = require("treesitter.vue.queries")
 --- @field public is_supported_node_type fun(self: LanguageQuery, node_type: string): boolean
 --- @field public new fun(self: LanguageQuery, language: string): LanguageQuery
 --- @field public query_by_node fun(self: LanguageQuery, node: TSNode): string
+--- @field public sortable_group_by_node fun(self: LanguageQuery, node: TSNode): string[]
 ---
 --- @field private _get_linkable_nodes_by_language fun(language: string): table
 --- @field private _get_sortable_nodes_by_language fun(language: string): table
@@ -129,6 +130,21 @@ end
 LanguageQuery.is_supported_node_type = function(self, node_type)
     assert(node_type ~= nil, "node cannot be nil")
     return R.any(R.equals(node_type), self.sortable_nodes)
+end
+
+--- Returns a function that returns the query_by_node func for the given language
+--- @param self LanguageQuery
+--- @param node TSNode: the node
+--- @return string[]
+LanguageQuery.sortable_group_by_node = function(self, node)
+    if self.language == "typescript" then
+        return typescript_queries.sortable_group_by_node(node)
+    elseif self.language == "javascript" then
+        return javascript_queries.sortable_group_by_node(node)
+    end
+
+    --- TODO: this shouldn't be an error, but a `print` to the user saying that the language is not supported
+    error("Unsupported `queries_by_node` for language '" .. self.language .. "'")
 end
 
 --- Returns a function that returns the query_by_node func for the given language
