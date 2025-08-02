@@ -20,7 +20,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public closest_sortable_node_by_idx fun(self: Chadnodes, idx:number): Chadnode | nil
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
---- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
+--- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes, TSNode, number
 --- @field public get fun(self: Chadnodes): Chadnode[]
 --- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
@@ -203,7 +203,7 @@ end
 --- @param bufnr number: the buffer number
 --- @param region Region: the region to get the nodes from
 --- @param parser vim.treesitter.LanguageTree
---- @return Chadnodes, TSNode
+--- @return Chadnodes, TSNode, number
 Chadnodes.from_region = function(bufnr, region, parser)
     --- @type TSNode | nil
     local node = FileManager.get_node_at_row(bufnr, region, parser)
@@ -221,6 +221,9 @@ Chadnodes.from_region = function(bufnr, region, parser)
     local processed_nodes = {}
     local chadquery = Chadquery:new(parser:lang(), { region = region, root_node = root_node })
 
+    local idx = 0
+    --- @type number
+    local idx_of_first_sortable_node = -1
     local cnodes = Chadnodes:new(parser)
     for child, _ in parent:iter_children() do
         -- if the node is after the last line of the visually-selected area, stop
@@ -231,6 +234,8 @@ Chadnodes.from_region = function(bufnr, region, parser)
         local child_id = child:id()
 
         if Region.from_node(child).srow + 1 >= region.srow then
+            idx = idx + 1
+
             if chadquery:is_supported_node_type(child) then
                 local query = chadquery:build_query(child)
                 local query_matches = query:iter_matches(
@@ -269,9 +274,13 @@ Chadnodes.from_region = function(bufnr, region, parser)
                 end
             end
         end
+
+        if idx_of_first_sortable_node == -1 and #cnodes.nodes > 0 and cnodes:node_by_idx(#cnodes.nodes):is_sortable() then
+            idx_of_first_sortable_node = idx
+        end
     end
 
-    return cnodes, parent
+    return cnodes, parent, idx_of_first_sortable_node
 end
 
 --- Get the nodes

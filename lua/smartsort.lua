@@ -37,7 +37,7 @@ M.print_chadnodes = function()
     end
 end
 
---- @param inputargs Args: the arguments to use
+--- @param inputargs? Args: the arguments to use
 M.smartsort = function(inputargs)
     local args = inputargs or {}
     local setup = f.merge_tables(
@@ -131,11 +131,17 @@ M.sort_multiple_lines = function(selected_region, config)
 
     --- @type Chadnodes
     local cnodes = nil
-    status, err = pcall(function() cnodes = Chadnodes.from_region(0, region, parser) end)
+    --- @type number
+    local idx_of_first_non_sortable_node = nil
+    status, err = pcall(function()
+        cnodes, _, idx_of_first_non_sortable_node = Chadnodes.from_region(0, region, parser)
+    end)
     if not status then
         print(err)
         return
     end
+
+    local first_sortable_type = cnodes:node_by_idx(idx_of_first_non_sortable_node):type()
 
     local linked_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)
 
