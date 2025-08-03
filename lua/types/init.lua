@@ -1,0 +1,13 @@
+--- @alias JSQueryName
+--- | "class_declaration"
+--- | "function_declaration"
+--- | "lexical_declaration"
+--- | "lexical_declaration_function"
+--- | "lexical_declaration_variable"
+--- | "method_definition"
+--- | "pair"
+
+--- @alias SortableBehavior
+--- | "above"
+--- | "below"
+--- | "preserve"

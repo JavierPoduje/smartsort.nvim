@@ -6,11 +6,15 @@ local f = require("funcs")
 local parsers = require("nvim-treesitter.parsers")
 
 --- @class SmartsortSetup
---- @field non_sortable_behavior "above" | "below" | "preserve"
+--- @field non_sortable_behavior SortableBehavior
+--- @field non_target_sortable_behavior SortableBehavior
+--- @field use_sort_groups boolean
 
 --- @type SmartsortSetup
 local smartsort_setup = {
     non_sortable_behavior = "preserve",
+    non_target_sortable_behavior = "preserve",
+    use_sort_groups = false,
 }
 
 --- @class Args
@@ -132,16 +136,19 @@ M.sort_multiple_lines = function(selected_region, config)
     --- @type Chadnodes
     local cnodes = nil
     --- @type number
-    local idx_of_first_non_sortable_node = nil
+    local first_sortable_node_idx = nil
     status, err = pcall(function()
-        cnodes, _, idx_of_first_non_sortable_node = Chadnodes.from_region(0, region, parser)
+        cnodes, _, first_sortable_node_idx = Chadnodes.from_region(0, region, parser)
     end)
     if not status then
         print(err)
         return
     end
 
-    local first_sortable_type = cnodes:node_by_idx(idx_of_first_non_sortable_node):type()
+    if first_sortable_node_idx == nil then
+        print("No sortable nodes found")
+        return
+    end
 
     local linked_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)
 
@@ -150,7 +157,12 @@ M.sort_multiple_lines = function(selected_region, config)
     local should_have_left_indentation_by_idx = linked_cnodes:calculate_left_indentation_by_idx()
 
     local sorted_nodes_with_gaps = linked_cnodes
-        :sort(config)
+        :sort({
+            first_sortable_node_idx = first_sortable_node_idx,
+            non_sortable_behavior = config.non_sortable_behavior,
+            non_target_sortable_behavior = config.non_target_sortable_behavior,
+            use_sort_groups = config.use_sort_groups,
+        })
         :stringify_into_table(
             vertical_gaps,
             horizontal_gaps,

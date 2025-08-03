@@ -14,13 +14,14 @@ local Region = require("region")
 --- @field public query vim.treesitter.Query: the query
 --- @field public language_query LanguageQuery: the language query
 ---
---- @field public build_query fun(self: Chadquery, node: TSNode): vim.treesitter.Query
---- @field public get_endchar_from_str fun(self: Chadquery, node: string): EndChar | nil
---- @field public is_linkable fun(self: Chadquery, node_type: string): boolean
---- @field public is_special_end_char fun(self: Chadquery, char: string): boolean
---- @field public is_supported_node_type fun(self: Chadquery, node: TSNode): boolean
---- @field public new fun(language: string, options: OptionsForEmbeddedLanguages): Chadquery
---- @field public sort_and_linkable_nodes fun(): table
+--- @field build_query fun(self: Chadquery, node: TSNode): vim.treesitter.Query
+--- @field get_endchar_from_str fun(self: Chadquery, node: string): EndChar | nil
+--- @field get_sortable_group_by_node fun(node: TSNode): string[]
+--- @field is_linkable fun(self: Chadquery, node_type: string): boolean
+--- @field is_special_end_char fun(self: Chadquery, char: string): boolean
+--- @field is_supported_node_type fun(self: Chadquery, node: TSNode): boolean
+--- @field new fun(language: string, options: OptionsForEmbeddedLanguages): Chadquery
+--- @field sort_and_linkable_nodes fun(): table
 
 local Chadquery = {}
 
@@ -133,6 +134,14 @@ Chadquery._get_language_to_work_with = function(region, root_node, language)
     end
 
     return language
+end
+
+--- Returns a sortable-group given a tsnode
+--- @param ts_node TSNode: the node to determine the sortable group for
+--- @return string[]
+Chadquery.get_sortable_group_by_node = function(ts_node)
+    local language_query = LanguageQuery:new("typescript")
+    return language_query:sortable_group_by_node(ts_node)
 end
 
 return Chadquery

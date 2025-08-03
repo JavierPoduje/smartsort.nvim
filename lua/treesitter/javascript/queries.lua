@@ -37,15 +37,6 @@ M.queries_by_node = function(node)
     return queries
 end
 
---- @alias JSQueryName
---- | "class_declaration"
---- | "function_declaration"
---- | "lexical_declaration"
---- | "lexical_declaration_function"
---- | "lexical_declaration_variable"
---- | "method_definition"
---- | "pair"
-
 --- @type table<JSQueryName, string>
 M.query_by_node_as_table = {
     class_declaration = [[ [
