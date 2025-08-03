@@ -10,11 +10,7 @@ local it = it
 --- @diagnostic disable-next-line: undefined-field
 local truthy = assert.is.truthy
 
-local default_setup = {
-    non_sortable_behavior = "preserve",
-    non_target_sortable_behavior = "preserve",
-    use_sort_groups = false,
-}
+local default_setup = utils.default_setup
 
 describe("chadnodes: sort - typescript", function()
     it("should sort with `above` behavior", function()

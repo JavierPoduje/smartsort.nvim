@@ -1,5 +1,6 @@
 local Chadnodes = require("chadnodes")
 local css_mocks = require("tests.mocks.css")
+local f = require("funcs")
 local utils = require("tests.utils")
 
 --- @diagnostic disable-next-line: undefined-global
@@ -9,13 +10,18 @@ local it = it
 --- @diagnostic disable-next-line: undefined-field
 local truthy = assert.is.truthy
 
+local default_setup = utils.default_setup
+
 describe("chadnodes: sort - css", function()
     it("should sort alphabetically", function()
         local mock = css_mocks.classes
         local bufnr, parser = utils.setup(mock.content, "css")
-        local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+        local cnodes, _, first_sortable_node_idx = Chadnodes.from_region(bufnr, mock.region, parser)
+        local opts = f.merge_tables(default_setup, {
+            first_sortable_node_idx = first_sortable_node_idx,
+        })
 
-        truthy(vim.deep_equal(cnodes:sort({ non_sortable_behavior = "preserve" }):stringified_cnodes(), {
+        truthy(vim.deep_equal(cnodes:sort(opts):stringified_cnodes(), {
             "/*\n * This is\n * a multi-line\n * comment\n */",
             ".aclass {\n  color: red;\n}",
             ".bclass {\n  color: blue;\n}",

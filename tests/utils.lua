@@ -31,6 +31,13 @@ local setup = function(buf_content, filetype)
     return bufnr, parser
 end
 
+local default_setup = {
+    non_sortable_behavior = "preserve",
+    non_target_sortable_behavior = "preserve",
+    use_sort_groups = false,
+}
+
 return {
     setup = setup,
+    default_setup = default_setup,
 }
