@@ -47,6 +47,10 @@ M.query_by_node_as_table = {
         (export_statement (function_declaration (identifier) @identifier))
         (function_declaration (identifier) @identifier)
     ] @block ]],
+    lexical_declaration = [[  [
+       (export_statement (lexical_declaration (variable_declarator (identifier) @identifier)))
+       (lexical_declaration (variable_declarator (identifier) @identifier))
+    ] @block ]],
     lexical_declaration_function = [[ [
         (export_statement (lexical_declaration (variable_declarator (identifier) @identifier (arrow_function))))
         (lexical_declaration (variable_declarator (identifier) @identifier (arrow_function)))
@@ -58,10 +62,6 @@ M.query_by_node_as_table = {
             (lexical_declaration (variable_declarator (identifier) @identifier . [(number) (string) (object) (array) (call_expression) (new_expression) (member_expression)]))
         )
         (lexical_declaration (variable_declarator (identifier) @identifier . [(number) (string) (object) (array) (call_expression) (new_expression) (member_expression)]))
-    ] @block ]],
-    lexical_declaration = [[  [
-       (export_statement (lexical_declaration (variable_declarator (identifier) @identifier)))
-       (lexical_declaration (variable_declarator (identifier) @identifier))
     ] @block ]],
     method_definition = [[ (method_definition (property_identifier) @identifier) @block ]],
     pair = [[ (pair (property_identifier) @identifier) @block ]],

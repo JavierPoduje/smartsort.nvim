@@ -14,6 +14,7 @@ local Region = require("region")
 --- @field public query vim.treesitter.Query: the query
 --- @field public language_query LanguageQuery: the language query
 ---
+--- @field build_queries fun(self: Chadquery, node: TSNode): QueryWithName[]
 --- @field build_query fun(self: Chadquery, node: TSNode): vim.treesitter.Query
 --- @field get_endchar_from_str fun(self: Chadquery, node: string): EndChar | nil
 --- @field get_sortable_group_by_node fun(node: TSNode): string[]
@@ -59,9 +60,36 @@ end
 --- @return vim.treesitter.Query: the query
 Chadquery.build_query = function(self, node)
     assert(is_supported_language(self.language), "Unsupported language: " .. self.language)
+
     local query_str = self.language_query:query_by_node(node)
     assert(query_str ~= nil, "query_str cannot be nil")
+
     return vim.treesitter.query.parse(self.language, query_str)
+end
+
+--- @class QueryWithName
+--- @field name string: the name of the query
+--- @field query vim.treesitter.Query: the query object
+
+--- Return new Query objects from the given land and node
+--- @param self Chadquery
+--- @param node TSNode: the node
+--- @return QueryWithName[]: a list of Query objects
+Chadquery.build_queries = function(self, node)
+    assert(is_supported_language(self.language), "Unsupported language: " .. self.language)
+
+    local potential_queries = self.language_query:potential_queries_by_node(node)
+    assert(potential_queries ~= nil, "query_str cannot be nil")
+
+    local queries = {}
+    for _, potential_query in ipairs(potential_queries) do
+        print(potential_query.name)
+        table.insert(queries, {
+            name = potential_query.name,
+            query = vim.treesitter.query.parse(self.language, potential_query.query)
+        })
+    end
+    return queries
 end
 
 --- @param self Chadquery

@@ -19,10 +19,12 @@ local f = require("funcs")
 --- @field public debug fun(self: Chadnode, bufnr: number, opts: table | nil): table<any>
 --- @field public from_query_match fun(query: vim.treesitter.Query, match: table<integer, TSNode>, bufnr: number): Chadnode
 --- @field public get fun(self: Chadnode): TSNode
+--- @field public get_query_name_by_group fun(self: Chadnode, sortable_group: string[]): string | nil
 --- @field public get_sort_key fun(self: Chadnode): string
 --- @field public has_next_sibling fun(self: Chadnode): boolean
 --- @field public is_endchar_node fun(self: Chadnode): boolean
 --- @field public is_first_node_in_row fun(self: Chadnode): boolean
+--- @field public is_in_sortable_group fun(self: Chadnode, sortable_group: string[]): boolean
 --- @field public is_sortable fun(self: Chadnode): boolean
 --- @field public new fun(self:Chadnode, node: TSNode, sort_key: string | nil): Chadnode
 --- @field public parent_node fun(self: Chadnode): TSNode | nil
@@ -206,6 +208,33 @@ end
 --- @return TSNode: the node
 Chadnode.get = function(self)
     return self.ts_node
+end
+
+--- Check if the node is in a sortable group
+--- @param self Chadnode: the node
+--- @param sortable_group string[]: the sortable group to check
+--- @return boolean
+Chadnode.is_in_sortable_group = function(self, sortable_group)
+    return self:get_query_name_by_group(sortable_group) ~= nil
+end
+
+--- Get the query name by the sortable group
+--- @param self Chadnode: the node
+--- @param sortable_group string[]: the sortable group to get the query name for
+--- @return string | nil: the query name
+Chadnode.get_query_name_by_group = function(self, sortable_group)
+    assert(
+        sortable_group ~= nil and #sortable_group > 0,
+        "The sortable group can't be nil or empty"
+    )
+
+    local cnode_type = self:type()
+    for _, query_name in ipairs(sortable_group) do
+        if string.find(query_name, cnode_type) ~= nil then
+            return query_name
+        end
+    end
+    return nil
 end
 
 --- Return the node's sortable index

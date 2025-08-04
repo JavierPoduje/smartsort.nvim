@@ -138,7 +138,12 @@ M.sort_multiple_lines = function(selected_region, config)
     --- @type number
     local first_sortable_node_idx = nil
     status, err = pcall(function()
-        cnodes, _, first_sortable_node_idx = Chadnodes.from_region(0, region, parser)
+        cnodes, _, first_sortable_node_idx = Chadnodes.from_region(
+            0,
+            region,
+            parser,
+            { use_sort_groups = config.use_sort_groups }
+        )
     end)
     if not status then
         print(err)

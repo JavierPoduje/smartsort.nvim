@@ -42,6 +42,7 @@ local vue_queries = require("treesitter.vue.queries")
 --- @field public is_linkable fun(self: LanguageQuery, node_type: string): boolean
 --- @field public is_supported_node_type fun(self: LanguageQuery, node_type: string): boolean
 --- @field public new fun(self: LanguageQuery, language: string): LanguageQuery
+--- @field public potential_queries_by_node fun(self: LanguageQuery, node: TSNode): RawQueryWithName[]
 --- @field public query_by_node fun(self: LanguageQuery, node: TSNode): string
 --- @field public sortable_group_by_node fun(self: LanguageQuery, node: TSNode): string[]
 ---
@@ -129,7 +130,13 @@ end
 --- @return boolean
 LanguageQuery.is_supported_node_type = function(self, node_type)
     assert(node_type ~= nil, "node cannot be nil")
-    return R.any(R.equals(node_type), self.sortable_nodes)
+    return R.any(
+        function(sortable_node)
+            return string.find(sortable_node, node_type) ~= nil
+        end,
+        self.sortable_nodes
+    )
+    -- return R.any(R.equals(node_type), self.sortable_nodes)
 end
 
 --- Returns a function that returns the query_by_node func for the given language
@@ -145,6 +152,18 @@ LanguageQuery.sortable_group_by_node = function(self, node)
 
     --- TODO: this shouldn't be an error, but a `print` to the user saying that the language is not supported
     error("Unsupported `queries_by_node` for language '" .. self.language .. "'")
+end
+
+--- Returns the potential queries for the given node
+--- @param self LanguageQuery
+--- @param node TSNode: the node
+--- @return RawQueryWithName[]
+LanguageQuery.potential_queries_by_node = function(self, node)
+    if self.language == "typescript" then
+        return typescript_queries.potential_queries_by_node(node)
+    end
+
+    error("Unsupported language: " .. self.language)
 end
 
 --- Returns a function that returns the query_by_node func for the given language

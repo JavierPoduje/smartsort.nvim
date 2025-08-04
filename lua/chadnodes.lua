@@ -26,7 +26,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field closest_sortable_node_by_idx fun(self: Chadnodes, idx:number): Chadnode | nil
 --- @field cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
---- @field from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes, TSNode, number
+--- @field from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree, opts?: FromRegionOpts): Chadnodes, TSNode, number
 --- @field get fun(self: Chadnodes): Chadnode[]
 --- @field get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field get_sortable_nodes fun(self: Chadnodes): Chadnode[]
@@ -209,13 +209,19 @@ Chadnodes.debug = function(self, bufnr, opts)
     return R.map(function(node) return node:debug(bufnr, opts) end, self.nodes)
 end
 
+--- @class FromRegionOpts
+--- @field use_sort_groups boolean
+
 --- Return a new `Chadnodes` object with the matched nodes in the given region and the parent node
 --- of the node from the region selected.
 --- @param bufnr number: the buffer number
 --- @param region Region: the region to get the nodes from
 --- @param parser vim.treesitter.LanguageTree
+--- @param opts? FromRegionOpts
 --- @return Chadnodes, TSNode, number
-Chadnodes.from_region = function(bufnr, region, parser)
+Chadnodes.from_region = function(bufnr, region, parser, opts)
+    opts = opts or {}
+
     --- @type TSNode | nil
     local node = FileManager.get_node_at_row(bufnr, region, parser)
     if not node then
@@ -248,14 +254,39 @@ Chadnodes.from_region = function(bufnr, region, parser)
             idx = idx + 1
 
             if chadquery:is_supported_node_type(child) then
-                local query = chadquery:build_query(child)
-                local query_matches = query:iter_matches(
-                    child,
-                    bufnr,
-                    child:start(),
-                    child:end_() + 1,
-                    { max_start_depth = 1 }
-                )
+                --- @type fun(): integer, table<integer, TSNode[]>, vim.treesitter.query.TSMetadata, TSTree
+                local query_matches = nil
+                if not opts.use_sort_groups then
+                    local query = chadquery:build_query(child)
+                    query_matches = query:iter_matches(
+                        child,
+                        bufnr,
+                        child:start(),
+                        child:end_() + 1,
+                        { max_start_depth = 1 }
+                    )
+                else
+                    local queries_with_names = chadquery:build_queries(child)
+                    print(#queries_with_names)
+                    for _, query_with_name in ipairs(queries_with_names) do
+                        print("query with name", vim.inspect(query_with_name))
+                        query_matches = query_with_name.query:iter_matches(
+                            child,
+                            bufnr,
+                            child:start(),
+                            child:end_() + 1,
+                            { max_start_depth = 1 }
+                        )
+
+                        for _, match, _ in query_matches do
+                            print(vim.inspect(match))
+                            local cnode = Chadnode.from_query_match(query_with_name.query, match, bufnr)
+                            print(cnode)
+                            error("break")
+                        end
+
+                    end
+                end
 
                 for _, match, _ in query_matches do
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
@@ -451,20 +482,20 @@ Chadnodes._sort_with_sortable_groups = function(self, opts)
 
     local raw_sortables = R.reduce(
         function(acc, cnode)
-            if vim.tbl_contains(sortable_group, cnode:type()) then
+            if cnode:is_in_sortable_group(sortable_group) then
                 table.insert(acc.sortables, cnode)
             else
                 table.insert(acc.non_target_sortables, cnode)
             end
+            return acc
         end,
         { sortables = {}, non_target_sortables = {} },
         self:get_sortable_nodes()
     )
-    local sortables = raw_sortables.sortables
-    local non_target_sortables = raw_sortables.non_target_sortables
 
+    local sortables = Chadnodes:sort_sortable_nodes(raw_sortables.sortables)
+    local non_target_sortables = raw_sortables.non_target_sortables
     local non_sortables = self:get_non_sortable_nodes()
-    sortables = Chadnodes:sort_sortable_nodes(sortables)
 
     local output = Chadnodes:new(self.parser)
 
@@ -481,13 +512,15 @@ Chadnodes._sort_with_sortable_groups = function(self, opts)
             assert(cnode ~= nil, "Chadnode not found")
 
             if is_sortable then
-                if vim.tbl_contains(sortable_group, cnode:type()) then
+                if cnode:is_in_sortable_group(sortable_group) then
+                    print("sortable")
+                    print(cnode)
                     cnode = sortables:node_by_idx(sortable_idx)
                     assert(cnode ~= nil, "Chadnode not found")
                     output:add(cnode)
                     sortable_idx = sortable_idx + 1
                 else
-                    cnode = non_target_sortables:node_by_idx(non_target_sortable_idx)
+                    cnode = non_target_sortables[non_target_sortable_idx]
                     assert(cnode ~= nil, "Chadnode not found")
                     output:add(cnode)
                     non_target_sortable_idx = non_target_sortable_idx + 1
@@ -507,7 +540,7 @@ Chadnodes._sort_with_sortable_groups = function(self, opts)
             assert(cnode ~= nil, "Chadnode not found")
 
             if is_sortable then
-                if vim.tbl_contains(sortable_group, cnode:type()) then
+                if cnode:is_in_sortable_group(sortable_group) then
                     cnode = sortables:node_by_idx(sortable_idx)
                     assert(cnode ~= nil, "Chadnode not found")
                     output:add(cnode)
@@ -538,7 +571,7 @@ Chadnodes._sort_with_sortable_groups = function(self, opts)
             assert(cnode ~= nil, "Chadnode not found")
 
             if is_sortable then
-                if vim.tbl_contains(sortable_group, cnode:type()) then
+                if cnode:is_in_sortable_group(sortable_group) then
                     cnode = sortables:node_by_idx(sortable_idx)
                     assert(cnode ~= nil, "Chadnode not found")
                     output:add(cnode)
@@ -568,7 +601,7 @@ Chadnodes._sort_with_sortable_groups = function(self, opts)
             assert(cnode ~= nil, "Chadnode not found")
 
             if is_sortable then
-                if vim.tbl_contains(sortable_group, cnode:type()) then
+                if cnode:is_in_sortable_group(sortable_group) then
                     cnode = sortables:node_by_idx(sortable_idx)
                     assert(cnode ~= nil, "Chadnode not found")
                     output:add(cnode)
@@ -609,7 +642,8 @@ Chadnodes._sort_with_sortable_groups = function(self, opts)
         for _, cnode in ipairs(non_sortables) do output:add(cnode) end
         for _, cnode in ipairs(non_target_sortables) do output:add(cnode) end
     else
-        error("Invalid non_sortable_behavior or non_target_sortable_behavior: " .. opts.non_sortable_behavior .. ", " .. opts.non_target_sortable_behavior)
+        error("Invalid non_sortable_behavior or non_target_sortable_behavior: " ..
+        opts.non_sortable_behavior .. ", " .. opts.non_target_sortable_behavior)
     end
 
     return output

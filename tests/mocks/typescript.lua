@@ -159,8 +159,25 @@ function bar() {
     region = Region.new(1, 1, 6, 1),
 }
 
+local funcs_and_vars = {
+    content = [[
+const ddd = (something: string): string => something + " concat";
+
+const ccc = "test";
+
+// standalone comment
+
+const aaa = (something: string): string => something + " concat";
+
+// linked comment
+const bbb = "test";
+    ]],
+    region = Region.new(1, 1, 10, 19),
+}
+
 return {
     commented_functions = commented_functions,
+    funcs_and_vars = funcs_and_vars,
     interface_properties = interface_properties,
     middle_size = middle_size,
     node_with_comment = node_with_comment,

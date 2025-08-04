@@ -3,7 +3,33 @@ local javascript_queries = require("treesitter.javascript.queries")
 
 local M = {}
 
---- @param node TSNode: the type of the node
+--- @class RawQueryWithName
+--- @field public name string: the name of the query
+--- @field public query string: the query string
+
+--- @param node TSNode: the node
+--- @return RawQueryWithName: the potential queries for the node
+M.potential_queries_by_node = function(node)
+    local node_type = node:type()
+
+    -- Check if the node is an export statement. If so, get the type of the first child.
+    if node_type == "export_statement" then
+        node_type = node:child(1):type()
+    end
+
+    local potential_queries = {}
+    for query_name, query in pairs(M.query_by_node_as_table) do
+        if string.find(query_name, node_type) ~= nil then
+            table.insert(potential_queries, {
+                name = query_name,
+                query = query,
+            })
+        end
+    end
+    return potential_queries
+end
+
+--- @param node TSNode: the node
 --- @return string
 M.query_by_node = function(node)
     local node_type = node:type()
