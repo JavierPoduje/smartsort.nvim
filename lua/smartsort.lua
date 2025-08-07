@@ -99,8 +99,6 @@ M.sort_single_line = function(region, args)
     -- split words by separator, ignoring separators inside strings, and calculate spaces
     local words, spaces_between_words = M._split_ignoring_strings_with_spaces(trimmed_str, separator)
 
-    print(vim.inspect(words))
-
     table.sort(words)
 
     local str_to_insert = table.concat({
@@ -155,7 +153,6 @@ M.sort_multiple_lines = function(selected_region, config)
 end
 
 --- Build the string of sorted words
----
 --- @param spaces_between_words number[]: the spaces between words
 --- @param words string[]: the words to build the sorted words of
 --- @param separator string: the separator to use between words
@@ -187,7 +184,6 @@ M._build_sorted_words = function(spaces_between_words, words, separator)
 end
 
 --- Calculate the spaces between. The spaces are only calculated between words separated by a comma.
----
 --- @param str string: the string to calculate the spaces between words of
 --- @param separator string: the separator to use between words
 --- @return number[]: the spaces between words
@@ -276,35 +272,6 @@ M._split_ignoring_strings_with_spaces = function(str, separator)
     table.insert(parts, current_part)
 
     return parts, spaces
-end
-
---- Split string by separator, ignoring separators inside string literals
---- @param str string: the string to split
---- @param separator string: the separator to split by
---- @return string[]: array of split parts
-M._split_ignoring_strings = function(str, separator)
-    local parts = {}
-    local current_part = ""
-    local i = 1
-
-    while i <= #str do
-        local char = string.sub(str, i, i)
-
-        if char == separator and not M._is_inside_string(str, i) then
-            -- Found separator outside of string
-            table.insert(parts, current_part)
-            current_part = ""
-        else
-            current_part = current_part .. char
-        end
-
-        i = i + 1
-    end
-
-    -- Add the last part
-    table.insert(parts, current_part)
-
-    return parts
 end
 
 --- Check if a character position is inside a string literal
