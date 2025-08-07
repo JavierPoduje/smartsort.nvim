@@ -30,6 +30,9 @@ M.query_by_node_as_table = {
     ] @block ]],
     method_definition = [[ (method_definition (property_identifier) @identifier) @block ]],
     pair = [[ (pair (property_identifier) @identifier) @block ]],
+    public_field_definition = [[
+        public_field_definition (property_identifier) @identifier) @block
+    ]],
 }
 
 return M

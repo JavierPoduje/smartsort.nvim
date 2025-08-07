@@ -1,3 +1,7 @@
+import { bb, dd, aa, cc, hola } from "somewhere.js";
+
+type greetings = "hi |" | "bye" | "| goodbye";
+
 class Point {
   x: number;
   y: number;

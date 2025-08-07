@@ -96,10 +96,10 @@ M.sort_single_line = function(region, args)
         trimmed_str = string.sub(trimmed_str, 1, -2)
         final_char_is_separator = true
     end
-    local spaces_between_words = M._calculate_spaces_between_words(trimmed_str, separator)
+    -- split words by separator, ignoring separators inside strings, and calculate spaces
+    local words, spaces_between_words = M._split_ignoring_strings_with_spaces(trimmed_str, separator)
 
-    -- split words by separator
-    local words = vim.fn.split(trimmed_str, separator .. "\\s*")
+    print(vim.inspect(words))
 
     table.sort(words)
 
@@ -202,7 +202,7 @@ M._calculate_spaces_between_words = function(str, separator)
     local count_spaces = false
 
     while idx <= #str do
-        if string.sub(str, idx, idx) == separator then
+        if string.sub(str, idx, idx) == separator and not M._is_inside_string(str, idx) then
             idx = idx + 1
             count_spaces = true
         end
@@ -238,6 +238,106 @@ M._trim = function(str)
     local rightpad = string.match(str, "%s*$")
     local trimmed_str = string.match(str, "^%s*(.-)%s*$")
     return trimmed_str, leftpad, rightpad
+end
+
+--- Split string by separator, ignoring separators inside string literals, and calculate spaces
+--- @param str string: the string to split
+--- @param separator string: the separator to split by
+--- @return string[], number[]: array of split parts and spaces between them
+M._split_ignoring_strings_with_spaces = function(str, separator)
+    local parts = {}
+    local spaces = {}
+    local current_part = ""
+    local i = 1
+
+    while i <= #str do
+        local char = string.sub(str, i, i)
+
+        if char == separator and not M._is_inside_string(str, i) then
+            -- Found separator outside of string
+            table.insert(parts, current_part)
+            current_part = ""
+
+            -- Calculate spaces after this separator
+            local space_count = 0
+            i = i + 1
+            while i <= #str and string.sub(str, i, i) == " " do
+                space_count = space_count + 1
+                i = i + 1
+            end
+            table.insert(spaces, space_count)
+        else
+            current_part = current_part .. char
+            i = i + 1
+        end
+    end
+
+    -- Add the last part
+    table.insert(parts, current_part)
+
+    return parts, spaces
+end
+
+--- Split string by separator, ignoring separators inside string literals
+--- @param str string: the string to split
+--- @param separator string: the separator to split by
+--- @return string[]: array of split parts
+M._split_ignoring_strings = function(str, separator)
+    local parts = {}
+    local current_part = ""
+    local i = 1
+
+    while i <= #str do
+        local char = string.sub(str, i, i)
+
+        if char == separator and not M._is_inside_string(str, i) then
+            -- Found separator outside of string
+            table.insert(parts, current_part)
+            current_part = ""
+        else
+            current_part = current_part .. char
+        end
+
+        i = i + 1
+    end
+
+    -- Add the last part
+    table.insert(parts, current_part)
+
+    return parts
+end
+
+--- Check if a character position is inside a string literal
+--- @param str string: the string to check
+--- @param pos number: the position in the string (1-indexed)
+--- @return boolean: true if the position is inside a string literal
+M._is_inside_string = function(str, pos)
+    local i = 1
+    local in_string = false
+    local quote_char = nil
+
+    while i <= pos do
+        local char = string.sub(str, i, i)
+
+        if char == "'" or char == '"' then
+            if not in_string then
+                -- Start of string
+                in_string = true
+                quote_char = char
+            elseif quote_char == char then
+                -- End of string (only if it's the same quote type)
+                in_string = false
+                quote_char = nil
+            end
+        elseif char == "\\" and in_string then
+            -- Skip escaped character
+            i = i + 1
+        end
+
+        i = i + 1
+    end
+
+    return in_string
 end
 
 return M
