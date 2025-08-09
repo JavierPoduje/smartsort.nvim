@@ -86,6 +86,15 @@ function bar() {
     region = Region.new(1, 1, 7, 1),
 }
 
+local single_line_sorter_mock = {
+    content = [[
+import { bb, dd, aa, cc, hola } from "somewhere.js";
+
+type greetings = "hi |" | "bye" | "| goodbye";
+    ]],
+    region = Region.new(1, 9, 1, 30),
+}
+
 local three_interfaces = {
     content = [[
 export interface B {
@@ -165,6 +174,7 @@ return {
     middle_size = middle_size,
     node_with_comment = node_with_comment,
     simplest = simplest,
+    single_line_sorter_mock = single_line_sorter_mock,
     three_interfaces = three_interfaces,
     two_classes = two_classes,
     with_bigger_gap = with_bigger_gap,

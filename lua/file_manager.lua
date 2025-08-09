@@ -9,6 +9,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public region Region
 ---
 --- @field public buf_set_lines fun(bufnr: number, start_row: number, end_row: number, lines: string[])
+--- @field public get_line fun(region: Region): string
 --- @field public get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree): TSNode
 --- @field public get_region_to_work_with fun(bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree): Region
 --- @field public insert_in_buffer fun(row: number, start_col: number, end_col: number, str: string): FileManager
@@ -37,6 +38,15 @@ end
 --- @param lines string[]: the lines to insert
 FileManager.buf_set_lines = function(bufnr, start_row, end_row, lines)
     vim.api.nvim_buf_set_lines(0, start_row, end_row, true, lines)
+end
+
+--- Get the line from the buffer in a specific range
+--- @param region Region: the region to get the line from
+--- @return string
+FileManager.get_line = function(region)
+    local full_line = vim.fn.getline(region.srow, region.erow)
+    local raw_str = string.sub(full_line[1], region.scol, region.ecol)
+    return raw_str
 end
 
 --- Returns a new region where everything is exactly the same as the selected region,

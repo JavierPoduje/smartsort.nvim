@@ -5,12 +5,12 @@ local R = require("ramda")
 ---
 --- @field separator string: the separator to use between words
 ---
---- @field _build_sorted_words fun(self: SinglelineSorter, spaces_between_words: number, words: string[]): string
+--- @field _build_sorted_words fun(self: SinglelineSorter, spaces_between_words: number[], words: string[]): string
 --- @field _is_inside_string fun(self: SinglelineSorter, str: string): boolean
 --- @field _split_ignoring_strings_with_spaces fun(self: SinglelineSorter, str: string): string[], number[]
 --- @field _trim fun(str: string): string, string, string
 --- @field new fun(separator: string): SinglelineSorter
---- @field sort fun(self: SinglelineSorter, region: Region): string, string, string
+--- @field sort fun(self: SinglelineSorter, raw_str: string): string
 
 local SinglelineSorter = {}
 
@@ -143,12 +143,10 @@ end
 
 --- Sort the selected line. It modifies the buffer directly.
 --- @param self SinglelineSorter
---- @param region Region: the region to sort, with srow, erow, scol
-SinglelineSorter.sort = function(self, region)
-    local full_line = vim.fn.getline(region.srow, region.erow)
-    local raw_str = string.sub(full_line[1], region.scol, region.ecol)
+--- @param raw_str string: the line to sort
+--- @return string: the sorted line
+SinglelineSorter.sort = function(self, raw_str)
     local final_char_is_separator = false
-
     local trimmed_str, leftpad, rightpad = SinglelineSorter._trim(raw_str)
     if string.sub(trimmed_str, -1) == self.separator then
         trimmed_str = string.sub(trimmed_str, 1, -2)
@@ -161,12 +159,12 @@ SinglelineSorter.sort = function(self, region)
 
     local str_to_insert = table.concat({
         leftpad,
-        SinglelineSorter:_build_sorted_words(spaces_between_words, words),
+        self:_build_sorted_words(spaces_between_words, words),
         final_char_is_separator and self.separator or "",
         rightpad,
     }, "")
 
-    FileManager.insert_line_in_buffer(region.srow, region.scol, region.ecol, str_to_insert)
+    return str_to_insert
 end
 
 return SinglelineSorter

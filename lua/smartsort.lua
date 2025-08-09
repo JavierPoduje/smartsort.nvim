@@ -112,6 +112,12 @@ M.sort_single_line = function(region, args)
     FileManager.insert_line_in_buffer(region.srow, region.scol, region.ecol, str_to_insert)
 end
 
+M.sort_single_line_new_approach = function(region, args)
+    local raw_str = FileManager.get_line(region)
+    local sorted_line = SinglelineSorter.new(args.separator):sort(raw_str)
+    return sorted_line
+end
+
 --- Sort the selected lines
 --- @param selected_region Region: the region to sort
 --- @param config SmartsortSetup: the configuration to use
