@@ -17,7 +17,14 @@ M.query_by_node_as_table = {
         ) @block
     ]],
     field = [[ (field (identifier) @identifier) @block ]],
-    function_declaration = [[ (function_declaration (identifier) @identifier) @block ]],
+    function_declaration = [[
+        ([
+            (function_declaration (identifier) @identifier)
+            (function_declaration
+                (method_index_expression
+                    method: (identifier) @identifier))
+        ]) @block
+    ]],
     variable_declaration = [[
         (variable_declaration
             (assignment_statement

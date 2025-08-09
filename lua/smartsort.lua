@@ -2,6 +2,7 @@ local Chadnodes = require("chadnodes")
 local FileManager = require("file_manager")
 local R = require("ramda")
 local Region = require("region")
+local SinglelineSorter = require("singleline_sorter")
 local f = require("funcs")
 local parsers = require("nvim-treesitter.parsers")
 
