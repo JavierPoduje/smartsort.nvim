@@ -23,7 +23,6 @@ local M = {
     separator = smartsort_setup.separator
 }
 
--- TODO: use this later, when configuration is implemented
 M.setup = function(opts)
     local new_opts = f.merge_tables(smartsort_setup, opts or {})
     smartsort_setup = f.merge_tables(smartsort_setup, new_opts)

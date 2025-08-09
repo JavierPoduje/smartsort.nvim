@@ -1,4 +1,5 @@
 local Chadnodes = require("chadnodes")
+local Region = require("region")
 local lua_mocks = require("tests.mocks.lua")
 local utils = require("tests.utils")
 
@@ -55,5 +56,25 @@ describe("chadnodes: sort - lua", function()
             "--- @type string",
             'local varC = "something"',
         }))
+    end)
+
+    it("should sort different function definition types", function()
+        local mock = lua_mocks.module
+        local bufnr, parser = utils.setup(mock.content, "lua")
+        local cnodes = Chadnodes.from_region(bufnr, Region.new(3, 1, 22, 3), parser)
+
+        truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(),
+            {
+                "--- Module for various functions",
+                "--- @return table",
+                'M.__tostring = function(self)\n    return "Functions module"\nend',
+                '--- Prints "something" to the console',
+                "--- @return nil",
+                "function M:new()\n    local o = {}\n    setmetatable(o, self)\n    self.__index = self\n    return o\nend",
+                "--- Returns a string representation of the module",
+                "--- @return string",
+                'M.printsomething = function(self)\n    print("something")\nend'
+            }
+        ))
     end)
 end)
