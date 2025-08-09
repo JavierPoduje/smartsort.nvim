@@ -1,4 +1,3 @@
-local FileManager = require("file_manager")
 local R = require("ramda")
 
 --- @class SinglelineSorter
