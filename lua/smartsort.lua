@@ -7,10 +7,12 @@ local parsers = require("nvim-treesitter.parsers")
 
 --- @class SmartsortSetup
 --- @field non_sortable_behavior "above" | "below" | "preserve"
+--- @field separator string
 
 --- @type SmartsortSetup
 local smartsort_setup = {
     non_sortable_behavior = "preserve",
+    separator = ",",
 }
 
 --- @class Args
@@ -18,7 +20,7 @@ local smartsort_setup = {
 --- @field setup? SmartsortSetup: the setup to use for smartsort
 
 local M = {
-    separator = ",",
+    separator = smartsort_setup.separator
 }
 
 -- TODO: use this later, when configuration is implemented
@@ -37,18 +39,13 @@ M.print_chadnodes = function()
     end
 end
 
---- @param inputargs Args: the arguments to use
+--- @param inputargs SmartsortSetup: the arguments to use
 M.smartsort = function(inputargs)
-    local args = inputargs or {}
-    local setup = f.merge_tables(
-        smartsort_setup,
-        args.setup or {}
-    )
-
+    local setup = f.merge_tables(smartsort_setup, inputargs or {})
     local region = Region.from_selection()
 
     if region.srow == region.erow then
-        M.sort_single_line(region, args)
+        M.sort_single_line(region, setup)
     else
         M.sort_multiple_lines(region, setup)
     end
@@ -81,7 +78,7 @@ M.sort_single_line = function(region, args)
     --- @type SinglelineSorter
     local singleline_sorter = nil
     local status, err = pcall(function()
-        singleline_sorter = SinglelineSorter.new(args.separator)
+        singleline_sorter = SinglelineSorter.new(args.separator or M.separator)
     end)
     if not status then
         print(err)
