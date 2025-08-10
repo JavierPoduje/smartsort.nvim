@@ -3,7 +3,7 @@ local R = require("ramda")
 local f = require("funcs")
 
 local css_node_types = require("treesitter.css.node_types")
-local css_queries = require("treesitter.css.queries")
+local css_definition = require('treesitter/css')
 
 local go_node_types = require("treesitter.go.node_types")
 local go_definition = require('treesitter/go')
@@ -21,7 +21,7 @@ local twig_node_types = require("treesitter.twig.node_types")
 local twig_queries = require("treesitter.twig.queries")
 
 local typescript_node_types = require("treesitter.typescript.node_types")
-local typescript_queries = require("treesitter.typescript.queries")
+local typescript_definition = require('treesitter/typescript')
 
 local vue_node_types = require("treesitter.vue.node_types")
 local vue_queries = require("treesitter.vue.queries")
@@ -169,7 +169,11 @@ LanguageQuery.query_by_node = function(self, node)
     local node_type = node:type()
 
     if self.language == "typescript" then
-        return typescript_queries.query_by_node(node)
+        -- Check if the node is an export statement. If so, get the type of the first child.
+        if node_type == "export_statement" then
+            node_type = node:child(1):type()
+        end
+        query = typescript_definition.query_by_node[node_type]
     elseif self.language == "javascript" then
         -- Check if the node is an export statement. If so, get the type of the first child.
         if node_type == "export_statement" then
@@ -181,7 +185,7 @@ LanguageQuery.query_by_node = function(self, node)
     elseif self.language == "lua" then
         return lua_queries.query_by_node(node)
     elseif self.language == "css" then
-        return css_queries.query_by_node(node)
+        query = css_definition.query_by_node[node_type]
     elseif self.language == "scss" then
         return scss_queries.query_by_node(node)
     elseif self.language == "vue" then

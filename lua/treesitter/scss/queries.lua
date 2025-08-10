@@ -1,6 +1,5 @@
+local css_definition = require('treesitter/css')
 local merge_tables = require("funcs").merge_tables
-
-local css_queries = require("treesitter.css.queries")
 
 local M = {}
 
@@ -12,9 +11,6 @@ M.query_by_node = function(node)
     return query
 end
 
-M.query_by_node_as_table = merge_tables(
-    {},
-    css_queries.query_by_node_as_table
-)
+M.query_by_node_as_table = merge_tables({}, css_definition.query_by_node)
 
 return M
