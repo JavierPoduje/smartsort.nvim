@@ -6,10 +6,10 @@ local css_node_types = require("treesitter.css.node_types")
 local css_queries = require("treesitter.css.queries")
 
 local go_node_types = require("treesitter.go.node_types")
-local go_queries = require("treesitter.go.queries")
+local go_definition = require('treesitter/go')
 
 local javascript_node_types = require("treesitter.javascript.node_types")
-local javascript_queries = require("treesitter.javascript.queries")
+local javascript_definition = require('treesitter/javascript')
 
 local lua_node_types = require("treesitter.lua.node_types")
 local lua_queries = require("treesitter.lua.queries")
@@ -164,12 +164,20 @@ end
 --- @param node TSNode: the node
 --- @return string: the query string
 LanguageQuery.query_by_node = function(self, node)
+    --- @type string
+    local query = nil
+    local node_type = node:type()
+
     if self.language == "typescript" then
         return typescript_queries.query_by_node(node)
     elseif self.language == "javascript" then
-        return javascript_queries.query_by_node(node)
+        -- Check if the node is an export statement. If so, get the type of the first child.
+        if node_type == "export_statement" then
+            node_type = node:child(1):type()
+        end
+        query = javascript_definition.query_by_node[node_type]
     elseif self.language == "go" then
-        return go_queries.query_by_node(node)
+        query = go_definition.query_by_node[node_type]
     elseif self.language == "lua" then
         return lua_queries.query_by_node(node)
     elseif self.language == "css" then
@@ -182,8 +190,9 @@ LanguageQuery.query_by_node = function(self, node)
         return twig_queries.query_by_node(node)
     end
 
-    --- TODO: this shouldn't be an error, but a `print` to the user saying that the language is not supported
-    error("Unsupported language: " .. self.language)
+    assert(query ~= nil, "Unsupported node type: " .. node_type)
+
+    return query
 end
 
 return LanguageQuery

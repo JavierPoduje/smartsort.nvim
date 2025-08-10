@@ -1,5 +1,5 @@
 local merge_tables = require("funcs").merge_tables
-local javascript_queries = require("treesitter.javascript.queries")
+local javascript_definition = require('treesitter/javascript')
 
 local M = {}
 
@@ -26,7 +26,7 @@ M.query_by_node_as_table = merge_tables(
         ] @block ]],
         property_signature = [[ (property_signature (property_identifier) @identifier) @block ]],
     },
-    javascript_queries.query_by_node_as_table
+    javascript_definition.query_by_node
 )
 
 return M

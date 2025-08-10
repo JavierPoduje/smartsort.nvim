@@ -19,9 +19,7 @@ local smartsort_setup = {
 --- @field setup? SmartsortSetup: the setup to use for smartsort
 --- @field single_line_separator string: the separator to use between words
 
-local M = {
-    single_line_separator = smartsort_setup.single_line_separator
-}
+local M = {}
 
 M.setup = function(opts)
     local new_opts = f.merge_tables(smartsort_setup, opts or {})
@@ -77,7 +75,7 @@ M.sort_single_line = function(region, args)
     --- @type SinglelineSorter
     local singleline_sorter = nil
     local status, err = pcall(function()
-        singleline_sorter = SinglelineSorter.new(args.single_line_separator or M.single_line_separator)
+        singleline_sorter = SinglelineSorter.new(args.single_line_separator or smartsort_setup.single_line_separator)
     end)
     if not status then
         print(err)
