@@ -2,29 +2,40 @@ local Config = require("config")
 local R = require("ramda")
 local f = require("funcs")
 
-local css_node_types = require("treesitter.css.node_types")
 local css_definition = require('treesitter/css')
+local css_node_types = require("treesitter.css.node_types")
 
-local go_node_types = require("treesitter.go.node_types")
 local go_definition = require('treesitter/go')
+local go_node_types = require("treesitter.go.node_types")
 
-local javascript_node_types = require("treesitter.javascript.node_types")
 local javascript_definition = require('treesitter/javascript')
+local javascript_node_types = require("treesitter.javascript.node_types")
 
-local lua_node_types = require("treesitter.lua.node_types")
 local lua_definition = require('treesitter/lua')
+local lua_node_types = require("treesitter.lua.node_types")
 
-local scss_node_types = require("treesitter.scss.node_types")
 local scss_definition = require('treesitter/scss')
+local scss_node_types = require("treesitter.scss.node_types")
 
+local twig_definition = require('treesitter/twig')
 local twig_node_types = require("treesitter.twig.node_types")
-local twig_queries = require("treesitter.twig.queries")
 
-local typescript_node_types = require("treesitter.typescript.node_types")
 local typescript_definition = require('treesitter/typescript')
+local typescript_node_types = require("treesitter.typescript.node_types")
 
-local vue_node_types = require("treesitter.vue.node_types")
 local vue_definition = require('treesitter/vue')
+local vue_node_types = require("treesitter.vue.node_types")
+
+local definition_by_language = {
+    css = css_definition,
+    go = go_definition,
+    javascript = javascript_definition,
+    lua = lua_definition,
+    scss = scss_definition,
+    twig = twig_definition,
+    typescript = typescript_definition,
+    vue = vue_definition
+}
 
 --- @class Gap
 --- @field public horizontal_gap number: the vertical gap between the two nodes
@@ -105,10 +116,7 @@ end
 --- @param self LanguageQuery
 --- @return EmbeddedLanguageQuery[]
 LanguageQuery.embedded_languages_queries = function(self)
-    if self.language == "vue" then
-        return vue_definition.embedded_languages_queries
-    end
-    return {}
+    return definition_by_language[self.language] or {}
 end
 
 --- Returns a list of queries for the embedded languages
@@ -168,30 +176,15 @@ LanguageQuery.query_by_node = function(self, node)
     local query = nil
     local node_type = node:type()
 
-    if self.language == "typescript" then
-        -- Check if the node is an export statement. If so, get the type of the first child.
+    if self.language == "typescript" or self.language == "javascript" then
+        -- Check if the node is an export statement.
+        -- If so, get the type of the first child.
         if node_type == "export_statement" then
             node_type = node:child(1):type()
         end
-        query = typescript_definition.query_by_node[node_type]
-    elseif self.language == "javascript" then
-        -- Check if the node is an export statement. If so, get the type of the first child.
-        if node_type == "export_statement" then
-            node_type = node:child(1):type()
-        end
-        query = javascript_definition.query_by_node[node_type]
-    elseif self.language == "go" then
-        query = go_definition.query_by_node[node_type]
-    elseif self.language == "lua" then
-        query = lua_definition.query_by_node[node_type]
-    elseif self.language == "css" then
-        query = css_definition.query_by_node[node_type]
-    elseif self.language == "scss" then
-        query = scss_definition.query_by_node[node_type]
-    elseif self.language == "vue" then
-        query = vue_definition.query_by_node[node_type]
-    elseif self.language == "twig" then
-        return twig_queries.query_by_node(node)
+        query = definition_by_language[self.language].query_by_node[node_type]
+    else
+        query = definition_by_language[self.language].query_by_node[node_type]
     end
 
     assert(query ~= nil, "Unsupported node type: " .. node_type)
