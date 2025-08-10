@@ -12,10 +12,10 @@ local javascript_node_types = require("treesitter.javascript.node_types")
 local javascript_definition = require('treesitter/javascript')
 
 local lua_node_types = require("treesitter.lua.node_types")
-local lua_queries = require("treesitter.lua.queries")
+local lua_definition = require('treesitter/lua')
 
 local scss_node_types = require("treesitter.scss.node_types")
-local scss_queries = require("treesitter.scss.queries")
+local scss_definition = require('treesitter/scss')
 
 local twig_node_types = require("treesitter.twig.node_types")
 local twig_queries = require("treesitter.twig.queries")
@@ -24,7 +24,7 @@ local typescript_node_types = require("treesitter.typescript.node_types")
 local typescript_definition = require('treesitter/typescript')
 
 local vue_node_types = require("treesitter.vue.node_types")
-local vue_queries = require("treesitter.vue.queries")
+local vue_definition = require('treesitter/vue')
 
 --- @class Gap
 --- @field public horizontal_gap number: the vertical gap between the two nodes
@@ -106,7 +106,7 @@ end
 --- @return EmbeddedLanguageQuery[]
 LanguageQuery.embedded_languages_queries = function(self)
     if self.language == "vue" then
-        return vue_queries.embedded_languages_queries
+        return vue_definition.embedded_languages_queries
     end
     return {}
 end
@@ -183,13 +183,13 @@ LanguageQuery.query_by_node = function(self, node)
     elseif self.language == "go" then
         query = go_definition.query_by_node[node_type]
     elseif self.language == "lua" then
-        return lua_queries.query_by_node(node)
+        query = lua_definition.query_by_node[node_type]
     elseif self.language == "css" then
         query = css_definition.query_by_node[node_type]
     elseif self.language == "scss" then
-        return scss_queries.query_by_node(node)
+        query = scss_definition.query_by_node[node_type]
     elseif self.language == "vue" then
-        return vue_queries.query_by_node(node)
+        query = vue_definition.query_by_node[node_type]
     elseif self.language == "twig" then
         return twig_queries.query_by_node(node)
     end
