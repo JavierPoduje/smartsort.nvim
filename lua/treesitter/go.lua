@@ -1,6 +1,6 @@
 require('treesitter/types')
 
---- @type ChadLanguageConfig
+--- @type LanguageConfig
 return {
     end_chars = {
         {

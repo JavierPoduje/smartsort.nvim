@@ -11,7 +11,7 @@
 --- @field gap Gap: the Gap between the character and the next node
 --- @field is_attached boolean: true if the character is attached to the previous node
 
---- @class ChadLanguageConfig
+--- @class LanguageConfig
 --- @field embedded_languages_queries? EmbeddedLanguageQuery[]: a list of embedded language queries
 --- @field end_chars EndCharDefinition[]
 --- @field linkable string[]: the types of nodes that can be linked

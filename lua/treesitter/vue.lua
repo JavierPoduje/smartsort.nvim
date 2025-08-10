@@ -4,7 +4,7 @@ local scss_definition = require('treesitter/scss')
 local typescript_definition = require('treesitter/typescript')
 require('treesitter/types')
 
---- @type ChadLanguageConfig
+--- @type LanguageConfig
 return {
     embedded_languages_queries = {
         {

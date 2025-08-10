@@ -2,7 +2,7 @@ local f = require("funcs")
 local javascript_definition = require('treesitter/javascript')
 require('treesitter/types')
 
---- @type ChadLanguageConfig
+--- @type LanguageConfig
 return {
     end_chars = f.merge_tables({}, javascript_definition.end_chars),
     linkable = f.merge_tables({}, javascript_definition.linkable),

@@ -2,7 +2,7 @@ local css_definition = require('treesitter/css')
 local f = require("funcs")
 require('treesitter/types')
 
---- @type ChadLanguageConfig
+--- @type LanguageConfig
 return {
     end_chars = f.merge_tables({}, css_definition.end_chars),
     linkable = f.merge_tables({ "single_line_comment" }, css_definition.linkable),

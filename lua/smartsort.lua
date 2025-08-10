@@ -6,8 +6,8 @@ local f = require("funcs")
 local parsers = require("nvim-treesitter.parsers")
 
 --- @class SmartsortSetup
---- @field non_sortable_behavior "above" | "below" | "preserve"
---- @field single_line_separator string
+--- @field non_sortable_behavior? "above" | "below" | "preserve"
+--- @field single_line_separator? string
 
 --- @type SmartsortSetup
 local smartsort_setup = {
@@ -21,8 +21,9 @@ local smartsort_setup = {
 
 local M = {}
 
-M.setup = function(opts)
-    local new_opts = f.merge_tables(smartsort_setup, opts or {})
+--- @param input_smartsort_setup SmartsortSetup
+M.setup = function(input_smartsort_setup)
+    local new_opts = f.merge_tables(smartsort_setup, input_smartsort_setup or {})
     smartsort_setup = f.merge_tables(smartsort_setup, new_opts)
 end
 
