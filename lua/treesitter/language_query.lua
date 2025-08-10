@@ -106,11 +106,9 @@ LanguageQuery.query_by_node = function(self, node)
         if node_type == "export_statement" then
             node_type = node:child(1):type()
         end
-        query = definition_by_language[self.language].query_by_node[node_type]
-    else
-        query = definition_by_language[self.language].query_by_node[node_type]
     end
 
+    query = definition_by_language[self.language].query_by_node[node_type]
     assert(query ~= nil, "Unsupported node type: " .. node_type)
 
     return query
