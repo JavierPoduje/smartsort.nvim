@@ -2,13 +2,13 @@
 --- @field language string: the language of the query
 --- @field query string: the query string
 
---- @class GapDefinition
---- @field vertical_gap number
---- @field horizontal_gap number
+--- @class Gap
+--- @field public horizontal_gap number: the vertical gap between the two nodes
+--- @field public vertical_gap number: the vertical gap between the two nodes
 
 --- @class EndCharDefinition
 --- @field char string: the character
---- @field gap GapDefinition: the Gap between the character and the next node
+--- @field gap Gap: the Gap between the character and the next node
 --- @field is_attached boolean: true if the character is attached to the previous node
 
 --- @class ChadLanguageConfig

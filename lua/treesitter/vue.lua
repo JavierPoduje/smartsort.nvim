@@ -1,3 +1,7 @@
+local css_definition = require('treesitter/css')
+local f = require("funcs")
+local scss_definition = require('treesitter/scss')
+local typescript_definition = require('treesitter/typescript')
 require('treesitter/types')
 
 --- @type ChadLanguageConfig
@@ -50,12 +54,20 @@ return {
             is_attached = false,
         }
     },
-    linkable = {},
+    linkable = f.merge_arrays(
+        {},
+        css_definition.linkable,
+        scss_definition.linkable,
+        typescript_definition.linkable
+    ),
     query_by_node = {
         script_element = [[ (script_element) @injection ]],
         directive_attribute = [[ (directive_attribute (directive_value) @identifier) @block ]],
     },
-    sortable = {
-        "directive_attribute",
-    },
+    sortable = f.merge_arrays(
+        { "directive_attribute" },
+        css_definition.sortable,
+        scss_definition.sortable,
+        typescript_definition.sortable
+    ),
 }
