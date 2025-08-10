@@ -25,7 +25,7 @@ vim.api.nvim_create_user_command('Smartsort', function(opts)
     local args = vim.fn.split(opts.args, " \\s*")
 
     require('smartsort').sort({
-        separator = args[1] or nil,
+        single_line_separator = args[1] or nil,
     })
 end, {
     range = true,

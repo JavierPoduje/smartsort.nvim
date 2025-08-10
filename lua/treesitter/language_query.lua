@@ -43,9 +43,38 @@ local vue_queries = require("treesitter.vue.queries")
 --- @field public is_supported_node_type fun(self: LanguageQuery, node_type: string): boolean
 --- @field public new fun(self: LanguageQuery, language: string): LanguageQuery
 --- @field public query_by_node fun(self: LanguageQuery, node: TSNode): string
----
---- @field private _get_linkable_nodes_by_language fun(language: string): table
---- @field private _get_sortable_nodes_by_language fun(language: string): table
+
+local linkable_nodes_by_language = {
+    css = css_node_types.linkable,
+    lua = lua_node_types.linkable,
+    go = go_node_types.linkable,
+    scss = f.merge_arrays(scss_node_types.linkable, css_node_types.linkable),
+    typescript = typescript_node_types.linkable,
+    javascript = javascript_node_types.linkable,
+    twig = twig_node_types.linkable,
+    vue = f.merge_arrays(
+        vue_node_types.linkable,
+        typescript_node_types.linkable,
+        css_node_types.linkable,
+        scss_node_types.linkable
+    )
+}
+
+local sortable_nodes_by_language = {
+    css = css_node_types.sortable,
+    lua = lua_node_types.sortable,
+    go = go_node_types.sortable,
+    twig = twig_node_types.sortable,
+    scss = f.merge_arrays(scss_node_types.sortable, css_node_types.sortable),
+    typescript = typescript_node_types.sortable,
+    javascript = javascript_node_types.sortable,
+    vue = f.merge_arrays(
+        vue_node_types.sortable,
+        typescript_node_types.sortable,
+        css_node_types.sortable,
+        scss_node_types.sortable
+    )
+}
 
 local LanguageQuery = {}
 
@@ -66,8 +95,8 @@ function LanguageQuery:new(language)
     )
 
     obj.language = language
-    obj.linkable_nodes = LanguageQuery._get_linkable_nodes_by_language(language)
-    obj.sortable_nodes = LanguageQuery._get_sortable_nodes_by_language(language)
+    obj.linkable_nodes = linkable_nodes_by_language[language]
+    obj.sortable_nodes = sortable_nodes_by_language[language]
 
     return obj
 end
@@ -76,7 +105,6 @@ end
 --- @param self LanguageQuery
 --- @return EmbeddedLanguageQuery[]
 LanguageQuery.embedded_languages_queries = function(self)
-    --- TODO: all languages `queries` should have their method `embedded_languages_queries` defined
     if self.language == "vue" then
         return vue_queries.embedded_languages_queries
     end
@@ -156,69 +184,6 @@ LanguageQuery.query_by_node = function(self, node)
 
     --- TODO: this shouldn't be an error, but a `print` to the user saying that the language is not supported
     error("Unsupported language: " .. self.language)
-end
-
---- HELPERS
-
---- @param language string: the language to get the non-sortable nodes for
---- @return table: list of strings representing the non-sortable nodes
-LanguageQuery._get_linkable_nodes_by_language = function(language)
-    if language == "css" then
-        return css_node_types.linkable
-    elseif language == "lua" then
-        return lua_node_types.linkable
-    elseif language == "go" then
-        return go_node_types.linkable
-    elseif language == "scss" then
-        return f.merge_arrays(
-            scss_node_types.linkable,
-            css_node_types.linkable)
-    elseif language == "typescript" then
-        return typescript_node_types.linkable
-    elseif language == "javascript" then
-        return javascript_node_types.linkable
-    elseif language == "twig" then
-        return twig_node_types.linkable
-    elseif language == "vue" then
-        return f.merge_arrays(
-            vue_node_types.linkable,
-            typescript_node_types.linkable,
-            css_node_types.linkable,
-            scss_node_types.linkable
-        )
-    end
-
-    error("Unsupported language: " .. language)
-end
-
---- @param language string: the language to get the sortable nodes for
---- @return table: list of strings representing the sortable nodes
-LanguageQuery._get_sortable_nodes_by_language = function(language)
-    if language == "css" then
-        return css_node_types.sortable
-    elseif language == "lua" then
-        return lua_node_types.sortable
-    elseif language == "go" then
-        return go_node_types.sortable
-    elseif language == "twig" then
-        return twig_node_types.sortable
-    elseif language == "scss" then
-        return f.merge_arrays(
-            scss_node_types.sortable,
-            css_node_types.sortable)
-    elseif language == "typescript" then
-        return typescript_node_types.sortable
-    elseif language == "javascript" then
-        return javascript_node_types.sortable
-    elseif language == "vue" then
-        return f.merge_arrays(
-            vue_node_types.sortable,
-            typescript_node_types.sortable,
-            css_node_types.sortable,
-            scss_node_types.sortable)
-    end
-
-    error("Unsupported language: " .. language)
 end
 
 return LanguageQuery

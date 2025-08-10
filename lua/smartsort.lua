@@ -7,20 +7,20 @@ local parsers = require("nvim-treesitter.parsers")
 
 --- @class SmartsortSetup
 --- @field non_sortable_behavior "above" | "below" | "preserve"
---- @field separator string
+--- @field single_line_separator string
 
 --- @type SmartsortSetup
 local smartsort_setup = {
     non_sortable_behavior = "preserve",
-    separator = ",",
+    single_line_separator = ",",
 }
 
 --- @class Args
---- @field separator string: the separator to use between words
 --- @field setup? SmartsortSetup: the setup to use for smartsort
+--- @field single_line_separator string: the separator to use between words
 
 local M = {
-    separator = smartsort_setup.separator
+    single_line_separator = smartsort_setup.single_line_separator
 }
 
 M.setup = function(opts)
@@ -77,7 +77,7 @@ M.sort_single_line = function(region, args)
     --- @type SinglelineSorter
     local singleline_sorter = nil
     local status, err = pcall(function()
-        singleline_sorter = SinglelineSorter.new(args.separator or M.separator)
+        singleline_sorter = SinglelineSorter.new(args.single_line_separator or M.single_line_separator)
     end)
     if not status then
         print(err)
