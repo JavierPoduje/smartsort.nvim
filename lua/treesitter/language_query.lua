@@ -37,7 +37,7 @@ end
 --- @param self LanguageQuery
 --- @return EmbeddedLanguageQuery[]
 LanguageQuery.embedded_languages_queries = function(self)
-    return definition_by_language[self.language] or {}
+    return definition_by_language[self.language].embedded_languages_queries or {}
 end
 
 --- Returns a list of queries for the embedded languages
