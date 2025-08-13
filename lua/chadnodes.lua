@@ -20,12 +20,12 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public closest_sortable_node_by_idx fun(self: Chadnodes, idx:number): Chadnode | nil
 --- @field public cnode_is_sortable_by_idx fun(self): table<string, boolean>
 --- @field public debug fun(self: Chadnodes, bufnr: number, opts: table | nil): table<any>
---- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree): Chadnodes
+--- @field public from_region fun(bufnr: number, region: Region, parser: vim.treesitter.LanguageTree, language_queries?: table<string, string>): Chadnodes
 --- @field public get fun(self: Chadnodes): Chadnode[]
 --- @field public get_non_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public get_sortable_nodes fun(self: Chadnodes): Chadnode[]
 --- @field public is_there_an_empty_line_until_next_sortable_node fun(self: Chadnodes, idx: number): boolean
---- @field public merge_sortable_nodes_with_adjacent_linkable_nodes fun(self: Chadnodes, region: Region, vertical_gaps?: number[]): Chadnodes
+--- @field public merge_sortable_nodes_with_adjacent_linkable_nodes fun(self: Chadnodes, region: Region, language_queries?: table<string, string>): Chadnodes
 --- @field public new fun(self: Chadnodes, parser: vim.treesitter.LanguageTree): Chadnodes
 --- @field public node_by_idx fun(self: Chadnodes, idx: number): Chadnode | nil
 --- @field public print fun(self: Chadnodes)
@@ -203,10 +203,13 @@ end
 --- @param bufnr number: the buffer number
 --- @param region Region: the region to get the nodes from
 --- @param parser vim.treesitter.LanguageTree
+--- @param language_queries? table<string, string>: table of languages with queries by node type
 --- @return Chadnodes, TSNode
-Chadnodes.from_region = function(bufnr, region, parser)
+Chadnodes.from_region = function(bufnr, region, parser, language_queries)
+    language_queries = language_queries or {}
+
     --- @type TSNode | nil
-    local node = FileManager.get_node_at_row(bufnr, region, parser)
+    local node = FileManager.get_node_at_row(bufnr, region, parser, language_queries)
     if not node then
         error("No node found at the given region")
     end
@@ -219,7 +222,11 @@ Chadnodes.from_region = function(bufnr, region, parser)
     end
 
     local processed_nodes = {}
-    local chadquery = Chadquery:new(parser:lang(), { region = region, root_node = root_node })
+    local chadquery = Chadquery:new(
+        parser:lang(),
+        { region = region, root_node = root_node },
+        language_queries
+    )
 
     local cnodes = Chadnodes:new(parser)
     for child, _ in parent:iter_children() do
@@ -299,14 +306,18 @@ end
 --- Merge the sortable nodes with their adjacent non-sortable nodes.
 --- @param self Chadnodes
 --- @param region Region
---- @param vertical_gaps? number[]: the vertical gaps between the nodes
+--- @param language_queries? table<string, string>: table of languages with queries by node type
 --- @return Chadnodes
-Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, region, vertical_gaps)
-    local chadquery = Chadquery:new(self.parser:lang(), { region = region })
+Chadnodes.merge_sortable_nodes_with_adjacent_linkable_nodes = function(self, region, language_queries)
+    language_queries = language_queries or {}
+
+    local chadquery = Chadquery:new(
+        self.parser:lang(),
+        { region = region },
+        language_queries
+    )
     local cnodes = Chadnodes:new(self.parser)
-    if not vertical_gaps then
-        vertical_gaps = self:calculate_vertical_gaps()
-    end
+    local vertical_gaps = self:calculate_vertical_gaps()
 
     for idx = 1, #vertical_gaps + 1 do
         local current_node = self:node_by_idx(idx)

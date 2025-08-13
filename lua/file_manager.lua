@@ -10,8 +10,8 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 ---
 --- @field public buf_set_lines fun(bufnr: number, start_row: number, end_row: number, lines: string[])
 --- @field public get_line fun(region: Region): string
---- @field public get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree): TSNode
---- @field public get_region_to_work_with fun(bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree): Region
+--- @field public get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree, language_queries?: table<string, string>): TSNode
+--- @field public get_region_to_work_with fun(bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree, language_queries?: table<string, string>): Region
 --- @field public insert_in_buffer fun(row: number, start_col: number, end_col: number, str: string): FileManager
 --- @field public new fun(self: FileManager, bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree): FileManager
 
@@ -55,9 +55,10 @@ end
 --- @param bufnr number
 --- @param selected_region Region
 --- @param parser vim.treesitter.LanguageTree
+--- @param language_queries? table<string, string>
 --- @return Region
-FileManager.get_region_to_work_with = function(bufnr, selected_region, parser)
-    local node = FileManager.get_node_at_row(bufnr, selected_region, parser)
+FileManager.get_region_to_work_with = function(bufnr, selected_region, parser, language_queries)
+    local node = FileManager.get_node_at_row(bufnr, selected_region, parser, language_queries)
     if node == nil then
         error("No node found at the given selected region")
     end
@@ -81,18 +82,22 @@ end
 --- @param bufnr number
 --- @param region Region
 --- @param parser vim.treesitter.LanguageTree
+--- @param language_queries? table<string, string>
 --- @return TSNode | nil
-FileManager.get_node_at_row = function(bufnr, region, parser)
+FileManager.get_node_at_row = function(bufnr, region, parser, language_queries)
+    language_queries = language_queries or {}
+
     local row = region.srow
     local lines = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)
     if #lines == 0 then
         return nil
     end
 
-    local chadquery = Chadquery:new(parser:lang(), {
-        region = region,
-        root_node = parser:parse()[1]:root(),
-    })
+    local chadquery = Chadquery:new(
+        parser:lang(),
+        { region = region, root_node = parser:parse()[1]:root() },
+        language_queries
+    )
 
     local first_line = lines[1]
     local first_non_empty_char = first_line:find("%S") or 1

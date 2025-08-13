@@ -8,11 +8,13 @@ local parsers = require("nvim-treesitter.parsers")
 --- @class SmartsortSetup
 --- @field non_sortable_behavior? "above" | "below" | "preserve"
 --- @field single_line_separator? string
+--- @field treesitter? table<string, table<string, string>>: table of languages with queries by node type
 
 --- @type SmartsortSetup
 local smartsort_setup = {
     non_sortable_behavior = "preserve",
     single_line_separator = ",",
+    treesitter = {},
 }
 
 --- @class Args
@@ -96,7 +98,8 @@ M.sort_multiple_lines = function(selected_region, config)
     --- @type Region
     local region = nil
     local status, err = pcall(function()
-        region = FileManager.get_region_to_work_with(0, selected_region, parser)
+        local language_queries = (config.treesitter or {})[parser:lang()] or {}
+        region = FileManager.get_region_to_work_with(0, selected_region, parser, language_queries)
     end)
     if not status then
         print(err)
@@ -105,7 +108,12 @@ M.sort_multiple_lines = function(selected_region, config)
 
     --- @type Chadnodes
     local cnodes = nil
-    status, err = pcall(function() cnodes = Chadnodes.from_region(0, region, parser) end)
+    -- local language_queries = (config.treesitter or {})[parser:lang()] or {}
+    -- print('language_queries:', vim.inspect(language_queries))
+    status, err = pcall(function()
+        local language_queries = (config.treesitter or {})[parser:lang()] or {}
+        cnodes = Chadnodes.from_region(0, region, parser, language_queries)
+    end)
     if not status then
         print(err)
         return

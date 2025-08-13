@@ -19,7 +19,7 @@ local Region = require("region")
 --- @field public is_linkable fun(self: Chadquery, node_type: string): boolean
 --- @field public is_special_end_char fun(self: Chadquery, char: string): boolean
 --- @field public is_supported_node_type fun(self: Chadquery, node: TSNode): boolean
---- @field public new fun(language: string, options: OptionsForEmbeddedLanguages): Chadquery
+--- @field public new fun(language: string, options: OptionsForEmbeddedLanguages, language_queries?: table<string, string>): Chadquery
 --- @field public sort_and_linkable_nodes fun(): table
 
 local Chadquery = {}
@@ -30,23 +30,26 @@ end
 
 --- @param language string: the language to query from
 --- @param options OptionsForEmbeddedLanguages
+--- @param language_queries? table<string, string>: a table of language queries
 --- @return Chadquery: a new Chadquery object
-function Chadquery:new(language, options)
+function Chadquery:new(language, options, language_queries)
     options = options or {}
+    language_queries = language_queries or {}
+
     Chadquery.__index = Chadquery
     local obj = {}
     setmetatable(obj, Chadquery)
 
     assert(is_supported_language(language), "Unsupported language: " .. language)
 
-    local should_check_if_language_is_embedded = options and options.region and options.root_node
+    local should_check_if_language_is_embedded = (options and options.region and options.root_node and true) or false
     if should_check_if_language_is_embedded then
-        local embedded_language = Chadquery._get_language_to_work_with(options.region, options.root_node, language)
+        local embedded_language = Chadquery._get_language_to_work_with(options.region, options.root_node, language, language_queries)
         obj.language = embedded_language
-        obj.language_query = LanguageQuery:new(embedded_language)
+        obj.language_query = LanguageQuery:new(embedded_language, language_queries)
     else
         obj.language = language
-        obj.language_query = LanguageQuery:new(language)
+        obj.language_query = LanguageQuery:new(language, language_queries)
     end
 
     return obj
@@ -112,9 +115,10 @@ end
 --- @param region Region: the region to query from
 --- @param root_node TSNode: the root node of the current buffer
 --- @param language string: the language to use
+--- @param language_definition? table<string, string>: the language configuration to use
 --- @return string: the language to use
-Chadquery._get_language_to_work_with = function(region, root_node, language)
-    local language_query = LanguageQuery:new(language)
+Chadquery._get_language_to_work_with = function(region, root_node, language, language_definition)
+    local language_query = LanguageQuery:new(language, language_definition)
     for _, elq_item in ipairs(language_query:embedded_languages_queries()) do
         local query = elq_item.query
         local embedded_language = elq_item.language

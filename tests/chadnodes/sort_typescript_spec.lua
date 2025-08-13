@@ -101,4 +101,33 @@ describe("chadnodes: sort - typescript", function()
             'const foo = () => {\n  console.log("foo");\n};'
         }))
     end)
+
+    it("should handle user-defined queries", function()
+        local mock = typescript_mocks.prints
+        local bufnr, parser = utils.setup(mock.content, "typescript")
+        local cnodes = Chadnodes.from_region(bufnr, mock.region, parser, {
+            expression_statement = [[
+                (expression_statement
+                  (call_expression
+                    function: (member_expression
+                      object: (identifier) @object (#eq? @object "console")
+                      property: (property_identifier) @property (#eq? @property "log")
+                    )
+                    (arguments
+                      (string (string_fragment) @identifier)
+                    )
+                  )
+                ) @block
+            ]]
+        })
+
+        truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
+            "console.log('aaa');",
+            "console.log('bbb');",
+            "console.log('ccc');",
+            "console.log('ddd');",
+            "console.log('eee');",
+            "console.log('fff');",
+        }))
+    end)
 end)

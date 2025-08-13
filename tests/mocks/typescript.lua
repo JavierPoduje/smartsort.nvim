@@ -168,11 +168,24 @@ function bar() {
     region = Region.new(1, 1, 6, 1),
 }
 
+local prints = {
+    content = [[
+console.log('ddd');
+console.log('fff');
+console.log('aaa');
+console.log('eee');
+console.log('bbb');
+console.log('ccc');
+    ]],
+    region = Region.new(1, 1, 6, 19),
+}
+
 return {
     commented_functions = commented_functions,
     interface_properties = interface_properties,
     middle_size = middle_size,
     node_with_comment = node_with_comment,
+    prints = prints,
     simplest = simplest,
     single_line_sorter_mock = single_line_sorter_mock,
     three_interfaces = three_interfaces,

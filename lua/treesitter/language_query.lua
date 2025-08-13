@@ -5,6 +5,7 @@ local f = require("funcs")
 --- @class LanguageQuery
 ---
 --- @field public language string: the language to work with
+--- @field public language_config LanguageConfig: the language definition
 --- @field public linkable_nodes string[]: the non-sortable nodes
 --- @field public sortable_nodes string[]: the sortable nodes
 ---
@@ -13,7 +14,7 @@ local f = require("funcs")
 --- @field public get_sortable_and_linkable_nodes fun(self: LanguageQuery): table
 --- @field public is_linkable fun(self: LanguageQuery, node_type: string): boolean
 --- @field public is_supported_node_type fun(self: LanguageQuery, node_type: string): boolean
---- @field public new fun(self: LanguageQuery, language: string): LanguageQuery
+--- @field public new fun(self: LanguageQuery, language: string, language_config?: LanguageConfig): LanguageQuery
 --- @field public query_by_node fun(self: LanguageQuery, node: TSNode): string
 
 local definition_by_language = {
@@ -37,14 +38,14 @@ end
 --- @param self LanguageQuery
 --- @return EmbeddedLanguageQuery[]
 LanguageQuery.embedded_languages_queries = function(self)
-    return definition_by_language[self.language].embedded_languages_queries or {}
+    return self.language_config.embedded_languages_queries or {}
 end
 
 --- Returns a list of queries for the embedded languages
 --- @param self LanguageQuery
 --- @return EndChar[]
 LanguageQuery.get_end_chars = function(self)
-    return definition_by_language[self.language].end_chars or {}
+    return self.language_config.end_chars or {}
 end
 
 --- @param self LanguageQuery
@@ -73,8 +74,9 @@ LanguageQuery.is_supported_node_type = function(self, node_type)
 end
 
 --- @param language string: the language to work with
+--- @param language_queries? table<string, string>: a table of language queries
 --- @return LanguageQuery
-function LanguageQuery:new(language)
+function LanguageQuery:new(language, language_queries)
     LanguageQuery.__index = LanguageQuery
     local obj = {}
     setmetatable(obj, LanguageQuery)
@@ -84,9 +86,22 @@ function LanguageQuery:new(language)
         "Unsupported language: " .. language
     )
 
+    local language_config = definition_by_language[language]
+    language_config.query_by_node = f.merge_tables(language_config.query_by_node, language_queries or {})
+
     obj.language = language
-    obj.linkable_nodes = definition_by_language[language].linkable
-    obj.sortable_nodes = definition_by_language[language].sortable
+
+    obj.language_config = language_config
+    obj.linkable_nodes = obj.language_config.linkable
+    obj.sortable_nodes = obj.language_config.sortable
+
+    -- ensure that the node_types defined in the language_queries defined by the user
+    -- are added to the sortable_nodes
+    for node_type, _ in pairs(language_queries or {})  do
+        if not R.any(R.equals(node_type), obj.sortable_nodes) then
+            table.insert(obj.sortable_nodes, node_type)
+        end
+    end
 
     return obj
 end
@@ -108,7 +123,7 @@ LanguageQuery.query_by_node = function(self, node)
         end
     end
 
-    query = definition_by_language[self.language].query_by_node[node_type]
+    query = self.language_config.query_by_node[node_type]
     assert(query ~= nil, "Unsupported node type: " .. node_type)
 
     return query
