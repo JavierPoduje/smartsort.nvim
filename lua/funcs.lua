@@ -62,22 +62,6 @@ M.merge_tables = function(...)
     end, {}, { ... })
 end
 
---- Return the string representation of a node
---- @param node TSNode
---- @return string
-M.node_to_string = function(node)
-    return vim.treesitter.get_node_text(node, 0)
-end
-
---- Get the trimmed string
----
---- @param str string: the string to trim
---- @return string: the trimmed string
-M.trim = function(str)
-    local trimmed_str = string.match(str, "^%s*(.-)%s*$")
-    return trimmed_str
-end
-
 --- Replace the last item in a table with a new value.
 --- If the table is empty, it does nothing.
 --- @param tbl table: the table to modify

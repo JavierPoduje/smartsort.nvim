@@ -11,9 +11,9 @@ class Point {
     this.y = y;
   }
 
-        scale(n: number): void {
+              scale(n: number): void {
     this.x *= n;
-    this.y *= n;
+                  this.y *= n;
   }
 
   asString(): string {
