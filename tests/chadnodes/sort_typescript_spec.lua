@@ -76,17 +76,17 @@ describe("chadnodes: sort - typescript", function()
         }))
     end)
 
-    it("can sort peroperties of interfaces", function()
+    it("can sort properties of interfaces", function()
         local mock = typescript_mocks.interface_properties
         local bufnr, parser = utils.setup(mock.content, "typescript")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
         truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
             "  a: number;",
-            "  ;",
+            "   ;",
             "  b: {\n    foo: string;\n    bar: boolean;\n  }",
             "  c: {\n    baz: string;\n    qux: number;\n    extra: {\n      zig: string;\n    };\n  };",
-            "  ;",
+            "           ;",
         }))
     end)
 

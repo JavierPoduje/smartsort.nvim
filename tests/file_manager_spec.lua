@@ -15,28 +15,28 @@ describe("FileManager", function()
             local mock = file_manager_mocks.no_indentation
             local bufnr, _ = utils.setup(mock.content, mock.language)
             local identation = FileManager.get_region_indentation(bufnr, mock.region)
-            equal(0, identation)
+            equal("", identation)
         end)
 
         it("handles one line with two spaces indentation", function()
             local mock = file_manager_mocks.two_spaces
             local bufnr, _ = utils.setup(mock.content, mock.language)
             local identation = FileManager.get_region_indentation(bufnr, mock.region)
-            equal(2, identation)
+            equal("  ", identation)
         end)
 
         it("handles one line with four spaces indentation", function()
             local mock = file_manager_mocks.four_spaces
             local bufnr, _ = utils.setup(mock.content, mock.language)
             local identation = FileManager.get_region_indentation(bufnr, mock.region)
-            equal(4, identation)
+            equal("    ", identation)
         end)
 
         it("handles one line with one tab indentation", function()
             local mock = file_manager_mocks.one_tab
             local bufnr, _ = utils.setup(mock.content, mock.language)
             local identation = FileManager.get_region_indentation(bufnr, mock.region)
-            equal(1, identation)
+            equal("\t", identation)
         end)
     end)
 end)

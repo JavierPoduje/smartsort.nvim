@@ -60,13 +60,12 @@ describe("chadnode", function()
             local cnode = chadnodes:node_by_idx(1)
 
             equal(cnode == nil, false)
-
             equal(
                 true,
                 vim.deep_equal(
                 --- @diagnostic disable-next-line: need-check-nil
                     cnode:stringify(bufnr, 4, false),
-                    "  const foo = () => {\n    console.log(\"foo\");\n  };"
+                    "const foo = () => {\n  console.log(\"foo\");\n};"
                 )
             )
         end)

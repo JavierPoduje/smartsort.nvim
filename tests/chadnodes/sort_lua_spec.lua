@@ -22,14 +22,14 @@ describe("chadnodes: sort - lua", function()
 
         truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
             "    aBoolean = true,",
-            "    ,",
-            '    aaa = "value of aaa",',
-            "    ,",
+            "                       ,",
+            '                                            aaa = "value of aaa",',
+            "                                          ,",
             '    anotherValue = { "value1", "value2", },',
-            "    ,",
+            "                                                                ,",
             '    someValue = "value",',
-            "    ,",
-            "    -- some comment",
+            "                   ,",
+            "                     -- some comment",
         }))
     end)
 

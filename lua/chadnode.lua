@@ -293,12 +293,13 @@ end
 Chadnode.stringify = function(self, bufnr, target_row, trim)
     trim = trim or false
 
-    local text = vim.treesitter.get_node_text(self.ts_node, bufnr)
+    local text = vim.treesitter.get_node_text(self.ts_node, bufnr, { metadata = {} })
     local lines = vim.split(text, "\n")
 
-    -- local original_indent = f.get_line_indent(bufnr, self.region.srow)
-    local original_indent = FileManager.get_region_indentation(bufnr, self.region)
-    local target_indent = f.get_line_indent(bufnr, target_row)
+    local _, scol = self.ts_node:range()
+    local indentation_type = FileManager._get_node_indent_type(bufnr, self.ts_node)
+
+    local block_indentation = FileManager.get_region_indentation(bufnr, self.region)
 
     -- Adjust indentation for all lines
     local stringified_lines = {}
@@ -311,15 +312,26 @@ Chadnode.stringify = function(self, bufnr, target_row, trim)
         idx = idx + 1
     end
 
-    for _, line in ipairs(lines) do
-        local relative_indent = line:match("^" .. original_indent .. "(%s*)")
-        local relative_indent_str = relative_indent or ""
-        local identation_str = f.if_else(
-            trim,
-            function() return "" end,
-            function() return target_indent .. relative_indent_str end
-        )
-        table.insert(stringified_lines, identation_str .. line:gsub("^%s*", ""))
+    for lineidx, line in ipairs(lines) do
+        --- the first line is managed differently, because it needs to be manually indented
+        if lineidx == 1 then
+            local indentation_char = f.if_else(
+                indentation_type == "tab",
+                function() return "\t" end,
+                function() return " " end
+            )
+            local indentation = string.rep(indentation_char, scol)
+            table.insert(stringified_lines, indentation .. line)
+        else
+            local relative_indentation = line:match("^" .. block_indentation .. "(%s*)")
+            local relative_indent_str = relative_indentation or ""
+            local identation_str = f.if_else(
+                trim,
+                function() return "" end,
+                function() return block_indentation .. relative_indent_str end
+            )
+            table.insert(stringified_lines, identation_str .. line:gsub("^%s*", ""))
+        end
     end
 
     return table.concat(stringified_lines, "\n")
