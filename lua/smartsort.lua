@@ -107,8 +107,6 @@ M.sort_multiple_lines = function(selected_region, config)
 
     --- @type Chadnodes
     local cnodes = nil
-    -- local language_queries = (config.treesitter or {})[parser:lang()] or {}
-    -- print('language_queries:', vim.inspect(language_queries))
     status, _ = pcall(function()
         local language_queries = (config.treesitter or {})[parser:lang()] or {}
         cnodes = Chadnodes.from_region(0, region, parser, language_queries)

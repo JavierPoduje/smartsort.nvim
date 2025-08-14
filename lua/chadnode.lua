@@ -1,3 +1,4 @@
+local FileManager = require('file_manager')
 local R = require('ramda')
 local Region = require('region')
 local f = require("funcs")
@@ -295,7 +296,8 @@ Chadnode.stringify = function(self, bufnr, target_row, trim)
     local text = vim.treesitter.get_node_text(self.ts_node, bufnr)
     local lines = vim.split(text, "\n")
 
-    local original_indent = f.get_line_indent(bufnr, self.region.srow)
+    -- local original_indent = f.get_line_indent(bufnr, self.region.srow)
+    local original_indent = FileManager.get_region_indentation(bufnr, self.region)
     local target_indent = f.get_line_indent(bufnr, target_row)
 
     -- Adjust indentation for all lines

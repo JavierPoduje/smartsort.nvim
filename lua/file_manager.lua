@@ -11,6 +11,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 --- @field public buf_set_lines fun(bufnr: number, start_row: number, end_row: number, lines: string[])
 --- @field public get_line fun(region: Region): string
 --- @field public get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree, language_queries?: table<string, string>): TSNode
+--- @field public get_region_indentation fun(bufnr: number, region: Region): number
 --- @field public get_region_to_work_with fun(bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree, language_queries?: table<string, string>): Region
 --- @field public insert_in_buffer fun(row: number, start_col: number, end_col: number, str: string): FileManager
 --- @field public new fun(self: FileManager, bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree): FileManager
@@ -37,7 +38,7 @@ end
 --- @param end_row number: the end row to insert the string into
 --- @param lines string[]: the lines to insert
 FileManager.buf_set_lines = function(bufnr, start_row, end_row, lines)
-    vim.api.nvim_buf_set_lines(0, start_row, end_row, true, lines)
+    vim.api.nvim_buf_set_lines(bufnr, start_row, end_row, true, lines)
 end
 
 --- Get the line from the buffer in a specific range
@@ -134,6 +135,43 @@ FileManager.insert_line_in_buffer = function(row, start_col, end_col, str)
         end_col = #line
     end
     vim.api.nvim_buf_set_text(0, row - 1, start_col - 1, row - 1, end_col, { str })
+end
+
+--- Get the indentation of the leftmost line in a given region.
+--- Counts spaces and tabs, where each tab is equivalent to 1 space.
+--- @param bufnr number: the buffer number
+--- @param region Region The region to analyze
+--- @return number The number of leading whitespace characters (spaces or tabs)
+FileManager.get_region_indentation = function(bufnr, region)
+    assert(region ~= nil, "Region cannot be nil")
+
+    -- Get all lines in the region (srow and erow are 1-based, Neovim API is 0-based)
+    local lines = vim.api.nvim_buf_get_lines(bufnr, region.srow - 1, region.erow, false)
+    if not lines or #lines == 0 then
+        return 0 -- Return 0 if no lines are found
+    end
+
+    -- Initialize min_indent to a large number
+    local min_indent = math.huge
+
+    -- Iterate through each line to find the minimum indentation
+    for _, line in ipairs(lines) do
+        local indent = 0
+        for char in line:gmatch(".") do
+            if char == " " or char == "\t" then
+                indent = indent + 1
+            else
+                break -- Stop at the first non-whitespace character
+            end
+        end
+        -- Update min_indent if this line's indentation is smaller and the line is not empty
+        if indent < min_indent and line:match("%S") then
+            min_indent = indent
+        end
+    end
+
+    -- Return 0 if no non-empty lines were found
+    return min_indent == math.huge and 0 or min_indent
 end
 
 return FileManager
