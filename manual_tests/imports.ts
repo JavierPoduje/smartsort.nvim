@@ -15,3 +15,10 @@ async function bbb(a: string, b: string): Promise<void> {
 export function aaa(a: string, b: string) {
   console.log("aaa");
 }
+
+console.log('ddd');
+console.log('fff');
+console.log("aaa");
+console.log('eee');
+console.log('bbb');
+console.log('ccc');

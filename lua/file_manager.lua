@@ -60,7 +60,8 @@ end
 FileManager.get_region_to_work_with = function(bufnr, selected_region, parser, language_queries)
     local node = FileManager.get_node_at_row(bufnr, selected_region, parser, language_queries)
     if node == nil then
-        error("No node found at the given selected region")
+        vim.notify("No supported node was found in the first line selected", vim.log.levels.WARN)
+        error()
     end
 
     local parent = node:parent()

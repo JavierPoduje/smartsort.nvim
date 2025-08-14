@@ -211,7 +211,8 @@ Chadnodes.from_region = function(bufnr, region, parser, language_queries)
     --- @type TSNode | nil
     local node = FileManager.get_node_at_row(bufnr, region, parser, language_queries)
     if not node then
-        error("No node found at the given region")
+        vim.notify("No sortable node at the given region was found", vim.log.levels.WARN)
+        error()
     end
 
     local root_node = parser:parse()[1]:root()

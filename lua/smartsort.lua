@@ -97,12 +97,11 @@ M.sort_multiple_lines = function(selected_region, config)
 
     --- @type Region
     local region = nil
-    local status, err = pcall(function()
+    local status, _ = pcall(function()
         local language_queries = (config.treesitter or {})[parser:lang()] or {}
         region = FileManager.get_region_to_work_with(0, selected_region, parser, language_queries)
     end)
     if not status then
-        print(err)
         return
     end
 
@@ -110,12 +109,11 @@ M.sort_multiple_lines = function(selected_region, config)
     local cnodes = nil
     -- local language_queries = (config.treesitter or {})[parser:lang()] or {}
     -- print('language_queries:', vim.inspect(language_queries))
-    status, err = pcall(function()
+    status, _ = pcall(function()
         local language_queries = (config.treesitter or {})[parser:lang()] or {}
         cnodes = Chadnodes.from_region(0, region, parser, language_queries)
     end)
     if not status then
-        print(err)
         return
     end
 
