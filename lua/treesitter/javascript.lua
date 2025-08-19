@@ -29,6 +29,11 @@ return {
             (export_statement (class_declaration (type_identifier) @identifier))
             (class_declaration (type_identifier) @identifier)
         ] @block ]],
+        expression_statement = [[
+            (expression_statement
+              (call_expression function: (identifier) @identifier)
+            ) @block
+        ]],
         function_declaration = [[ [
             (export_statement (function_declaration (identifier) @identifier))
             (function_declaration (identifier) @identifier)
@@ -46,6 +51,7 @@ return {
     sortable = {
         "class_declaration",
         "export_statement",
+        "expression_statement",
         "function_declaration",
         "lexical_declaration",
         "method_definition",
