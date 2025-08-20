@@ -3,6 +3,7 @@ require('treesitter/types')
 --- @type LanguageConfig
 return {
     end_chars = {},
+    handy_sortables = {},
     linkable = {
         "comment",
     },
@@ -13,7 +14,4 @@ return {
             ) @block
         ]],
     },
-    sortable = {
-        "statement_directive",
-    }
 }

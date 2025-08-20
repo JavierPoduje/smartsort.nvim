@@ -16,4 +16,4 @@
 --- @field end_chars EndCharDefinition[]
 --- @field linkable string[]: the types of nodes that can be linked
 --- @field query_by_node table<string, string>: a mapping of node types to their queries
---- @field sortable string[]: the types of nodes that can be sorted
+--- @field handy_sortables string[]: types that should be considered as sortable nodes, but are not sortable by themselfs (e.g. `export_statement` in javascript)

@@ -12,6 +12,7 @@ return {
             is_attached = true,
         }
     },
+    handy_sortables = {},
     linkable = {
         "comment",
     },
@@ -40,10 +41,4 @@ return {
             ) @block
         ]],
     },
-    sortable = {
-        "assignment_statement",
-        "function_declaration",
-        "field",
-        "variable_declaration",
-    }
 }

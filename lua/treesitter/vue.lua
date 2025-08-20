@@ -54,6 +54,7 @@ return {
             is_attached = false,
         }
     },
+    handy_sortables = {},
     linkable = f.merge_arrays(
         {},
         css_definition.linkable,
@@ -64,10 +65,4 @@ return {
         script_element = [[ (script_element) @injection ]],
         directive_attribute = [[ (directive_attribute (directive_value) @identifier) @block ]],
     },
-    sortable = f.merge_arrays(
-        { "directive_attribute" },
-        css_definition.sortable,
-        scss_definition.sortable,
-        typescript_definition.sortable
-    ),
 }

@@ -93,7 +93,10 @@ function LanguageQuery:new(language, language_queries)
 
     obj.language_config = language_config
     obj.linkable_nodes = obj.language_config.linkable
-    obj.sortable_nodes = obj.language_config.sortable
+    obj.sortable_nodes = f.merge_arrays(
+        f.keys(obj.language_config.query_by_node),
+        obj.language_config.handy_sortables
+    )
 
     -- ensure that the node_types defined in the language_queries defined by the user
     -- are added to the sortable_nodes
@@ -115,12 +118,10 @@ LanguageQuery.query_by_node = function(self, node)
     local query = nil
     local node_type = node:type()
 
-    if self.language == "typescript" or self.language == "javascript" then
-        -- Check if the node is an export statement.
-        -- If so, get the type of the first child.
-        if node_type == "export_statement" then
-            node_type = node:child(1):type()
-        end
+    -- e.g. in javascript, the export_statement is not sortable by itself,
+    -- so we need to look for its child
+    if R.any(R.equals(node_type), self.language_config.handy_sortables) then
+        node_type = node:child(1):type()
     end
 
     query = self.language_config.query_by_node[node_type]

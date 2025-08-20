@@ -20,6 +20,7 @@ return {
             is_attached = true,
         }
     },
+    handy_sortables = { "export_statement" },
     linkable = {
         "comment",
         "document",
@@ -48,13 +49,4 @@ return {
             public_field_definition (property_identifier) @identifier) @block
         ]],
     },
-    sortable = {
-        "class_declaration",
-        "export_statement",
-        "expression_statement",
-        "function_declaration",
-        "lexical_declaration",
-        "method_definition",
-        "pair",
-    }
 }

@@ -31,6 +31,20 @@ M.is_max_col = function(col)
     return col == vim.v.maxcol
 end
 
+--- Returns a list of keys from the table.
+--- @generic K
+--- @param tbl table<K, any>
+--- @return K[]: a list of keys from the table
+M.keys = function(tbl)
+    local keyset = {}
+    local n = 0
+    for k, _ in pairs(tbl) do
+        n = n + 1
+        keyset[n] = k
+    end
+    return keyset
+end
+
 --- Returns a merged table containing all elements from the input tables.
 --- It does not modify the original tables.
 ---

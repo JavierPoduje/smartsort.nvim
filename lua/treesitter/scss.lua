@@ -5,7 +5,7 @@ require('treesitter/types')
 --- @type LanguageConfig
 return {
     end_chars = f.merge_tables({}, css_definition.end_chars),
+    handy_sortables = {},
     linkable = f.merge_tables({ "single_line_comment" }, css_definition.linkable),
     query_by_node = f.merge_tables({}, css_definition.query_by_node),
-    sortable = f.merge_arrays({ "declaration" }, css_definition.sortable)
 }

@@ -118,6 +118,9 @@ FileManager.get_node_at_row = function(bufnr, region, parser, language_queries)
     -- Get the node at cursor (most indented node) and walk up the tree to find a suitable block node
     local block_types = chadquery:sort_and_linkable_nodes()
     local node_at_cursor = ts_utils.get_node_at_cursor(0, false)
+
+    -- TODO: this fails for interfaces when they are exporter (javasript and typescript)
+    -- Change LanguageQuery to handle the `export_statement` node type. it should behave differently than the other nodes, I think...
     while node_at_cursor ~= nil and not R.any(R.equals(node_at_cursor:type()), block_types) do
         node_at_cursor = node_at_cursor:parent()
     end

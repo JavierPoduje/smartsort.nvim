@@ -12,6 +12,7 @@ return {
             is_attached = true,
         }
     },
+    handy_sortables = {},
     linkable = {
         "comment",
     },
@@ -39,11 +40,4 @@ return {
             )
         ]],
     },
-    sortable = {
-        "function_declaration",
-        "keyed_element",
-        "method_declaration",
-        "short_var_declaration",
-        "type_case",
-    }
 }
