@@ -12,12 +12,12 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 ---
 --- @field public region Region
 ---
---- @field _get_node_indent_type fun(bufnr: number, node: TSNode): IndentationType
 --- @field public buf_set_lines fun(bufnr: number, start_row: number, end_row: number, lines: string[])
 --- @field public get_line fun(region: Region): string
 --- @field public get_node_at_row fun(bufnr: number, row: number, parser: vim.treesitter.LanguageTree, language_queries?: table<string, string>): TSNode
 --- @field public get_region_indentation fun(bufnr: number, region: Region): string
 --- @field public get_region_to_work_with fun(bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree, language_queries?: table<string, string>): Region
+--- @field public indent_type fun(bufnr: number): IndentationType
 --- @field public insert_in_buffer fun(row: number, start_col: number, end_col: number, str: string): FileManager
 --- @field public new fun(self: FileManager, bufnr: number, selected_region: Region, parser: vim.treesitter.LanguageTree): FileManager
 
@@ -190,41 +190,15 @@ FileManager.get_region_indentation = function(bufnr, region)
     return output
 end
 
---- Determine the indentation type ("spaces" or "tabs") of the first indented line in a TSNode's text.
---- Returns "spaces" if no indentation is found.
---- @param bufnr number
---- @param node TSNode
---- @return IndentationType
-FileManager._get_node_indent_type = function(bufnr, node)
-    bufnr = bufnr or 0
-    assert(node ~= nil, "Node cannot be nil")
-
-    -- Get the text of the node
-    local text = vim.treesitter.get_node_text(node, bufnr, { metadata = {} })
-    if not text then
-        return "spaces" -- Return default if no text
+--- Determine the indentation type of the buffer.
+--- @param bufnr number: the buffer number
+--- @return IndentationType: "spaces" or "tabs"
+FileManager.indent_type = function(bufnr)
+    if vim.api.nvim_get_option_value("expandtab", { buf = bufnr }) then
+        return "spaces"
+    else
+        return "tabs"
     end
-
-    -- Convert text to lines if it's a string
-    local lines = type(text) == "string" and vim.split(text, "\n", { trimempty = false }) or text
-
-    assert(type(lines) == "table", "Expected lines to be a table")
-    assert(#lines > 0, "Expected lines to have at least one element")
-
-    -- Check each line for indentation
-    for _, line in ipairs(lines) do
-        if line:match("^%s+") then -- Check if line starts with whitespace
-            local first_char = line:match("^(%s)")
-            if first_char == "\t" then
-                return "tabs"
-            elseif first_char == " " then
-                return "spaces"
-            end
-        end
-    end
-
-    -- Return "spaces" if no indentation is found
-    return "spaces"
 end
 
 return FileManager

@@ -297,7 +297,11 @@ Chadnode.stringify = function(self, bufnr, target_row, trim)
     local lines = vim.split(text, "\n")
 
     local _, scol = self.ts_node:range()
-    local indentation_type = FileManager._get_node_indent_type(bufnr, self.ts_node)
+    local indentation_char = f.if_else(
+        FileManager.indent_type(bufnr) == "tabs",
+        function() return "\t" end,
+        function() return " " end
+    )
 
     local block_indentation = FileManager.get_region_indentation(bufnr, self.region)
 
@@ -315,11 +319,6 @@ Chadnode.stringify = function(self, bufnr, target_row, trim)
     for lineidx, line in ipairs(lines) do
         --- the first line is managed differently, because it needs to be manually indented
         if lineidx == 1 then
-            local indentation_char = f.if_else(
-                indentation_type == "tab",
-                function() return "\t" end,
-                function() return " " end
-            )
             local indentation = string.rep(indentation_char, scol)
             table.insert(stringified_lines, indentation .. line)
         else
