@@ -115,6 +115,11 @@ M.sort_multiple_lines = function(selected_region, config)
         return
     end
 
+    if #cnodes.nodes == 0 then
+        vim.notify("The selected nodes are not sortable", vim.log.levels.WARN)
+        return
+    end
+
     local linked_cnodes = cnodes:merge_sortable_nodes_with_adjacent_linkable_nodes(region)
 
     local vertical_gaps = linked_cnodes:calculate_vertical_gaps()
