@@ -29,7 +29,7 @@ local f = require("funcs")
 --- @field public parent_node fun(self: Chadnode): TSNode | nil
 --- @field public print fun(self: Chadnode, bufnr: number, opts: table | nil)
 --- @field public set_end_character fun(self: Chadnode, character: EndChar)
---- @field public stringify fun(self: Chadnode, bufnr: number, target_row: number, trim: boolean): string
+--- @field public stringify fun(self: Chadnode, bufnr: number, trim: boolean): string
 --- @field public stringify_first_suffix fun(self: Chadnode): string
 --- @field public to_string fun(self: Chadnode, bufnr: number): string
 --- @field public type fun(self: Chadnode): string
@@ -57,7 +57,7 @@ end
 --- @param self Chadnode
 --- @return string
 Chadnode.__tostring = function(self)
-    local cnode_str = self:stringify(0, self.region.srow, false)
+    local cnode_str = self:stringify(0, false)
 
     if self:is_endchar_node() then
         return cnode_str
@@ -287,10 +287,9 @@ end
 --- Return the string representation of a node, preserving the indent
 --- @param self Chadnode
 --- @param bufnr number: the buffer number
---- @param target_row number: the row to insert the node. The node will be indented to match this row's indentation.
 --- @param trim boolean: whether to trim the leading whitespace from each line
 --- @return string
-Chadnode.stringify = function(self, bufnr, target_row, trim)
+Chadnode.stringify = function(self, bufnr, trim)
     trim = trim or false
 
     local text = vim.treesitter.get_node_text(self.ts_node, bufnr, { metadata = {} })
@@ -311,7 +310,7 @@ Chadnode.stringify = function(self, bufnr, target_row, trim)
     local idx = 1
     while #self.attached_prefix_cnodes > 0 and self.attached_prefix_cnodes[idx] ~= nil do
         local prefix_cnode = self.attached_prefix_cnodes[idx]
-        local stringified_comment = prefix_cnode:stringify(bufnr, prefix_cnode.region.srow, trim)
+        local stringified_comment = prefix_cnode:stringify(bufnr, trim)
         table.insert(stringified_lines, stringified_comment)
         idx = idx + 1
     end

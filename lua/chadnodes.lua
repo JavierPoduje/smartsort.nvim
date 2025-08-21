@@ -504,7 +504,7 @@ Chadnodes.stringify_into_table = function(self, vertical_gaps, horizontal_gaps, 
         if not cnode:is_endchar_node() then
             local has_left_indentation = should_have_left_indentation_by_idx[idx]
 
-            local cnode_str = cnode:stringify(0, cnode.region.srow, not has_left_indentation)
+            local cnode_str = cnode:stringify(0, not has_left_indentation)
             local endchar_as_str = cnode:stringify_first_suffix()
             local stringified_node_lines = vim.fn.split(cnode_str .. endchar_as_str, "\n")
 
