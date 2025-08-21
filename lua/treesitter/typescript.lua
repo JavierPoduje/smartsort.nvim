@@ -10,12 +10,18 @@ return {
     query_by_node = f.merge_tables(
         {
             interface_declaration = [[
-            [
-               (interface_declaration (type_identifier) @identifier)
-               (export_statement (interface_declaration (type_identifier) @identifier))
-            ] @block
+                [
+                    (interface_declaration (type_identifier) @identifier)
+                    (export_statement (interface_declaration (type_identifier) @identifier))
+                ] @block
             ]],
             property_signature = [[ (property_signature (property_identifier) @identifier) @block ]],
+            type_alias_declaration = [[
+                [
+                    (type_alias_declaration name: (type_identifier) @identifier)
+                    (export_statement (type_alias_declaration name: (type_identifier) @identifier))
+                ] @block
+            ]],
         },
         javascript_definition.query_by_node
     ),

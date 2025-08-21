@@ -25,6 +25,7 @@ return {
             ) @block
         ]],
         field = [[ (field (identifier) @identifier) @block ]],
+        function_call = [[ (function_call name: (identifier) @identifier) @block ]],
         function_declaration = [[
             ([
                 (function_declaration (identifier) @identifier)

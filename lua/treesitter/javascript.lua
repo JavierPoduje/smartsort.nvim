@@ -48,5 +48,10 @@ return {
         public_field_definition = [[
             public_field_definition (property_identifier) @identifier) @block
         ]],
+        switch_case = [[
+            (switch_case
+              value: ([ (binary_expression) (identifier) (number) (string) ] @identifier)
+            ) @block
+        ]],
     },
 }
