@@ -21,6 +21,10 @@ local setup = function(buf_content, filetype)
     -- set filetype
     vim.bo[bufnr].filetype = filetype
 
+    -- ensure consistent indentation for tests - always use spaces.
+    -- if we don't add this, some tests will fail kind of randomly detecting tabs instead of spaces.
+    vim.bo[bufnr].expandtab = true
+
     -- set parser
     local parser = parsers.get_parser(bufnr, filetype)
     if not parser then

@@ -63,6 +63,8 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ## How does it work?
 
+**Important**: Smartsort requires you to visually select the code you want to sort. The plugin doesn't sort everything in your file by default - you need to highlight the specific region you want to organize.
+
 ### Multiple lines
 - Multiple lines don't require a separator.
 - Blocks of code are sorted based on their "identifier", which is the "name" or "label" that a block of code has.
