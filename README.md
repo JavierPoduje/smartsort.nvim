@@ -310,50 +310,64 @@ To sort this, you would use:
 :Smartsort |
 ```
 
-**More examples:**
+> Notice that the plugin is smart enough to ignore separators that appear inside strings, so you don't need to worry about commas or other characters within quoted text.
+
+## Rationale
+
+Understanding how Smartsort handles different types of code blocks helps you make the most of the plugin. Here's how it works:
+
+### How Code Blocks Are Identified
+
+Smartsort uses Treesitter to parse your code and identify different types of nodes. Sortable blocks are calculated dynamically based on the queries defined for each language (like functions, classes, interfaces). These queries determine what constitutes a sortable block and what can be "linked" to other blocks (like comments).
+
+### Handling Non-Sortable Blocks
+
+**Standalone blocks** (like comments, blank lines, or other code that doesn't have a clear identifier) are handled in two ways:
+
+1. **Ignored blocks**: If a block is not matched by any query and is not defined as `linkable` in the language definition, it will be ignored during sorting and maintain its original position while other blocks are sorted around it.
+
+2. **Linked blocks**: If a block is defined as `linkable`, its behavior depends on its relationship to nearby code:
+   - **Attached**: If there's no blank line between the block and the next sortable node, it "attaches" to that node and moves with it during sorting
+   - **Standalone**: If there's a blank line separating it from the next node, it remains in place (like ignored blocks)
+
+### Example: Comments and Their Behavior
+
+Here's a practical example showing how comments are handled:
 
 ```typescript
 // ===== Before sorting =====
-const colors = ["red", "blue", "green", "yellow"];
+// This is a comment
+const foo = () => {};
 
-// ===== After sorting =====
-const colors = ["blue", "green", "red", "yellow"];
+// This is another comment
+
+const bar = () => {};
 ```
+
+After sorting, the result depends on the comment placement:
 
 ```typescript
-// ===== Before sorting =====
-const config = { debug: true, port: 3000, host: "localhost" };
-
 // ===== After sorting =====
-const config = { debug: true, host: "localhost", port: 3000 };
+const bar = () => {};
+
+// This is another comment
+
+// This is a comment
+const foo = () => {};
 ```
 
-**Note:** The plugin is smart enough to ignore separators that appear inside strings, so you don't need to worry about commas or other characters within quoted text.
+**Why does this happen?**
 
-### What happens with blocks of code that don't have an identifier? for example, comments?
-- If they are not defined neither in `sortable` nor `linkable` in the language definition inside `Smartsort.nvim`, they will be ignored and not sorted. In other words, They will keep their original position while other blocks of code are sorted around them.
-- If they are defined as `linkable`, there are two possibilities:
-    - If the node is not "attached" to any other node after it, meaning, there's a newline between them, it'll be ignroed just like the previous case.
-    - Otherwise, it will be "attached" to the next node and sorted with it. This is useful for comments that are attached to a block of code, like:
-    ```javascript
-    // This is a comment
-    const foo = () => {};
+- The function `foo` is **attached** to its comment (no blank line between them), so they move together as a unit
+- The function `bar` is **not attached** to any comment, so it sorts independently
+- The comment `// This is another comment` is **standalone** (has blank lines on both sides), so it stays in place
+- Since `bar` comes before `foo` alphabetically, it appears first in the sorted result
 
-    // This is another comment
+### Benefits of This Approach
 
-    const bar = () => {};
-    ```
-    - If we `Samartsort` this, the result will be:
-    ```javascript
-    const bar = () => {};
+This design provides several advantages:
 
-    // This is another comment
-
-    // This is a comment
-    const foo = () => {};
-    ```
-    - Why?
-        - The function `foo` is attached to it's comment, so it will be sorted with it.
-        - The function `bar` is not attached to any comment, so it will be sorted by itself.
-        - The comment `// This is another comment` is not attached to any block of code, so it will be ignored and not sorted.
-        - Since the function `bar` has a name (or "identifier") that's "smaller" than `foo`, it will be sorted before it.
+- **Preserves code structure**: Comments stay with their related code
+- **Maintains readability**: Standalone comments don't jump around unexpectedly
+- **Flexible behavior**: You can control comment placement using blank lines
+- **Language-aware**: Different languages can define their own queries for what's sortable and linkable
