@@ -20,6 +20,8 @@ Smarsort.nvim is a neovim plugin that provides enhanced sorting functionality, l
 
 By extracting and processing nodes from a Treesitter parse tree within a given region of a buffer, this little thing can identify code structures (like functions, classes, etc.) and sort them based on their content or other criteria. The use of Treesitter allows the plugin to understand the code's syntax and semantics, leading to more accurate and reliable sorting results compared to simple text-based sorting.
 
+More about how the plugin works can be found in [the wiki](https://github.com/JavierPoduje/smartsort.nvim/wiki/Sorting-Mechanics).
+
 ## Features<a name="features"></a>
 
 - *Multi-Line Sorting*: Sort blocks of code based on their identifiers (e.g., function names, class names).
@@ -29,6 +31,8 @@ By extracting and processing nodes from a Treesitter parse tree within a given r
 - *Single-Line Sorting*: Sort items in a single line (e.g., `import { foo, bar, baz }`) using a user-specified separator.
 
   https://github.com/user-attachments/assets/0c4e24fe-87f8-49c0-b245-3d9b737c4dd2
+
+  > Use `:Smartsort <separator>` to specify a separator different from the one defined in `single_line_separator` (e.g. `:Smartsort |`).
 
 - *Non-sortable blocks*: Describe where the non-sortable blocks should be placed (e.g. `{ non_sortable_behavior = "preserve" | "above" | "below" }`).
 
