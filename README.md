@@ -9,8 +9,8 @@
 
 - [Description](#description)
 - [Features](#features)
+- [Requirements](#requirements)
 - [Installation](#installation)
-    - [Requirements](#requirements)
     - [Setup using Lazy](#lazy)
 - [Usage](#usage)
 
@@ -35,15 +35,13 @@ By extracting and processing nodes from a Treesitter parse tree within a given r
   https://github.com/user-attachments/assets/9ddcf253-f3a7-4fae-80a7-0b85e1424f4e
 
 
+## Requirements<a name="requirements"></a>
+
+- Neovim 0.7 or higher (needs treesitter support)
+
 ## Installation<a name="installation"></a>
 
-### Requirements<a name="requirements"></a>
-
-- Neovim
-- Treesitter
-- Plenary
-
-### Setup using lazy<a name="lazy"></a>
+### Lazy<a name="lazy"></a>
 
 Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
