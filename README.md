@@ -24,15 +24,15 @@ By extracting and processing nodes from a Treesitter parse tree within a given r
 
 - *Multi-Line Sorting*: Sort blocks of code based on their identifiers (e.g., function names, class names).
 
-  https://github.com/user-attachments/assets/04c842c7-1f92-477b-ae2d-ddf3d244da6f
+  https://github.com/user-attachments/assets/27ebf19f-1abe-4ed3-99e5-e4ac3bf4e6e8
 
 - *Single-Line Sorting*: Sort items in a single line (e.g., `import { foo, bar, baz }`) using a user-specified separator.
 
-  https://github.com/user-attachments/assets/609e751a-2b90-40ec-b8b7-3b5ead32e90c
+  https://github.com/user-attachments/assets/0c4e24fe-87f8-49c0-b245-3d9b737c4dd2
 
 - *Non-sortable blocks*: Describe where the non-sortable blocks should be placed (e.g. `{ non_sortable_behavior = "preserve" | "above" | "below" }`).
 
-  https://github.com/user-attachments/assets/968049c4-bc8c-4767-a776-ce2a591c5a34
+  https://github.com/user-attachments/assets/9ddcf253-f3a7-4fae-80a7-0b85e1424f4e
 
 
 ## Installation<a name="installation"></a>
