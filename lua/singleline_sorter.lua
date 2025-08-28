@@ -1,10 +1,12 @@
 local R = require("ramda")
+local special_separators = require('config').special_separators
 
 --- @class SinglelineSorter
 ---
 --- @field separator string: the separator to use between words
 ---
 --- @field _build_sorted_words fun(self: SinglelineSorter, spaces_between_words: number[], words: string[]): string
+--- @field _get_separator_character fun(separator: string): string
 --- @field _is_inside_string fun(self: SinglelineSorter, str: string): boolean
 --- @field _split_ignoring_strings_with_spaces fun(self: SinglelineSorter, str: string): string[], number[]
 --- @field _trim fun(str: string): string, string, string
@@ -42,6 +44,16 @@ SinglelineSorter._build_sorted_words = function(self, spaces_between_words, word
     end, {}, words)
 
     return table.concat(output, "")
+end
+
+--- Get the actual separator character, considering special separators
+--- @param separator string: the separator to get the character of
+--- @return string
+SinglelineSorter._get_separator_character = function(separator)
+    if special_separators[separator] then
+        separator = special_separators[separator]
+    end
+    return separator
 end
 
 --- Check if a character position is inside a string literal
@@ -135,7 +147,7 @@ SinglelineSorter.new = function(separator)
     local obj = {}
     setmetatable(obj, SinglelineSorter)
 
-    obj.separator = separator
+    obj.separator = SinglelineSorter._get_separator_character(separator)
 
     return obj
 end

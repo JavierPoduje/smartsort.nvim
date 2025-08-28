@@ -1,8 +1,5 @@
-local R = require "ramda"
-
 --- @class Options
 --- @field args Args: the arguments to use
-
 
 vim.api.nvim_create_user_command('SReload', function()
     require('lazy.core.loader').reload('smartsort.nvim')

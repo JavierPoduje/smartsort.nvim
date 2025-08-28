@@ -74,6 +74,18 @@ const foo = () => {
     region = Region.new(1, 1, 7, 1),
 }
 
+local prints = {
+    content = [[
+console.log('ddd');
+console.log('fff');
+console.log('aaa');
+console.log('eee');
+console.log('bbb');
+console.log('ccc');
+    ]],
+    region = Region.new(1, 1, 6, 19),
+}
+
 local simplest = {
     content = [[
 const foo = () => {
@@ -93,6 +105,13 @@ import { bb, dd, aa, cc, hola } from "somewhere.js";
 type greetings = "hi |" | "bye" | "| goodbye";
     ]],
     region = Region.new(1, 9, 1, 30),
+}
+
+local single_line_spaces = {
+    content = [[
+import { bb dd aa cc hola } from "somewhere.js";
+    ]],
+    region = Region.new(1, 9, 1, 26),
 }
 
 local three_interfaces = {
@@ -168,18 +187,6 @@ function bar() {
     region = Region.new(1, 1, 6, 1),
 }
 
-local prints = {
-    content = [[
-console.log('ddd');
-console.log('fff');
-console.log('aaa');
-console.log('eee');
-console.log('bbb');
-console.log('ccc');
-    ]],
-    region = Region.new(1, 1, 6, 19),
-}
-
 return {
     commented_functions = commented_functions,
     interface_properties = interface_properties,
@@ -188,6 +195,7 @@ return {
     prints = prints,
     simplest = simplest,
     single_line_sorter_mock = single_line_sorter_mock,
+    single_line_spaces = single_line_spaces,
     three_interfaces = three_interfaces,
     two_classes = two_classes,
     with_bigger_gap = with_bigger_gap,

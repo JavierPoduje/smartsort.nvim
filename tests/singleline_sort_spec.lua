@@ -27,4 +27,12 @@ describe("single line sort", function()
         local sorted_line = SinglelineSorter.new("|"):sort(raw_str)
         equal(' "bye" | "hi |" | "| goodbye";', sorted_line)
     end)
+
+    it("should sort by spaces", function()
+        local mock = typescript_mocks.single_line_spaces
+        utils.setup(mock.content, "typescript")
+        local raw_str = FileManager.get_line(mock.region)
+        local sorted_line = SinglelineSorter.new("space"):sort(raw_str)
+        equal(" aa bb cc dd hola ", sorted_line)
+    end)
 end)
