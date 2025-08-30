@@ -63,6 +63,12 @@ Region.from_selection = function()
     local ecol = vim.fn.col("'>")
 
     local last_line = vim.api.nvim_buf_get_lines(0, erow - 1, erow, true)[1]
+
+    if last_line == nil then
+        vim.notify("Can't sort without a selected region", vim.log.levels.WARN)
+        error()
+    end
+
     local line_length = vim.str_utfindex(last_line, #last_line)
     ecol = math.min(ecol, line_length)
 

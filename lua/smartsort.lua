@@ -42,7 +42,11 @@ end
 --- @param inputargs SmartsortSetup: the arguments to use
 M.smartsort = function(inputargs)
     local setup = f.merge_tables(smartsort_setup, inputargs or {})
-    local region = Region.from_selection()
+
+    --- @type Region
+    local region = nil
+    local status = pcall(function() region = Region.from_selection() end)
+    if not status then return end
 
     if region.srow == region.erow then
         M.sort_single_line(region, setup)
@@ -54,7 +58,11 @@ end
 --- Sort the selected text
 --- @param args Args: the arguments to use
 M.sort = function(args)
-    local region = Region.from_selection()
+    --- @type Region
+    local region = nil
+    local status = pcall(function() region = Region.from_selection() end)
+    if not status then return end
+
     local setup = f.merge_tables(
         smartsort_setup,
         args.setup or {}
