@@ -2,7 +2,7 @@
     <h1>smartsort.nvim</h1>
 
 ![tests-badge](https://github.com/JavierPoduje/smartsort.nvim/actions/workflows/ci.yml/badge.svg)
-![Work In Progress](https://img.shields.io/badge/Work%20In%20Progress-orange?style=for-the-badge)
+![lua-badge](https://img.shields.io/badge/Lua-2C2D72?style=flat&logo=lua&logoColor=white)
 </div>
 
 ## Table of Contents
