@@ -66,9 +66,108 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 }
 ```
 
+## Configuration Options
+
+### `non_sortable_behavior`
+The `non_sortable_behavior` option controls where non-sortable nodes (e.g., comments) are placed in multi-line sorting. Options are:
+- "above": places before sorted blocks
+- "below": places after sorted blocks
+- "preserve": keeps original position
+
+#### Examples
+- `non_sortable_behavior` = "above":
+```lua
+-- ===== Before sorting =====
+function foo()
+    return 1
+end
+
+-- standalone comment
+
+function bar()
+    return 2
+end
+
+-- ===== After sorting =====
+-- standalone comment
+
+function bar()
+    return 2
+end
+
+function foo()
+    return 1
+end
+```
+
+- `non_sortable_behavior` = "below":
+```lua
+-- ===== Before sorting =====
+function foo()
+    return 1
+end
+
+-- standalone comment
+
+function bar()
+    return 2
+end
+
+-- ===== After sorting =====
+function bar()
+    return 2
+end
+
+function foo()
+    return 1
+end
+
+-- standalone comment
+```
+
+- `non_sortable_behavior` = "preserve":
+```lua
+-- ===== Before sorting =====
+function foo()
+    return 1
+end
+
+-- standalone comment
+
+function bar()
+    return 2
+end
+
+-- ===== After sorting =====
+function bar()
+    return 2
+end
+
+-- standalone comment
+
+function foo()
+    return 1
+end
+```
+
+### `single_line_separator`
+Sets the default separator for single-line sorting (e.g., commas in import `{ foo, bar, baz }`). Override it by passing a separator to `:Smartsort <separator>`.
+```javascript
+// ===== Before sorting =====
+import { foo, bar, baz } from 'module';
+
+// Execute
+// - `:Smartsort ,`
+// - `:Smartsort` if `single_line_separator` is set to `,` in the `smartsort.nvim` setup
+
+// ===== After sorting =====
+import { bar, baz, foo } from 'module';
+```
+
 ## Usage<a name="usage"></a>
 
 1. Select a region of text in visual mode.
 2. Execute the `:Smartsort` command.
+    - For single-line sorting, you can also provide a separator as an argument (e.g., `:Smartsort ,`). Otherwise, the `single_line_separator` defined in the setup will be used.
 3. The selected text will be sorted based on the defined rules.
 
