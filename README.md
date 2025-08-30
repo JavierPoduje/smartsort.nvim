@@ -12,6 +12,9 @@
 - [Requirements](#requirements)
 - [Installation](#installation)
     - [Setup using Lazy](#lazy)
+- [Configuration Options](#configuration)
+    - [non_sortable_behavior](#config_non_sortable_behavior)
+    - [single_line_separator](#config_single_line_separator)
 - [Usage](#usage)
 
 ## Description<a name="description"></a>
@@ -66,9 +69,9 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 }
 ```
 
-## Configuration Options
+## Configuration Options<a name="configuration"></a>
 
-### `non_sortable_behavior`
+### `non_sortable_behavior`<a name="config_non_sortable_behavior"></a>
 The `non_sortable_behavior` option controls where non-sortable nodes (e.g., comments) are placed in multi-line sorting. Options are:
 - "above": places before sorted blocks
 - "below": places after sorted blocks
@@ -150,7 +153,7 @@ function foo()
 end
 ```
 
-### `single_line_separator`
+### `single_line_separator`<a name="config_single_line_separator"></a>
 Sets the default separator for single-line sorting (e.g., commas in import `{ foo, bar, baz }`). Override it by passing a separator to `:Smartsort <separator>`.
 ```javascript
 // ===== Before sorting =====
