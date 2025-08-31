@@ -231,14 +231,16 @@ Chadnodes.from_region = function(bufnr, region, parser, language_queries)
 
     local cnodes = Chadnodes:new(parser)
     for child, _ in parent:iter_children() do
+        local child_region = Region.from_node(child)
+
         -- if the node is after the last line of the visually-selected area, stop
-        if Region.from_node(child).erow >= region.erow then
+        if child_region.erow > region.erow then
             break
         end
 
         local child_id = child:id()
 
-        if Region.from_node(child).srow + 1 >= region.srow then
+        if child_region.srow + 1 >= region.srow then
             if chadquery:is_supported_node_type(child) then
                 local query = chadquery:build_query(child)
                 local query_matches = query:iter_matches(
@@ -250,6 +252,7 @@ Chadnodes.from_region = function(bufnr, region, parser, language_queries)
                 )
 
                 for _, match, _ in query_matches do
+                    print("match")
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
                     if not processed_nodes[child_id] then
                         cnodes:add(cnode)
@@ -257,6 +260,11 @@ Chadnodes.from_region = function(bufnr, region, parser, language_queries)
                     end
                 end
             else
+                -- this edge case is for `}` character in switch statements in `go`
+                if child_region.srow == child_region.erow and child_region.erow >= region.erow then
+                    break
+                end
+
                 local current_cnode = Chadnode:new(child, nil)
                 local end_char = chadquery:get_endchar_from_str(current_cnode:type())
 

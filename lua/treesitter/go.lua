@@ -30,7 +30,7 @@ return {
             (short_var_declaration (expression_list) @identifier) @block
         ]],
         type_case = [[
-            (type_switch_statement
+            (
                 (type_case
                     [
                         (qualified_type) @identifier

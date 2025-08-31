@@ -20,8 +20,6 @@ describe("chadnodes: sort - lua", function()
         local bufnr, parser = utils.setup(mock.content, "lua")
         local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
 
-        print(vim.inspect(cnodes:sort(default_setup):stringified_cnodes()))
-
         truthy(vim.deep_equal(cnodes:sort(default_setup):stringified_cnodes(), {
             "    aBoolean = true,",
             "                       ,",
