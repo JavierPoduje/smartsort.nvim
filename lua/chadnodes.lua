@@ -252,7 +252,6 @@ Chadnodes.from_region = function(bufnr, region, parser, language_queries)
                 )
 
                 for _, match, _ in query_matches do
-                    print("match")
                     local cnode = Chadnode.from_query_match(query, match, bufnr)
                     if not processed_nodes[child_id] then
                         cnodes:add(cnode)

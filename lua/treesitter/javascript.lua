@@ -27,8 +27,8 @@ return {
     },
     query_by_node = {
         class_declaration = [[ [
-            (export_statement (class_declaration (type_identifier) @identifier))
-            (class_declaration (type_identifier) @identifier)
+          (export_statement (class_declaration (identifier) @identifier))
+          (class_declaration (identifier) @identifier)
         ] @block ]],
         expression_statement = [[
             (expression_statement
