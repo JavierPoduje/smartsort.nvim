@@ -26,4 +26,20 @@ describe("chadnodes: sort - javascript", function()
             "class Zebra {\n  // implementation\n}",
         }))
     end)
+
+    it("should sort field_definitions", function()
+        local mock = javascript_mocks.field_definition
+        local bufnr, parser = utils.setup(mock.content, "javascript")
+        local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+        local sorted_cnodes = cnodes:sort(default_setup)
+
+        truthy(vim.deep_equal(sorted_cnodes:stringified_cnodes(), {
+            '    apple = "apple";',
+            "                   ;",
+            '    banana = "banana";',
+            "                   ;",
+            '    zebra = "zebra";',
+            "                     ;"
+        }))
+    end)
 end)

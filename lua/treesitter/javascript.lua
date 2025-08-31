@@ -35,6 +35,9 @@ return {
               (call_expression function: (identifier) @identifier)
             ) @block
         ]],
+        field_definition = [[
+            (field_definition (property_identifier) @identifier) @block
+        ]],
         function_declaration = [[ [
             (export_statement (function_declaration (identifier) @identifier))
             (function_declaration (identifier) @identifier)
@@ -45,9 +48,6 @@ return {
         ] @block ]],
         method_definition = [[ (method_definition (property_identifier) @identifier) @block ]],
         pair = [[ (pair (property_identifier) @identifier) @block ]],
-        public_field_definition = [[
-            public_field_definition (property_identifier) @identifier) @block
-        ]],
         switch_case = [[
             (switch_case
               value: ([ (binary_expression) (identifier) (number) (string) ] @identifier)

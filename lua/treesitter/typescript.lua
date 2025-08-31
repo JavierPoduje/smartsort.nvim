@@ -8,7 +8,12 @@ return {
     handy_sortables = f.merge_tables({}, javascript_definition.handy_sortables),
     linkable = f.merge_tables({}, javascript_definition.linkable),
     query_by_node = f.merge_tables(
+        javascript_definition.query_by_node,
         {
+            class_declaration = [[ [
+              (export_statement (class_declaration (type_identifier) @identifier))
+              (class_declaration (type_identifier) @identifier)
+            ] @block ]],
             interface_declaration = [[
                 [
                     (interface_declaration (type_identifier) @identifier)
@@ -22,7 +27,6 @@ return {
                     (export_statement (type_alias_declaration name: (type_identifier) @identifier))
                 ] @block
             ]],
-        },
-        javascript_definition.query_by_node
+        }
     ),
 }
