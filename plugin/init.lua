@@ -1,19 +1,19 @@
 --- @class Options
 --- @field args Args: the arguments to use
 
-vim.api.nvim_create_user_command('SReload', function()
-    require('lazy.core.loader').reload('smartsort.nvim')
-end, {
-    range = true,
-    nargs = '?',
-})
+-- vim.api.nvim_create_user_command('SReload', function()
+--     require('lazy.core.loader').reload('smartsort.nvim')
+-- end, {
+--     range = true,
+--     nargs = '?',
+-- })
 
-vim.api.nvim_create_user_command('SPrintChadnode', function()
-    require('smartsort').print_chadnodes()
-end, {
-    range = true,
-    nargs = '?',
-})
+-- vim.api.nvim_create_user_command('SPrintChadnode', function()
+--     require('smartsort').print_chadnodes()
+-- end, {
+--     range = true,
+--     nargs = '?',
+-- })
 
 --- Sort the visually selected lines
 --- @param opts Options: the options to use
@@ -29,10 +29,10 @@ end, {
     nargs = '?',
 })
 
---- Print the selected region
-vim.api.nvim_create_user_command('SmartsortRegion', function()
-    require('smartsort').region()
-end, {
-    range = true,
-    nargs = '?',
-})
+-- --- Print the selected region
+-- vim.api.nvim_create_user_command('SmartsortRegion', function()
+--     require('smartsort').region()
+-- end, {
+--     range = true,
+--     nargs = '?',
+-- })
