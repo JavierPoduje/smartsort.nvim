@@ -26,10 +26,23 @@ class MyClass {
 }
 ]],
     region = Region.new(2, 1, 4, 22),
+}
+
+local pair = {
+    content = [[
+const aaa = 'aaa';
+
+export default {
+  bbb: 'bbb',
+  aaa,
+}
+]],
+    region = Region.new(4, 1, 5, 13),
 
 }
 
 return {
     class_declaration = class_declaration,
     field_definition = field_definition,
+    pair = pair,
 }

@@ -42,4 +42,18 @@ describe("chadnodes: sort - javascript", function()
             "                     ;"
         }))
     end)
+
+    it("should sort object pairs", function()
+        local mock = javascript_mocks.pair
+        local bufnr, parser = utils.setup(mock.content, "javascript")
+        local cnodes = Chadnodes.from_region(bufnr, mock.region, parser)
+        local sorted_cnodes = cnodes:sort(default_setup)
+
+        truthy(vim.deep_equal(sorted_cnodes:stringified_cnodes(), {
+            "  aaa,",
+            "            ,",
+            "  bbb: 'bbb',",
+            "     ,",
+        }))
+    end)
 end)
