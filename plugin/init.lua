@@ -8,13 +8,6 @@
 --     nargs = '?',
 -- })
 
--- vim.api.nvim_create_user_command('SPrintChadnode', function()
---     require('smartsort').print_chadnodes()
--- end, {
---     range = true,
---     nargs = '?',
--- })
-
 --- Sort the visually selected lines
 --- @param opts Options: the options to use
 vim.api.nvim_create_user_command('Smartsort', function(opts)
@@ -29,7 +22,6 @@ end, {
     nargs = '?',
 })
 
--- --- Print the selected region
 -- vim.api.nvim_create_user_command('SmartsortRegion', function()
 --     require('smartsort').region()
 -- end, {

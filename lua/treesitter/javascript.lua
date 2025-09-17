@@ -47,7 +47,18 @@ return {
            (lexical_declaration (variable_declarator (identifier) @identifier))
         ] @block ]],
         method_definition = [[ (method_definition (property_identifier) @identifier) @block ]],
-        pair = [[ (pair (property_identifier) @identifier) @block ]],
+        pair = [[
+            [
+              (pair (property_identifier) @identifier)
+              ((shorthand_property_identifier) @identifier)
+            ] @block
+        ]],
+        shorthand_property_identifier = [[
+            [
+              (pair (property_identifier) @identifier)
+              ((shorthand_property_identifier) @identifier)
+            ] @block
+        ]],
         switch_case = [[
             (switch_case
               value: ([ (binary_expression) (identifier) (number) (string) ] @identifier)
