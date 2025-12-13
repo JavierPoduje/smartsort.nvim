@@ -9,7 +9,7 @@ local Config = {
         ["space"] = " ",
         ["tab"] = "\t",
     },
-    supported_languages = { "css", "go", "javascript", "lua", "scss", "twig", "typescript", "vue" },
+    supported_languages = { "css", "go", "javascript", "lua", "python", "scss", "twig", "typescript", "vue" },
 }
 
 

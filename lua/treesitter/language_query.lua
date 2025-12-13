@@ -22,6 +22,7 @@ local definition_by_language = {
     go = require('treesitter/go'),
     javascript = require('treesitter/javascript'),
     lua = require('treesitter/lua'),
+    python = require('treesitter/python'),
     scss = require('treesitter/scss'),
     twig = require('treesitter/twig'),
     typescript = require('treesitter/typescript'),
