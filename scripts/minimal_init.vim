@@ -13,18 +13,13 @@ runtime! plugin/init.lua
 lua <<EOF
 -- treesitter setup
 local required_parsers = {'css','go','javascript','lua','python','scss','typescript','vue'}
-local installed_parsers = require'nvim-treesitter.info'.installed_parsers()
-local to_install = vim.tbl_filter(function(parser)
-  return not vim.tbl_contains(installed_parsers, parser)
-end, required_parsers)
-if #to_install > 0 then
-  -- fixes 'pos_delta >= 0' error - https://github.com/nvim-lua/plenary.nvim/issues/52
-  vim.cmd('set display=lastline')
-  vim.cmd('set splitbelow=false')
-  vim.cmd('set splitright=false')
 
-  -- make "TSInstall*" available
-  vim.cmd 'runtime! plugin/nvim-treesitter.vim'
-  vim.cmd('TSInstallSync ' .. table.concat(to_install, ' '))
-end
+require("nvim-treesitter.configs").setup {
+  ensure_installed = required_parsers,
+  sync_install = true,
+}
+
+-- Force installation immediately when running headless tests
+require("nvim-treesitter.install").prefer_git = false
+require("nvim-treesitter.install").update({ with_sync = true })
 EOF
