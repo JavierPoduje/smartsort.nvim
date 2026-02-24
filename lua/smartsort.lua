@@ -3,7 +3,7 @@ local FileManager = require("file_manager")
 local Region = require("region")
 local SinglelineSorter = require("singleline_sorter")
 local f = require("funcs")
-local parsers = require("nvim-treesitter.parsers")
+local ts = vim.treesitter
 
 --- @class SmartsortSetup
 --- @field non_sortable_behavior? "above" | "below" | "preserve"
@@ -30,7 +30,7 @@ M.setup = function(input_smartsort_setup)
 end
 
 M.print_chadnodes = function()
-    local parser = parsers.get_parser()
+    local parser = ts.get_parser()
     local region = FileManager.get_region_to_work_with(0, Region.from_selection(), parser)
     local cnodes = Chadnodes.from_region(0, region, parser)
 
@@ -101,7 +101,7 @@ end
 --- @param selected_region Region: the region to sort
 --- @param config SmartsortSetup: the configuration to use
 M.sort_multiple_lines = function(selected_region, config)
-    local parser = parsers.get_parser()
+    local parser = ts.get_parser()
 
     --- @type Region
     local region = nil
