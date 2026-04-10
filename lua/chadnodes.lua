@@ -4,7 +4,7 @@ local FileManager = require("file_manager")
 local R = require("ramda")
 local Region = require("region")
 local f = require("funcs")
-local ts_utils = require("nvim-treesitter.ts_utils")
+local ts = vim.treesitter
 
 --- @class Chadnodes
 ---
@@ -78,7 +78,7 @@ end
 
 --- @param parser vim.treesitter.LanguageTree
 Chadnodes._get_container_node = function(parser)
-    local node = ts_utils.get_node_at_cursor()
+    local node = ts.get_node()
     assert(node ~= nil, "No node found")
 
     local parent = node:parent()

@@ -2,7 +2,7 @@ local Chadquery = require("chadquery")
 local R = require("ramda")
 local Region = require("region")
 local f = require("funcs")
-local ts_utils = require("nvim-treesitter.ts_utils")
+local ts = vim.treesitter
 
 --- @alias IndentationType
 --- | "spaces"
@@ -117,7 +117,7 @@ FileManager.get_node_at_row = function(bufnr, region, parser, language_queries)
 
     -- Get the node at cursor (most indented node) and walk up the tree to find a suitable block node
     local block_types = chadquery:sort_and_linkable_nodes()
-    local node_at_cursor = ts_utils.get_node_at_cursor(0, false)
+    local node_at_cursor = ts.get_node()
 
     -- TODO: this fails for interfaces when they are exporter (javasript and typescript)
     -- Change LanguageQuery to handle the `export_statement` node type. it should behave differently than the other nodes, I think...

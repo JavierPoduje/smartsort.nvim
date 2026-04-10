@@ -1,4 +1,4 @@
-local parsers = require("nvim-treesitter.parsers")
+local ts = vim.treesitter
 
 --- @param buf_content string: the content of the buffer
 --- @param filetype string: the filetype to set for the buffer
@@ -26,7 +26,7 @@ local setup = function(buf_content, filetype)
     vim.bo[bufnr].expandtab = true
 
     -- set parser
-    local parser = parsers.get_parser(bufnr, filetype)
+    local parser = ts.get_parser(bufnr, filetype)
     if not parser then
         error("Parser not available for filetype: " .. filetype)
     end
