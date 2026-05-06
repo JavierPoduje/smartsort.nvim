@@ -1,11 +1,6 @@
 #!/bin/bash
 
-languages=(css go javascript lua python scss typescript vue)
-
-for lang in "${languages[@]}"
-do
-    echo -e "\nInstalling $lang"
-    nvim --headless --clean \
-        -u scripts/ci.vim \
-        -c "TSInstallSync $lang" -c "q"
-done
+echo "Installing parsers..."
+nvim --headless --clean \
+    -u scripts/minimal_init.vim \
+    -c "q"
