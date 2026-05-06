@@ -15,11 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
-        with:
-          repository: nvim-treesitter/nvim-treesitter
-          path: nvim-treesitter
-
       - uses: rhysd/action-setup-vim@v1
         with:
           neovim: true
