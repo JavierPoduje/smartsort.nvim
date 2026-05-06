@@ -16,9 +16,20 @@ vim.opt.rtp:append(vim.fn.stdpath("data") .. "/site")
 
 local required_parsers = {'css','go','javascript','lua','python','scss','typescript','vue'}
 
+-- vim.treesitter.language.add() no longer raises in nvim 0.12 when the
+-- parser binary is absent, so check for the actual .so/.dylib on disk.
+local function parser_binary_exists(lang)
+    for _, ext in ipairs({ 'so', 'dylib', 'dll' }) do
+        if #vim.api.nvim_get_runtime_file('parser/' .. lang .. '.' .. ext, false) > 0 then
+            return true
+        end
+    end
+    return false
+end
+
 local missing = {}
 for _, lang in ipairs(required_parsers) do
-    if not pcall(vim.treesitter.language.add, lang) then
+    if not parser_binary_exists(lang) then
         table.insert(missing, lang)
     end
 end
