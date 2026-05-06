@@ -18,4 +18,8 @@ require("nvim-treesitter.configs").setup {
   ensure_installed = required_parsers,
   sync_install = true,
 }
+
+-- ensure_installed relies on VimEnter which does not fire in headless mode,
+-- so install parsers explicitly before tests run
+vim.cmd("TSInstallSync " .. table.concat(required_parsers, " "))
 EOF
