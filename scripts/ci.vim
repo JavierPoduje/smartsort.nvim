@@ -9,4 +9,5 @@ set rtp+=../nvim-treesitter
 set noswapfile
 
 runtime! plugin/plenary.vim
+runtime! plugin/nvim-treesitter.lua
 

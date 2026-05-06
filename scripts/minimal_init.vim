@@ -18,8 +18,4 @@ require("nvim-treesitter.configs").setup {
   ensure_installed = required_parsers,
   sync_install = true,
 }
-
--- Force installation immediately when running headless tests
-require("nvim-treesitter.install").prefer_git = false
-require("nvim-treesitter.install").update({ with_sync = true })
 EOF
