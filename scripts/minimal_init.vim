@@ -42,7 +42,7 @@ if #missing > 0 then
         --   mode when nvim-treesitter's tracking says a parser is installed but it isn't
         --   in the current rtp (which --clean resets)
         install.prefer_git = false
-        install.update({ with_sync = true, ask_reinstall = "force" })(table.unpack(missing))
+        install.update({ with_sync = true, ask_reinstall = "force" })(unpack(missing))
     end
 end
 EOF
