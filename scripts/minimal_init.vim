@@ -11,6 +11,10 @@ runtime! plugin/nvim-treesitter.lua
 runtime! plugin/init.lua
 
 lua <<EOF
+-- TSInstallSync puts parsers in stdpath('data')/site/parser/, but --clean
+-- strips that path from rtp, so we add it back before checking or installing.
+vim.opt.rtp:append(vim.fn.stdpath("data") .. "/site")
+
 local required_parsers = {'css','go','javascript','lua','python','scss','typescript','vue'}
 
 -- install any parsers not already available
