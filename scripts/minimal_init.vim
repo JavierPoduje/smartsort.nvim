@@ -37,11 +37,9 @@ end
 if #missing > 0 then
     local ok, install = pcall(require, 'nvim-treesitter.install')
     if ok then
-        -- prefer_git=false: tarball download, faster and no git auth needed in CI
-        -- force=true: skip "already installed, reinstall?" prompt without blocking stdin
-        -- with_sync=true: block until all parsers are downloaded
         install.prefer_git = false
-        install.install({ with_sync = true, force = true })(unpack(missing))
     end
+    -- TSInstallSync! = with_sync=true + ask_reinstall="force": blocks, never prompts
+    vim.cmd('TSInstallSync! ' .. table.concat(missing, ' '))
 end
 EOF

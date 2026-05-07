@@ -26,7 +26,8 @@ jobs:
 
       - name: Prepare treesitter
         run: |
-          git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter ../nvim-treesitter
+          git clone https://github.com/nvim-treesitter/nvim-treesitter ../nvim-treesitter
+          git -C ../nvim-treesitter checkout cf12346a3
 
       - name: Run tests
         run: |
