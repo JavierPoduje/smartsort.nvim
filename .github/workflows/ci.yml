@@ -10,15 +10,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-latest]
-        rev: [v0.11.1]
+        rev: [v0.12.2]
 
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/checkout@v4
-        with:
-          repository: nvim-treesitter/nvim-treesitter
-          path: nvim-treesitter
 
       - uses: rhysd/action-setup-vim@v1
         with:
@@ -31,7 +26,8 @@ jobs:
 
       - name: Prepare treesitter
         run: |
-          git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter ../nvim-treesitter
+          git clone https://github.com/nvim-treesitter/nvim-treesitter ../nvim-treesitter
+          git -C ../nvim-treesitter checkout cf12346a3
 
       - name: Run tests
         run: |
